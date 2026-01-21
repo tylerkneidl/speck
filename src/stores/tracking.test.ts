@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useTrackingStore } from './tracking'
+import { useTrackingStore, undo, redo, clearHistory } from './tracking'
 
 describe('useTrackingStore', () => {
   beforeEach(() => {
@@ -53,5 +53,97 @@ describe('useTrackingStore', () => {
     const point = useTrackingStore.getState().dataPoints[0]
     expect(point.pixelX).toBe(150)
     expect(point.pixelY).toBe(250)
+  })
+
+  it('should track selected point', () => {
+    const { addPoint, selectPoint } = useTrackingStore.getState()
+
+    addPoint({ frameNumber: 0, time: 0, pixelX: 100, pixelY: 200 })
+    const pointId = useTrackingStore.getState().dataPoints[0].id
+
+    selectPoint(pointId)
+    expect(useTrackingStore.getState().selectedPointId).toBe(pointId)
+
+    selectPoint(null)
+    expect(useTrackingStore.getState().selectedPointId).toBeNull()
+  })
+
+  it('should clear selection when selected point is deleted', () => {
+    const { addPoint, selectPoint, deletePoint } = useTrackingStore.getState()
+
+    addPoint({ frameNumber: 0, time: 0, pixelX: 100, pixelY: 200 })
+    const pointId = useTrackingStore.getState().dataPoints[0].id
+
+    selectPoint(pointId)
+    expect(useTrackingStore.getState().selectedPointId).toBe(pointId)
+
+    deletePoint(pointId)
+    expect(useTrackingStore.getState().selectedPointId).toBeNull()
+  })
+})
+
+describe('useTrackingStore undo/redo', () => {
+  beforeEach(() => {
+    useTrackingStore.getState().reset()
+    clearHistory()
+  })
+
+  it('should undo adding a point', () => {
+    const { addPoint } = useTrackingStore.getState()
+
+    addPoint({ frameNumber: 0, time: 0, pixelX: 100, pixelY: 200 })
+    expect(useTrackingStore.getState().dataPoints).toHaveLength(1)
+
+    undo()
+    expect(useTrackingStore.getState().dataPoints).toHaveLength(0)
+  })
+
+  it('should redo after undo', () => {
+    const { addPoint } = useTrackingStore.getState()
+
+    addPoint({ frameNumber: 0, time: 0, pixelX: 100, pixelY: 200 })
+    expect(useTrackingStore.getState().dataPoints).toHaveLength(1)
+
+    undo()
+    expect(useTrackingStore.getState().dataPoints).toHaveLength(0)
+
+    redo()
+    expect(useTrackingStore.getState().dataPoints).toHaveLength(1)
+  })
+
+  it('should preserve UI state when undoing data changes', () => {
+    const { addPoint, setTrailLength } = useTrackingStore.getState()
+
+    // First, change UI state
+    setTrailLength(25)
+
+    // Then make a data change
+    addPoint({ frameNumber: 0, time: 0, pixelX: 100, pixelY: 200 })
+    expect(useTrackingStore.getState().dataPoints).toHaveLength(1)
+    expect(useTrackingStore.getState().trailLength).toBe(25)
+
+    // Undo the data change - UI state should be preserved
+    undo()
+    expect(useTrackingStore.getState().dataPoints).toHaveLength(0)
+    expect(useTrackingStore.getState().trailLength).toBe(25) // UI state preserved
+  })
+
+  it('should undo multiple operations', () => {
+    const { addPoint } = useTrackingStore.getState()
+
+    addPoint({ frameNumber: 0, time: 0, pixelX: 100, pixelY: 200 })
+    addPoint({ frameNumber: 1, time: 0.033, pixelX: 110, pixelY: 210 })
+    addPoint({ frameNumber: 2, time: 0.066, pixelX: 120, pixelY: 220 })
+
+    expect(useTrackingStore.getState().dataPoints).toHaveLength(3)
+
+    undo()
+    expect(useTrackingStore.getState().dataPoints).toHaveLength(2)
+
+    undo()
+    expect(useTrackingStore.getState().dataPoints).toHaveLength(1)
+
+    undo()
+    expect(useTrackingStore.getState().dataPoints).toHaveLength(0)
   })
 })
