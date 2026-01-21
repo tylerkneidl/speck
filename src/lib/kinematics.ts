@@ -33,8 +33,8 @@ export function calculateVelocity(
     return null
   }
 
-  const prev = data[index - 1]
-  const next = data[index + 1]
+  const prev = data[index - 1]!
+  const next = data[index + 1]!
   const dt = next.time - prev.time
 
   if (dt === 0) return null
@@ -63,7 +63,7 @@ export function calculateAcceleration(
 
   if (!vPrev || !vNext) return null
 
-  const dt = data[index + 1].time - data[index - 1].time
+  const dt = data[index + 1]!.time - data[index - 1]!.time
   if (dt === 0) return null
 
   return {

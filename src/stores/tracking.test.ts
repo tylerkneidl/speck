@@ -35,7 +35,7 @@ describe('useTrackingStore', () => {
     const { addPoint, deletePoint } = useTrackingStore.getState()
 
     addPoint({ frameNumber: 0, time: 0, pixelX: 100, pixelY: 200 })
-    const pointId = useTrackingStore.getState().dataPoints[0].id
+    const pointId = useTrackingStore.getState().dataPoints[0]!.id
 
     deletePoint(pointId)
 
@@ -46,11 +46,11 @@ describe('useTrackingStore', () => {
     const { addPoint, updatePoint } = useTrackingStore.getState()
 
     addPoint({ frameNumber: 0, time: 0, pixelX: 100, pixelY: 200 })
-    const pointId = useTrackingStore.getState().dataPoints[0].id
+    const pointId = useTrackingStore.getState().dataPoints[0]!.id
 
     updatePoint(pointId, { x: 150, y: 250 })
 
-    const point = useTrackingStore.getState().dataPoints[0]
+    const point = useTrackingStore.getState().dataPoints[0]!
     expect(point.pixelX).toBe(150)
     expect(point.pixelY).toBe(250)
   })
@@ -59,7 +59,7 @@ describe('useTrackingStore', () => {
     const { addPoint, selectPoint } = useTrackingStore.getState()
 
     addPoint({ frameNumber: 0, time: 0, pixelX: 100, pixelY: 200 })
-    const pointId = useTrackingStore.getState().dataPoints[0].id
+    const pointId = useTrackingStore.getState().dataPoints[0]!.id
 
     selectPoint(pointId)
     expect(useTrackingStore.getState().selectedPointId).toBe(pointId)
@@ -72,7 +72,7 @@ describe('useTrackingStore', () => {
     const { addPoint, selectPoint, deletePoint } = useTrackingStore.getState()
 
     addPoint({ frameNumber: 0, time: 0, pixelX: 100, pixelY: 200 })
-    const pointId = useTrackingStore.getState().dataPoints[0].id
+    const pointId = useTrackingStore.getState().dataPoints[0]!.id
 
     selectPoint(pointId)
     expect(useTrackingStore.getState().selectedPointId).toBe(pointId)

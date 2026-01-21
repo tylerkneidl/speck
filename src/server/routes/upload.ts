@@ -21,6 +21,10 @@ const PRESIGN_EXPIRY = 3600 // 1 hour
 
 export const uploadRouter = new Hono()
 
+// Validation constants
+const MAX_FILE_SIZE = 500 * 1024 * 1024 // 500MB
+const ALLOWED_CONTENT_TYPES = ['video/mp4', 'video/webm', 'video/quicktime']
+
 // Get presigned URL for upload
 uploadRouter.post('/presign', async (c) => {
   // TODO: Get userId from Clerk session
@@ -28,8 +32,19 @@ uploadRouter.post('/presign', async (c) => {
   const body = await c.req.json<{
     fileName: string
     contentType: string
+    fileSize: number
     projectId: string
   }>()
+
+  // Validate file size
+  if (body.fileSize > MAX_FILE_SIZE) {
+    return c.json({ error: 'File too large. Maximum size is 500MB.' }, 400)
+  }
+
+  // Validate content type
+  if (!ALLOWED_CONTENT_TYPES.includes(body.contentType)) {
+    return c.json({ error: 'Invalid file type. Allowed: MP4, WebM, MOV.' }, 400)
+  }
 
   const key = `${userId}/${body.projectId}/${body.fileName}`
 
