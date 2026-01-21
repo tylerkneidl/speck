@@ -1,0 +1,85 @@
+import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { Hono } from 'hono'
+import { createLogger } from '../lib/logger'
+
+const logger = createLogger('upload')
+
+// Initialize S3 client for MinIO
+const s3Client = new S3Client({
+  endpoint: process.env.MINIO_ENDPOINT,
+  region: 'us-east-1', // MinIO doesn't care but SDK requires it
+  credentials: {
+    accessKeyId: process.env.MINIO_ACCESS_KEY || '',
+    secretAccessKey: process.env.MINIO_SECRET_KEY || '',
+  },
+  forcePathStyle: true, // Required for MinIO
+})
+
+const BUCKET = process.env.MINIO_BUCKET || 'videos'
+const PRESIGN_EXPIRY = 3600 // 1 hour
+
+export const uploadRouter = new Hono()
+
+// Get presigned URL for upload
+uploadRouter.post('/presign', async (c) => {
+  // TODO: Get userId from Clerk session
+  const userId = 'temp-user-id'
+  const body = await c.req.json<{
+    fileName: string
+    contentType: string
+    projectId: string
+  }>()
+
+  const key = `${userId}/${body.projectId}/${body.fileName}`
+
+  logger.info(
+    { userId, projectId: body.projectId, fileName: body.fileName },
+    'Generating presigned URL',
+  )
+
+  try {
+    const command = new PutObjectCommand({
+      Bucket: BUCKET,
+      Key: key,
+      ContentType: body.contentType,
+    })
+
+    const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: PRESIGN_EXPIRY })
+
+    // Also generate a read URL for after upload completes
+    const getCommand = new GetObjectCommand({
+      Bucket: BUCKET,
+      Key: key,
+    })
+    const readUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 86400 }) // 24 hours
+
+    return c.json({
+      uploadUrl,
+      readUrl,
+      key,
+    })
+  } catch (err) {
+    logger.error({ err, key }, 'Failed to generate presigned URL')
+    return c.json({ error: 'Failed to generate upload URL' }, 500)
+  }
+})
+
+// Get presigned URL for reading (refresh expired URLs)
+uploadRouter.post('/presign-read', async (c) => {
+  const body = await c.req.json<{ key: string }>()
+
+  try {
+    const command = new GetObjectCommand({
+      Bucket: BUCKET,
+      Key: body.key,
+    })
+
+    const readUrl = await getSignedUrl(s3Client, command, { expiresIn: 86400 })
+
+    return c.json({ readUrl })
+  } catch (err) {
+    logger.error({ err, key: body.key }, 'Failed to generate read URL')
+    return c.json({ error: 'Failed to generate read URL' }, 500)
+  }
+})
