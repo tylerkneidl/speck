@@ -30,6 +30,7 @@
     "drizzle-orm": "^0.38.0",
     "hono": "^4.6.0",
     "immer": "^10.1.0",
+    "lucide-react": "^0.562.0",
     "pino": "^9.5.0",
     "pino-pretty": "^13.0.0",
     "postgres": "^3.4.0",
