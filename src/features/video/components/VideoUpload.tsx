@@ -32,13 +32,9 @@ export function VideoUpload({ projectId = 'default', onUploadComplete }: VideoUp
   const extractMetadata = async (file: File): Promise<void> => {
     return new Promise((resolve, reject) => {
       const video = document.createElement('video')
-      video.preload = 'metadata'
+      video.preload = 'auto'
 
-      video.onloadedmetadata = () => {
-        // Default frame rate fallback
-        const frameRate = 30
-
-        // Use simple metadata extraction (frame rate detection is complex)
+      const finalize = (frameRate: number) => {
         setMetadata({
           storageUrl: '', // Will be set after upload
           fileName: file.name,
@@ -51,6 +47,47 @@ export function VideoUpload({ projectId = 'default', onUploadComplete }: VideoUp
 
         URL.revokeObjectURL(video.src)
         resolve()
+      }
+
+      video.onloadedmetadata = () => {
+        // Try to detect frame rate using requestVideoFrameCallback (Chrome/Edge)
+        if ('requestVideoFrameCallback' in video) {
+          let frameCount = 0
+          let startTime = 0
+          const maxSampleFrames = 10
+
+          const countFrame = (_now: number, metadata: VideoFrameCallbackMetadata) => {
+            if (frameCount === 0) {
+              startTime = metadata.mediaTime
+            }
+            frameCount++
+
+            if (frameCount < maxSampleFrames) {
+              video.requestVideoFrameCallback(countFrame)
+            } else {
+              video.pause()
+              const elapsed = metadata.mediaTime - startTime
+              const detectedRate = elapsed > 0 ? Math.round((frameCount - 1) / elapsed) : 30
+              // Snap to common frame rates
+              const commonRates = [23.976, 24, 25, 29.97, 30, 50, 59.94, 60]
+              const frameRate = commonRates.reduce((prev, curr) =>
+                Math.abs(curr - detectedRate) < Math.abs(prev - detectedRate) ? curr : prev
+              )
+              finalize(frameRate)
+            }
+          }
+
+          video.muted = true
+          video.play().then(() => {
+            video.requestVideoFrameCallback(countFrame)
+          }).catch(() => {
+            // Autoplay blocked, fall back to default
+            finalize(30)
+          })
+        } else {
+          // Fallback for browsers without requestVideoFrameCallback
+          finalize(30)
+        }
       }
 
       video.onerror = () => {
