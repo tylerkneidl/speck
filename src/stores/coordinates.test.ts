@@ -64,4 +64,39 @@ describe('useCoordinateStore', () => {
     toggleYAxis()
     expect(useCoordinateStore.getState().yAxisUp).toBe(false)
   })
+
+  it('should reset all state to initial values', () => {
+    const { setScalePoint1, setScalePoint2, setScaleDistance, setScaleUnit, setOrigin, setRotation, toggleYAxis, reset } =
+      useCoordinateStore.getState()
+
+    // Set up some state
+    setScalePoint1({ x: 100, y: 200 })
+    setScalePoint2({ x: 200, y: 200 })
+    setScaleDistance(1.5)
+    setScaleUnit('cm')
+    setOrigin({ x: 50, y: 100 })
+    setRotation(45)
+    toggleYAxis() // now false
+
+    // Verify state was set
+    expect(useCoordinateStore.getState().scalePoint1).toEqual({ x: 100, y: 200 })
+    expect(useCoordinateStore.getState().scaleDistance).toBe(1.5)
+    expect(useCoordinateStore.getState().origin).toEqual({ x: 50, y: 100 })
+    expect(useCoordinateStore.getState().rotation).toBe(45)
+    expect(useCoordinateStore.getState().yAxisUp).toBe(false)
+
+    // Reset
+    reset()
+
+    // Verify all state is back to initial
+    const state = useCoordinateStore.getState()
+    expect(state.scalePoint1).toBeNull()
+    expect(state.scalePoint2).toBeNull()
+    expect(state.scaleDistance).toBeNull()
+    expect(state.scaleUnit).toBe('m')
+    expect(state.origin).toEqual({ x: 0, y: 0 })
+    expect(state.rotation).toBe(0)
+    expect(state.yAxisUp).toBe(true)
+    expect(state.pixelsPerUnit).toBeNull()
+  })
 })

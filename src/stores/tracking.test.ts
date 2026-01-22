@@ -80,6 +80,34 @@ describe('useTrackingStore', () => {
     deletePoint(pointId)
     expect(useTrackingStore.getState().selectedPointId).toBeNull()
   })
+
+  it('should reset all state to initial values', () => {
+    const { addPoint, selectPoint, setAutoAdvance, setTrailLength, reset } = useTrackingStore.getState()
+
+    // Set up some state
+    addPoint({ frameNumber: 0, time: 0, pixelX: 100, pixelY: 200 })
+    addPoint({ frameNumber: 1, time: 0.033, pixelX: 110, pixelY: 210 })
+    const pointId = useTrackingStore.getState().dataPoints[0]!.id
+    selectPoint(pointId)
+    setAutoAdvance(false)
+    setTrailLength(25)
+
+    // Verify state was set
+    expect(useTrackingStore.getState().dataPoints).toHaveLength(2)
+    expect(useTrackingStore.getState().selectedPointId).toBe(pointId)
+    expect(useTrackingStore.getState().autoAdvance).toBe(false)
+    expect(useTrackingStore.getState().trailLength).toBe(25)
+
+    // Reset
+    reset()
+
+    // Verify all state is back to initial
+    const state = useTrackingStore.getState()
+    expect(state.dataPoints).toEqual([])
+    expect(state.selectedPointId).toBeNull()
+    expect(state.autoAdvance).toBe(true)
+    expect(state.trailLength).toBe(10)
+  })
 })
 
 describe('useTrackingStore undo/redo', () => {
