@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
+import { RedirectToSignIn } from '@clerk/clerk-react'
 import { useHotkeys } from 'react-hotkeys-hook'
+import { SignedIn, SignedOut, useIsClerkAvailable } from '@/lib/auth'
 
 import { VideoPlayer, VideoControls, VideoUpload } from '@/features/video/components'
 import { CanvasOverlay } from '@/features/tracking/components'
@@ -34,6 +35,23 @@ type Mode = 'setup' | 'track' | 'analyze'
 type PlacementMode = 'scale1' | 'scale2' | 'origin' | null
 
 function ProjectEditor() {
+  const isClerkAvailable = useIsClerkAvailable()
+
+  return (
+    <>
+      {isClerkAvailable && (
+        <SignedOut>
+          <RedirectToSignIn />
+        </SignedOut>
+      )}
+      <SignedIn fallback={!isClerkAvailable ? <ProjectEditorContent /> : null}>
+        <ProjectEditorContent />
+      </SignedIn>
+    </>
+  )
+}
+
+function ProjectEditorContent() {
   const { projectId } = Route.useParams()
 
   const [mode, setMode] = useState<Mode>('setup')
@@ -138,12 +156,7 @@ function ProjectEditor() {
   }, [])
 
   return (
-    <>
-      <SignedOut>
-        <RedirectToSignIn />
-      </SignedOut>
-      <SignedIn>
-        <div className="flex h-screen flex-col bg-zinc-950">
+    <div className="flex h-screen flex-col bg-zinc-950">
           {/* Header toolbar */}
           <header className="flex items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 py-2">
             <div className="flex items-center gap-4">
@@ -368,7 +381,5 @@ function ProjectEditor() {
             </div>
           </div>
         </div>
-      </SignedIn>
-    </>
   )
 }

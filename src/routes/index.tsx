@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
+import { SignInButton, UserButton } from '@clerk/clerk-react'
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { SignedIn, SignedOut, useIsClerkAvailable } from '@/lib/auth'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Folder, Trash2, Loader2, Video, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -29,6 +30,8 @@ interface Project {
 }
 
 function HomePage() {
+  const isClerkAvailable = useIsClerkAvailable()
+
   return (
     <div className="min-h-screen bg-zinc-950">
       {/* Header */}
@@ -42,25 +45,33 @@ function HomePage() {
               Motion Tracker
             </h1>
           </div>
-          <SignedIn>
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: 'h-8 w-8',
-                },
-              }}
-            />
-          </SignedIn>
-          <SignedOut>
-            <SignInButton mode="modal">
-              <Button
-                variant="outline"
-                className="border-zinc-700 bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
-              >
-                Sign In
-              </Button>
-            </SignInButton>
-          </SignedOut>
+          {isClerkAvailable ? (
+            <>
+              <SignedIn>
+                <UserButton
+                  appearance={{
+                    elements: {
+                      avatarBox: 'h-8 w-8',
+                    },
+                  }}
+                />
+              </SignedIn>
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <Button
+                    variant="outline"
+                    className="border-zinc-700 bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
+                  >
+                    Sign In
+                  </Button>
+                </SignInButton>
+              </SignedOut>
+            </>
+          ) : (
+            <span className="rounded bg-amber-500/10 px-2 py-1 font-mono text-xs text-amber-400">
+              Dev Mode
+            </span>
+          )}
         </div>
       </header>
 

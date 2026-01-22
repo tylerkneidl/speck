@@ -32,18 +32,39 @@ declare module '@tanstack/react-router' {
 
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
-if (!CLERK_PUBLISHABLE_KEY) {
-  throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY')
-}
+// Check if we have a valid Clerk key (not a placeholder)
+const hasValidClerkKey =
+  CLERK_PUBLISHABLE_KEY &&
+  CLERK_PUBLISHABLE_KEY !== 'pk_test_xxx' &&
+  CLERK_PUBLISHABLE_KEY.startsWith('pk_')
 
 const rootElement = document.getElementById('root')!
 
-createRoot(rootElement).render(
-  <StrictMode>
-    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    </ClerkProvider>
-  </StrictMode>,
-)
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  )
+}
+
+if (hasValidClerkKey) {
+  // Production mode with Clerk authentication
+  createRoot(rootElement).render(
+    <StrictMode>
+      <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+        <App />
+      </ClerkProvider>
+    </StrictMode>
+  )
+} else {
+  // Development mode without Clerk (for UI testing)
+  console.warn(
+    '⚠️ Running without Clerk authentication. Set VITE_CLERK_PUBLISHABLE_KEY in .env for full functionality.'
+  )
+  createRoot(rootElement).render(
+    <StrictMode>
+      <App />
+    </StrictMode>
+  )
+}
