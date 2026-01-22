@@ -368,15 +368,15 @@ function ProjectEditorContent() {
                   {/* Analyze toolbar */}
                   <div className="flex items-center gap-4 border-b border-zinc-800 px-4 py-3">
                     <Select value={graphType} onValueChange={(v) => setGraphType(v as GraphType)}>
-                      <SelectTrigger className="w-28 border-zinc-700 bg-zinc-800/50 text-sm">
+                      <SelectTrigger className="w-28 border-zinc-700 bg-zinc-800/50 text-sm text-zinc-200">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="border-zinc-700 bg-zinc-800">
-                        <SelectItem value="x-t">x vs t</SelectItem>
-                        <SelectItem value="y-t">y vs t</SelectItem>
-                        <SelectItem value="vx-t">vx vs t</SelectItem>
-                        <SelectItem value="vy-t">vy vs t</SelectItem>
-                        <SelectItem value="y-x">y vs x</SelectItem>
+                        <SelectItem value="x-t" className="text-zinc-200">x vs t</SelectItem>
+                        <SelectItem value="y-t" className="text-zinc-200">y vs t</SelectItem>
+                        <SelectItem value="vx-t" className="text-zinc-200">vx vs t</SelectItem>
+                        <SelectItem value="vy-t" className="text-zinc-200">vy vs t</SelectItem>
+                        <SelectItem value="y-x" className="text-zinc-200">y vs x</SelectItem>
                       </SelectContent>
                     </Select>
 

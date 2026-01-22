@@ -185,7 +185,7 @@ export function ScaleCalibration({
           <Select value={scaleUnit} onValueChange={(v) => setScaleUnit(v as ScaleUnit)}>
             <SelectTrigger
               id="scale-unit"
-              className="h-9 border-zinc-700 bg-zinc-800/50 font-mono text-sm focus:ring-zinc-600"
+              className="h-9 border-zinc-700 bg-zinc-800/50 font-mono text-sm text-zinc-200 focus:ring-zinc-600"
             >
               <SelectValue />
             </SelectTrigger>
@@ -194,7 +194,7 @@ export function ScaleCalibration({
                 <SelectItem
                   key={unit.value}
                   value={unit.value}
-                  className="font-mono text-sm focus:bg-zinc-700"
+                  className="font-mono text-sm text-zinc-200 focus:bg-zinc-700 focus:text-zinc-100"
                 >
                   {unit.label}
                 </SelectItem>
