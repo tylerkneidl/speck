@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { Undo2, Redo2, ChevronLeft, Settings, Crosshair, LineChart } from 'lucide-react'
+import { Undo2, Redo2, ChevronLeft, Settings, Crosshair, LineChart, RefreshCw } from 'lucide-react'
 
 export const Route = createFileRoute('/projects/$projectId')({
   component: ProjectEditor,
@@ -59,9 +59,9 @@ function ProjectEditorContent() {
   const [graphType, setGraphType] = useState<GraphType>('x-t')
   const [showRegression, setShowRegression] = useState(false)
 
-  const { metadata } = useVideoStore()
-  const { addPoint, autoAdvance, setAutoAdvance } = useTrackingStore()
-  const { setScalePoint1, setScalePoint2, setOrigin, scalePoint1, pixelsPerUnit } =
+  const { metadata, reset: resetVideo } = useVideoStore()
+  const { addPoint, autoAdvance, setAutoAdvance, reset: resetTracking } = useTrackingStore()
+  const { setScalePoint1, setScalePoint2, setOrigin, scalePoint1, pixelsPerUnit, reset: resetCoordinates } =
     useCoordinateStore()
   const { nextFrame } = useVideoStore()
 
@@ -155,6 +155,17 @@ function ProjectEditorContent() {
     setPlacementMode('origin')
   }, [])
 
+  // Reset everything and allow re-upload
+  const handleChangeVideo = useCallback(() => {
+    if (confirm('This will clear all tracking data. Continue?')) {
+      resetVideo()
+      resetTracking()
+      resetCoordinates()
+      setMode('setup')
+      setPlacementMode(null)
+    }
+  }, [resetVideo, resetTracking, resetCoordinates])
+
   return (
     <div className="flex h-screen flex-col bg-zinc-950">
           {/* Header toolbar */}
@@ -245,6 +256,17 @@ function ProjectEditorContent() {
                       height={metadata.height}
                       onClick={handleCanvasClick}
                     />
+
+                    {/* Change video button */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleChangeVideo}
+                      className="absolute right-4 top-4 z-20 gap-2 bg-black/50 text-zinc-400 backdrop-blur-sm hover:bg-black/70 hover:text-zinc-200"
+                    >
+                      <RefreshCw className="h-3.5 w-3.5" />
+                      Change Video
+                    </Button>
 
                     {/* Placement mode indicator */}
                     {placementMode && (
