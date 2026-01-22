@@ -5,18 +5,22 @@ import { createLogger } from '../lib/logger'
 
 const logger = createLogger('upload')
 
-// Initialize S3 client for MinIO
+// Support both Railway Buckets and MinIO (local dev)
+// Railway injects: AWS_ENDPOINT_URL, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, BUCKET
+// MinIO uses: MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET
+const isRailway = !!process.env.AWS_ENDPOINT_URL
+
 const s3Client = new S3Client({
-  endpoint: process.env.MINIO_ENDPOINT,
-  region: 'us-east-1', // MinIO doesn't care but SDK requires it
+  endpoint: process.env.AWS_ENDPOINT_URL || process.env.MINIO_ENDPOINT,
+  region: process.env.AWS_DEFAULT_REGION || 'us-east-1',
   credentials: {
-    accessKeyId: process.env.MINIO_ACCESS_KEY || '',
-    secretAccessKey: process.env.MINIO_SECRET_KEY || '',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || process.env.MINIO_ACCESS_KEY || '',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || process.env.MINIO_SECRET_KEY || '',
   },
-  forcePathStyle: true, // Required for MinIO
+  forcePathStyle: !isRailway, // Railway uses virtual-hosted style, MinIO uses path style
 })
 
-const BUCKET = process.env.MINIO_BUCKET || 'videos'
+const BUCKET = process.env.BUCKET || process.env.MINIO_BUCKET || 'videos'
 const PRESIGN_EXPIRY = 3600 // 1 hour
 
 export const uploadRouter = new Hono()
