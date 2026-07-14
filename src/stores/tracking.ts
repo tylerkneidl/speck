@@ -7,7 +7,7 @@ interface Point {
   y: number
 }
 
-interface DataPoint {
+export interface DataPoint {
   id: string
   frameNumber: number
   time: number

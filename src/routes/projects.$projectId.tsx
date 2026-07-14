@@ -9,6 +9,7 @@ import { CanvasOverlay } from '@/features/tracking/components'
 import { DataTable } from '@/features/data-table/components'
 import { Graph, type GraphType } from '@/features/graphing/components'
 import { ScaleCalibration, OriginTool, AxisRotation } from '@/features/coordinates/components'
+import { useProjectSync } from '@/features/projects/hooks/useProjectSync'
 
 import { useVideoStore } from '@/stores/video'
 import { useTrackingStore } from '@/stores/tracking'
@@ -53,6 +54,9 @@ function ProjectEditor() {
 
 function ProjectEditorContent() {
   const { projectId } = Route.useParams()
+
+  // Load this project into the stores and keep it saved (fetch → hydrate → debounced auto-save)
+  useProjectSync(projectId)
 
   const [mode, setMode] = useState<Mode>('setup')
   const [placementMode, setPlacementMode] = useState<PlacementMode>(null)
@@ -181,9 +185,16 @@ function ProjectEditorContent() {
 
               <div className="h-4 w-px bg-zinc-800" />
 
-              <span className="font-mono text-xs uppercase tracking-wider text-zinc-500">
-                {projectId}
-              </span>
+              <div className="flex items-center gap-2">
+                <svg width="18" height="18" viewBox="0 0 30 30" aria-hidden="true">
+                  <circle cx="22.5" cy="8.5" r="4.8" fill="#ff4e22" />
+                  <circle cx="14" cy="14" r="3.1" fill="#ff4e22" opacity=".6" />
+                  <circle cx="7.8" cy="19.2" r="2.1" fill="#ff4e22" opacity=".34" />
+                </svg>
+                <span className="font-display text-sm font-extrabold tracking-tight text-zinc-100">
+                  Speck<span className="text-primary">.</span>
+                </span>
+              </div>
             </div>
 
             {/* Mode tabs */}
@@ -197,14 +208,14 @@ function ProjectEditorContent() {
               <TabsList className="bg-zinc-800/50">
                 <TabsTrigger
                   value="setup"
-                  className="gap-2 data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100"
+                  className="gap-2 font-semibold data-[state=active]:bg-emerald-600 data-[state=active]:text-zinc-950"
                 >
                   <Settings className="h-3.5 w-3.5" />
                   Setup
                 </TabsTrigger>
                 <TabsTrigger
                   value="track"
-                  className="gap-2 data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100"
+                  className="gap-2 font-semibold data-[state=active]:bg-emerald-600 data-[state=active]:text-zinc-950"
                   disabled={!pixelsPerUnit}
                 >
                   <Crosshair className="h-3.5 w-3.5" />
@@ -212,7 +223,7 @@ function ProjectEditorContent() {
                 </TabsTrigger>
                 <TabsTrigger
                   value="analyze"
-                  className="gap-2 data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100"
+                  className="gap-2 font-semibold data-[state=active]:bg-emerald-600 data-[state=active]:text-zinc-950"
                 >
                   <LineChart className="h-3.5 w-3.5" />
                   Analyze
@@ -290,7 +301,7 @@ function ProjectEditorContent() {
                   </>
                 ) : (
                   <div className="flex h-full items-center justify-center p-8">
-                    <VideoUpload />
+                    <VideoUpload projectId={projectId} />
                   </div>
                 )}
               </div>

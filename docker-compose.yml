@@ -1,0 +1,49 @@
+# Local development stack for Speck (Postgres + MinIO object storage).
+# Usage:  docker compose up -d   →   npm run db:migrate   →   npm run dev:full
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: speck
+      POSTGRES_PASSWORD: speck
+      POSTGRES_DB: speck
+    ports:
+      - "5432:5432"
+    volumes:
+      - speck_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U speck -d speck"]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # web console
+    volumes:
+      - speck_minio:/data
+
+  # One-shot: create the "videos" bucket and set browser CORS so presigned
+  # uploads work from the Vite dev origin.
+  minio-init:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until /usr/bin/mc alias set local http://minio:9000 minioadmin minioadmin; do echo 'waiting for minio'; sleep 1; done;
+      /usr/bin/mc mb -p local/videos;
+      /usr/bin/mc anonymous set download local/videos;
+      echo 'bucket ready';
+      exit 0;
+      "
+
+volumes:
+  speck_pg:
+  speck_minio:

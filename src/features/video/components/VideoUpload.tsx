@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import { Upload, FileVideo, AlertCircle, Loader2 } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
+import { useApiClient } from '@/lib/api'
 import { useVideoStore } from '@/stores/video'
 
 interface VideoUploadProps {
@@ -10,6 +11,7 @@ interface VideoUploadProps {
 
 export function VideoUpload({ projectId = 'default', onUploadComplete }: VideoUploadProps) {
   const { setMetadata } = useVideoStore()
+  const api = useApiClient()
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -99,9 +101,9 @@ export function VideoUpload({ projectId = 'default', onUploadComplete }: VideoUp
     })
   }
 
-  const uploadFile = async (file: File): Promise<string> => {
+  const uploadFile = async (file: File): Promise<{ readUrl: string; key: string }> => {
     // Get presigned URL
-    const presignResponse = await fetch('/api/upload/presign', {
+    const presignResponse = await api('/api/upload/presign', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -117,7 +119,7 @@ export function VideoUpload({ projectId = 'default', onUploadComplete }: VideoUp
       throw new Error(errorData.error || 'Failed to get upload URL')
     }
 
-    const { uploadUrl, readUrl } = await presignResponse.json()
+    const { uploadUrl, readUrl, key } = await presignResponse.json()
 
     // Upload to MinIO with progress tracking
     await new Promise<void>((resolve, reject) => {
@@ -144,7 +146,7 @@ export function VideoUpload({ projectId = 'default', onUploadComplete }: VideoUp
       xhr.send(file)
     })
 
-    return readUrl
+    return { readUrl, key }
   }
 
   const handleFile = useCallback(
@@ -165,15 +167,15 @@ export function VideoUpload({ projectId = 'default', onUploadComplete }: VideoUp
         await extractMetadata(file)
 
         // Then upload
-        const storageUrl = await uploadFile(file)
+        const { readUrl, key } = await uploadFile(file)
 
-        // Update metadata with storage URL
+        // Persist the storage KEY (the URL is re-presigned on load; it expires)
         const currentMetadata = useVideoStore.getState().metadata
         if (currentMetadata) {
-          setMetadata({ ...currentMetadata, storageUrl })
+          setMetadata({ ...currentMetadata, storageUrl: readUrl, storageKey: key })
         }
 
-        onUploadComplete?.(storageUrl)
+        onUploadComplete?.(readUrl)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Upload failed')
       } finally {

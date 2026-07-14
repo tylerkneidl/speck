@@ -3,6 +3,7 @@ import { immer } from 'zustand/middleware/immer'
 
 export interface VideoMetadata {
   storageUrl: string
+  storageKey?: string
   fileName: string
   duration: number
   frameRate: number
