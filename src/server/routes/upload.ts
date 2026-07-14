@@ -1,6 +1,7 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { Hono } from 'hono'
+import { getUserId } from '../lib/auth'
 import { createLogger } from '../lib/logger'
 
 const logger = createLogger('upload')
@@ -31,8 +32,7 @@ const ALLOWED_CONTENT_TYPES = ['video/mp4', 'video/webm', 'video/quicktime']
 
 // Get presigned URL for upload
 uploadRouter.post('/presign', async (c) => {
-  // TODO: Get userId from Clerk session
-  const userId = 'temp-user-id'
+  const userId = getUserId(c)
   const body = await c.req.json<{
     fileName: string
     contentType: string
@@ -86,7 +86,14 @@ uploadRouter.post('/presign', async (c) => {
 
 // Get presigned URL for reading (refresh expired URLs)
 uploadRouter.post('/presign-read', async (c) => {
+  const userId = getUserId(c)
   const body = await c.req.json<{ key: string }>()
+
+  // Basic ownership guard: object keys are prefixed with the owner's userId.
+  // Full project-ownership verification is tracked in SPE-19.
+  if (!body.key || !body.key.startsWith(`${userId}/`)) {
+    return c.json({ error: 'Forbidden' }, 403)
+  }
 
   try {
     const command = new GetObjectCommand({

@@ -1,8 +1,8 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, inArray } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { dataPoints, db, projectSettings, projects } from '../db'
+import { getUserId } from '../lib/auth'
 import { createLogger } from '../lib/logger'
-// import { verifyClerkSession } from '../lib/auth' // TODO: implement
 
 const logger = createLogger('projects')
 
@@ -10,8 +10,7 @@ export const projectsRouter = new Hono()
 
 // List user's projects
 projectsRouter.get('/', async (c) => {
-  // TODO: Get userId from Clerk session
-  const userId = 'temp-user-id'
+  const userId = getUserId(c)
 
   logger.info({ userId }, 'Listing projects')
 
@@ -26,10 +25,13 @@ projectsRouter.get('/', async (c) => {
 
 // Get single project with settings and data points
 projectsRouter.get('/:id', async (c) => {
+  const userId = getUserId(c)
   const projectId = c.req.param('id')
-  // TODO: Verify ownership or public access
 
-  const [project] = await db.select().from(projects).where(eq(projects.id, projectId))
+  const [project] = await db
+    .select()
+    .from(projects)
+    .where(and(eq(projects.id, projectId), eq(projects.userId, userId)))
 
   if (!project) {
     return c.json({ error: 'Project not found' }, 404)
@@ -55,8 +57,7 @@ projectsRouter.get('/:id', async (c) => {
 
 // Create new project
 projectsRouter.post('/', async (c) => {
-  // TODO: Get userId from Clerk session
-  const userId = 'temp-user-id'
+  const userId = getUserId(c)
   const body = await c.req.json<{ name: string }>()
 
   logger.info({ userId, name: body.name }, 'Creating project')
@@ -83,17 +84,28 @@ projectsRouter.post('/', async (c) => {
 
 // Update project settings
 projectsRouter.put('/:id', async (c) => {
+  const userId = getUserId(c)
   const projectId = c.req.param('id')
   const body = await c.req.json()
 
-  logger.info({ projectId }, 'Updating project')
+  logger.info({ projectId, userId }, 'Updating project')
+
+  // Verify ownership before any write
+  const [owned] = await db
+    .select({ id: projects.id })
+    .from(projects)
+    .where(and(eq(projects.id, projectId), eq(projects.userId, userId)))
+
+  if (!owned) {
+    return c.json({ error: 'Project not found' }, 404)
+  }
 
   // Update project metadata
   if (body.name) {
     await db
       .update(projects)
       .set({ name: body.name, updatedAt: new Date() })
-      .where(eq(projects.id, projectId))
+      .where(and(eq(projects.id, projectId), eq(projects.userId, userId)))
   }
 
   // Update settings
@@ -113,21 +125,30 @@ projectsRouter.put('/:id', async (c) => {
 
 // Delete project
 projectsRouter.delete('/:id', async (c) => {
+  const userId = getUserId(c)
   const projectId = c.req.param('id')
-  // TODO: Verify ownership
 
-  logger.info({ projectId }, 'Deleting project')
+  logger.info({ projectId, userId }, 'Deleting project')
 
-  await db.delete(projects).where(eq(projects.id, projectId))
+  const deleted = await db
+    .delete(projects)
+    .where(and(eq(projects.id, projectId), eq(projects.userId, userId)))
+    .returning({ id: projects.id })
+
+  if (deleted.length === 0) {
+    return c.json({ error: 'Project not found' }, 404)
+  }
 
   return c.json({ success: true })
 })
 
 // Add data points
 projectsRouter.post('/:id/points', async (c) => {
+  const userId = getUserId(c)
   const projectId = c.req.param('id')
   const body = await c.req.json<{
     points: Array<{
+      id?: string
       frameNumber: number
       timeSeconds: number
       pixelX: number
@@ -135,12 +156,25 @@ projectsRouter.post('/:id/points', async (c) => {
     }>
   }>()
 
+  // Verify ownership before writing points
+  const [owned] = await db
+    .select({ id: projects.id })
+    .from(projects)
+    .where(and(eq(projects.id, projectId), eq(projects.userId, userId)))
+
+  if (!owned) {
+    return c.json({ error: 'Project not found' }, 404)
+  }
+
   logger.info({ projectId, count: body.points.length }, 'Adding data points')
 
   const insertedPoints = await db
     .insert(dataPoints)
     .values(
       body.points.map((p) => ({
+        // Accept a client-generated id so the client and server stay in sync
+        // (add/delete diffing keys on this id). Falls back to a random uuid.
+        ...(p.id ? { id: p.id } : {}),
         projectId,
         frameNumber: p.frameNumber,
         timeSeconds: p.timeSeconds.toString(),
@@ -151,22 +185,36 @@ projectsRouter.post('/:id/points', async (c) => {
     .returning()
 
   // Update project timestamp
-  await db.update(projects).set({ updatedAt: new Date() }).where(eq(projects.id, projectId))
+  await db
+    .update(projects)
+    .set({ updatedAt: new Date() })
+    .where(and(eq(projects.id, projectId), eq(projects.userId, userId)))
 
   return c.json(insertedPoints, 201)
 })
 
 // Delete data points
 projectsRouter.delete('/:id/points', async (c) => {
+  const userId = getUserId(c)
   const projectId = c.req.param('id')
   const body = await c.req.json<{ pointIds: string[] }>()
 
+  // Verify ownership before deleting points
+  const [owned] = await db
+    .select({ id: projects.id })
+    .from(projects)
+    .where(and(eq(projects.id, projectId), eq(projects.userId, userId)))
+
+  if (!owned) {
+    return c.json({ error: 'Project not found' }, 404)
+  }
+
   logger.info({ projectId, count: body.pointIds.length }, 'Deleting data points')
 
-  for (const pointId of body.pointIds) {
+  if (body.pointIds.length > 0) {
     await db
       .delete(dataPoints)
-      .where(and(eq(dataPoints.id, pointId), eq(dataPoints.projectId, projectId)))
+      .where(and(inArray(dataPoints.id, body.pointIds), eq(dataPoints.projectId, projectId)))
   }
 
   return c.json({ success: true })
