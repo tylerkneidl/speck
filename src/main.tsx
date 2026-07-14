@@ -4,6 +4,9 @@ import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { routeTree } from './routeTree.gen'
+import '@fontsource-variable/archivo'
+import '@fontsource-variable/hanken-grotesk'
+import '@fontsource-variable/jetbrains-mono'
 import './index.css'
 
 const queryClient = new QueryClient({
@@ -40,6 +43,12 @@ const hasValidClerkKey =
 
 const rootElement = document.getElementById('root')!
 
+// Dev-only auth bypass: skip Clerk and run signed-in so gated screens (project
+// list, editor) are reachable without logging in. Gated on import.meta.env.DEV
+// so it can NEVER be active in a production build, regardless of the env var.
+const devNoAuth = import.meta.env.DEV && import.meta.env.VITE_DEV_NO_AUTH === 'true'
+const useClerk = hasValidClerkKey && !devNoAuth
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -48,8 +57,8 @@ function App() {
   )
 }
 
-if (hasValidClerkKey) {
-  // Production mode with Clerk authentication
+if (useClerk) {
+  // Clerk authentication (production, and dev unless bypass is on)
   createRoot(rootElement).render(
     <StrictMode>
       <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
@@ -58,9 +67,10 @@ if (hasValidClerkKey) {
     </StrictMode>
   )
 } else {
-  // Development mode without Clerk (for UI testing)
   console.warn(
-    '⚠️ Running without Clerk authentication. Set VITE_CLERK_PUBLISHABLE_KEY in .env for full functionality.'
+    devNoAuth
+      ? '🔓 Dev auth bypass ON (VITE_DEV_NO_AUTH) — running as a signed-in dev user, no Clerk.'
+      : '⚠️ Running without Clerk authentication. Set VITE_CLERK_PUBLISHABLE_KEY in .env for full functionality.'
   )
   createRoot(rootElement).render(
     <StrictMode>

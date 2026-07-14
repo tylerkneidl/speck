@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { SignInButton, UserButton } from '@clerk/clerk-react'
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { useApiClient } from '@/lib/api'
 import { SignedIn, SignedOut, useIsClerkAvailable } from '@/lib/auth'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Folder, Trash2, Loader2, Video, ArrowRight } from 'lucide-react'
+import { Plus, Trash2, Loader2, Video, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -38,11 +39,14 @@ function HomePage() {
       <header className="border-b border-zinc-800 bg-zinc-900">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-500/10 border border-emerald-500/30">
-              <Video className="h-4 w-4 text-emerald-400" />
-            </div>
-            <h1 className="font-mono text-lg font-semibold tracking-tight text-zinc-100">
-              Motion Tracker
+            <svg width="26" height="26" viewBox="0 0 30 30" aria-hidden="true">
+              <circle cx="23" cy="8" r="5" fill="#ff4e22" />
+              <circle cx="14" cy="14" r="3.1" fill="#ff4e22" opacity=".6" />
+              <circle cx="7.5" cy="19" r="2.1" fill="#ff4e22" opacity=".33" />
+              <circle cx="3" cy="23.5" r="1.4" fill="#ff4e22" opacity=".18" />
+            </svg>
+            <h1 className="font-display text-xl font-extrabold tracking-tight text-zinc-100">
+              Speck<span className="text-primary">.</span>
             </h1>
           </div>
           {isClerkAvailable ? (
@@ -104,18 +108,50 @@ function LandingContent() {
           />
         </div>
 
-        <h2 className="font-mono text-4xl font-bold tracking-tight text-zinc-100">
-          Video-Based Motion Analysis
+        <svg
+          viewBox="0 0 600 220"
+          className="mx-auto mb-2 w-full max-w-xl overflow-visible"
+          aria-hidden="true"
+        >
+          <path className="speck-traj-line" d="M 10 210 Q 300 -50 590 210" />
+          <circle cx="10" cy="210" r="3" fill="#ff4e22" opacity=".14" />
+          <circle cx="68" cy="162" r="3.4" fill="#ff4e22" opacity=".22" />
+          <circle cx="126" cy="122" r="3.8" fill="#ff4e22" opacity=".3" />
+          <circle cx="184" cy="92" r="4.2" fill="#ff4e22" opacity=".4" />
+          <circle cx="242" cy="72" r="4.6" fill="#ff4e22" opacity=".52" />
+          <circle cx="300" cy="62" r="5" fill="#ff4e22" opacity=".64" />
+          <circle cx="358" cy="72" r="4.6" fill="#ff4e22" opacity=".52" />
+          <circle cx="416" cy="92" r="4.2" fill="#ff4e22" opacity=".4" />
+          <circle cx="474" cy="122" r="3.8" fill="#ff4e22" opacity=".3" />
+          <circle cx="532" cy="162" r="3.4" fill="#ff4e22" opacity=".22" />
+          <circle cx="590" cy="210" r="3" fill="#ff4e22" opacity=".14" />
+          <circle className="speck-live" r="6" />
+        </svg>
+
+        <h2 className="font-display text-5xl font-extrabold leading-[0.98] tracking-tight text-zinc-100 sm:text-6xl">
+          See it.
+          <br />
+          Track it.
+          <br />
+          <span className="speck-cycle" aria-hidden="true">
+            <span className="speck-words">
+              <span>Solve&nbsp;it.</span>
+              <span>Graph&nbsp;it.</span>
+              <span>Learn&nbsp;it.</span>
+              <span>Prove&nbsp;it.</span>
+              <span>Solve&nbsp;it.</span>
+            </span>
+          </span>
         </h2>
-        <p className="mt-4 text-lg leading-relaxed text-zinc-400">
-          Upload videos, track objects frame-by-frame, and generate position, velocity, and
-          acceleration data with publication-quality graphs.
+        <p className="mx-auto mt-6 max-w-md text-lg leading-relaxed text-zinc-400">
+          Turn any video into position, velocity, and acceleration data &mdash; one tracked point at
+          a time. Built for the physics classroom, fast enough to feel like play.
         </p>
 
         <div className="mt-8 flex items-center justify-center gap-4">
           <SignInButton mode="modal">
-            <Button className="gap-2 bg-emerald-600 text-white hover:bg-emerald-500">
-              Get Started
+            <Button className="gap-2 bg-emerald-600 font-semibold text-zinc-950 hover:bg-emerald-500">
+              Start tracking
               <ArrowRight className="h-4 w-4" />
             </Button>
           </SignInButton>
@@ -132,7 +168,7 @@ function LandingContent() {
               key={feature.title}
               className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4"
             >
-              <h3 className="font-mono text-sm font-medium text-zinc-300">{feature.title}</h3>
+              <h3 className="font-display text-sm font-bold text-zinc-100">{feature.title}</h3>
               <p className="mt-1 text-xs text-zinc-500">{feature.desc}</p>
             </div>
           ))}
@@ -146,11 +182,12 @@ function ProjectList() {
   const [newProjectName, setNewProjectName] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const queryClient = useQueryClient()
+  const api = useApiClient()
 
   const { data: projects, isLoading } = useQuery<Project[]>({
     queryKey: ['projects'],
     queryFn: async () => {
-      const res = await fetch('/api/projects')
+      const res = await api('/api/projects')
       if (!res.ok) throw new Error('Failed to fetch projects')
       return res.json()
     },
@@ -158,7 +195,7 @@ function ProjectList() {
 
   const createMutation = useMutation({
     mutationFn: async (name: string) => {
-      const res = await fetch('/api/projects', {
+      const res = await api('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),
@@ -175,7 +212,7 @@ function ProjectList() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' })
+      const res = await api(`/api/projects/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Failed to delete project')
     },
     onSuccess: () => {
@@ -202,7 +239,7 @@ function ProjectList() {
       {/* Header with create button */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-mono text-2xl font-bold tracking-tight text-zinc-100">
+          <h2 className="font-display text-2xl font-bold tracking-tight text-zinc-100">
             Your Projects
           </h2>
           <p className="mt-1 text-sm text-zinc-500">
@@ -211,7 +248,7 @@ function ProjectList() {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2 bg-emerald-600 text-white hover:bg-emerald-500">
+            <Button className="gap-2 bg-emerald-600 font-semibold text-zinc-950 hover:bg-emerald-500">
               <Plus className="h-4 w-4" />
               New Project
             </Button>
@@ -242,7 +279,7 @@ function ProjectList() {
               <Button
                 onClick={handleCreate}
                 disabled={!newProjectName.trim() || createMutation.isPending}
-                className="bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50"
+                className="bg-emerald-600 font-semibold text-zinc-950 hover:bg-emerald-500 disabled:opacity-50"
               >
                 {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Project
@@ -256,9 +293,14 @@ function ProjectList() {
       {projects?.length === 0 ? (
         <Card className="border-zinc-800 bg-zinc-900/50">
           <CardContent className="flex flex-col items-center justify-center py-16">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-800">
-              <Folder className="h-8 w-8 text-zinc-600" />
-            </div>
+            <svg viewBox="0 0 600 220" className="w-56 overflow-visible" aria-hidden="true">
+              <path className="speck-traj-line" d="M 10 210 Q 300 -50 590 210" />
+              <circle cx="126" cy="122" r="4" fill="#ff4e22" opacity=".3" />
+              <circle cx="242" cy="72" r="4.6" fill="#ff4e22" opacity=".5" />
+              <circle cx="300" cy="62" r="5" fill="#ff4e22" opacity=".64" />
+              <circle cx="416" cy="92" r="4.2" fill="#ff4e22" opacity=".4" />
+              <circle cx="532" cy="162" r="3.4" fill="#ff4e22" opacity=".22" />
+            </svg>
             <p className="mt-4 font-medium text-zinc-400">No projects yet</p>
             <p className="text-sm text-zinc-600">Create your first project to get started</p>
           </CardContent>

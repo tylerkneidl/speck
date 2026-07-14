@@ -27,11 +27,14 @@ export function useAuth() {
   const isClerkAvailable = useIsClerkAvailable()
 
   if (!isClerkAvailable) {
-    // Return mock "signed out" state when Clerk isn't available
+    // No Clerk provider. In the dev server we treat this as a signed-in "dev user"
+    // so the gated app (project list, editor) is reachable without logging in.
+    // In a production build (import.meta.env.DEV === false) this fails safe to signed-out.
+    const devSignedIn = import.meta.env.DEV
     return {
-      isSignedIn: false,
+      isSignedIn: devSignedIn,
       isLoaded: true,
-      userId: null,
+      userId: devSignedIn ? 'dev-user' : null,
     }
   }
 
