@@ -27,7 +27,11 @@ export function VideoPlayer({ src, onFrameChange }: VideoPlayerProps) {
     const video = videoRef.current
     if (!video || !metadata) return
 
-    const targetTime = currentFrame / metadata.frameRate
+    // Seek to the MIDDLE of the frame, not its boundary. Frame N occupies the
+    // interval [N/fps, (N+1)/fps); seeking to exactly N/fps is ambiguous (float
+    // rounding + decoder boundary behavior can land on frame N-1), which made
+    // stepping sometimes fail to advance. The midpoint lands squarely in frame N.
+    const targetTime = (currentFrame + 0.5) / metadata.frameRate
     if (Math.abs(video.currentTime - targetTime) > 0.001) {
       video.currentTime = targetTime
     }
