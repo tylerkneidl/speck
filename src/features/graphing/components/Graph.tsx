@@ -124,8 +124,8 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
         {regression && (
           <div className="flex items-center gap-4 font-mono text-xs">
             <span className="text-zinc-400">
-              y = <span className="text-blue-400">{regression.slope.toFixed(4)}</span>x +{' '}
-              <span className="text-blue-400">{regression.intercept.toFixed(4)}</span>
+              y = <span className="text-plasma">{regression.slope.toFixed(4)}</span>x +{' '}
+              <span className="text-plasma">{regression.intercept.toFixed(4)}</span>
             </span>
             <span className="text-zinc-600">|</span>
             <span className="text-zinc-400">
@@ -188,7 +188,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                   fontSize: '11px',
                 }}
                 labelStyle={{ color: '#a1a1aa' }}
-                itemStyle={{ color: '#ef4444' }}
+                itemStyle={{ color: '#ff4e22' }}
                 formatter={(value: number) => value.toFixed(4)}
                 labelFormatter={(label: number) => `${xLabel}: ${label.toFixed(4)}`}
               />
@@ -207,9 +207,9 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
               <Line
                 type="monotone"
                 dataKey={yKey}
-                stroke="#ef4444"
+                stroke="#ff4e22"
                 strokeWidth={2}
-                dot={{ r: 4, fill: '#ef4444', strokeWidth: 0 }}
+                dot={{ r: 4, fill: '#ff4e22', strokeWidth: 0 }}
                 activeDot={{ r: 6, fill: '#fbbf24', strokeWidth: 0 }}
               />
 
@@ -219,7 +219,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                   data={regressionLineData}
                   type="linear"
                   dataKey="y"
-                  stroke="#3b82f6"
+                  stroke="#27e0cf"
                   strokeWidth={1.5}
                   strokeDasharray="6 4"
                   dot={false}
