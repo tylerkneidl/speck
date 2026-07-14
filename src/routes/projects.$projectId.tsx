@@ -64,7 +64,8 @@ function ProjectEditorContent() {
   const [showRegression, setShowRegression] = useState(false)
 
   const { metadata, reset: resetVideo } = useVideoStore()
-  const { addPoint, autoAdvance, setAutoAdvance, reset: resetTracking } = useTrackingStore()
+  const { addPoint, autoAdvance, setAutoAdvance, selectPoint, dataPoints, reset: resetTracking } =
+    useTrackingStore()
   const { setScalePoint1, setScalePoint2, setOrigin, scalePoint1, pixelsPerUnit, reset: resetCoordinates } =
     useCoordinateStore()
   const { nextFrame } = useVideoStore()
@@ -97,6 +98,16 @@ function ProjectEditorContent() {
     [placementMode]
   )
 
+  // Delete the selected point
+  useHotkeys(
+    'delete, backspace',
+    () => {
+      const { selectedPointId, deletePoint } = useTrackingStore.getState()
+      if (selectedPointId) deletePoint(selectedPointId)
+    },
+    []
+  )
+
   // Handle canvas click based on mode
   const handleCanvasClick = useCallback(
     (pixelX: number, pixelY: number) => {
@@ -120,8 +131,14 @@ function ProjectEditorContent() {
         return
       }
 
-      // Track mode: add data points
+      // Track mode: select a nearby point (to delete/inspect) or add a new one
       if (mode === 'track' && metadata) {
+        const hit = dataPoints.find((p) => Math.hypot(p.pixelX - pixelX, p.pixelY - pixelY) <= 14)
+        if (hit) {
+          selectPoint(hit.id)
+          return
+        }
+
         const { currentFrame, currentTime } = useVideoStore.getState()
         addPoint({
           frameNumber: currentFrame,
@@ -146,6 +163,8 @@ function ProjectEditorContent() {
       addPoint,
       autoAdvance,
       nextFrame,
+      dataPoints,
+      selectPoint,
     ]
   )
 

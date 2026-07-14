@@ -97,7 +97,7 @@ function drawCoordinateSystem(
   ctx.rotate(rotationRad)
 
   // Axis style - technical green
-  ctx.strokeStyle = '#22c55e'
+  ctx.strokeStyle = '#27e0cf'
   ctx.lineWidth = 1.5
   ctx.setLineDash([])
 
@@ -114,7 +114,7 @@ function drawCoordinateSystem(
   ctx.stroke()
 
   // Tick marks on axes
-  ctx.strokeStyle = '#22c55e80'
+  ctx.strokeStyle = '#27e0cf80'
   ctx.lineWidth = 1
   const tickSpacing = 50
   const tickSize = 6
@@ -138,7 +138,7 @@ function drawCoordinateSystem(
   }
 
   // Origin marker - concentric circles for precision look
-  ctx.fillStyle = '#22c55e'
+  ctx.fillStyle = '#27e0cf'
   ctx.beginPath()
   ctx.arc(0, 0, 8, 0, 2 * Math.PI)
   ctx.fill()
@@ -148,7 +148,7 @@ function drawCoordinateSystem(
   ctx.arc(0, 0, 5, 0, 2 * Math.PI)
   ctx.fill()
 
-  ctx.fillStyle = '#22c55e'
+  ctx.fillStyle = '#27e0cf'
   ctx.beginPath()
   ctx.arc(0, 0, 2, 0, 2 * Math.PI)
   ctx.fill()
@@ -157,7 +157,7 @@ function drawCoordinateSystem(
 
   // Draw scale reference line
   if (scalePoint1 && scalePoint2) {
-    ctx.strokeStyle = '#3b82f6'
+    ctx.strokeStyle = '#2f83bb'
     ctx.lineWidth = 2
     ctx.setLineDash([8, 4])
 
@@ -167,7 +167,7 @@ function drawCoordinateSystem(
     ctx.stroke()
 
     // Scale point markers - diamond shape for distinctiveness
-    ctx.fillStyle = '#3b82f6'
+    ctx.fillStyle = '#2f83bb'
     ctx.setLineDash([])
 
     drawDiamond(ctx, scalePoint1.x, scalePoint1.y, 8)
@@ -216,7 +216,7 @@ function drawPoints(
       // Calculate opacity based on position in trail
       const opacity = trailLength > 0 ? 0.3 + (0.7 * i) / visiblePoints.length : 0.8
 
-      ctx.strokeStyle = `rgba(239, 68, 68, ${opacity})`
+      ctx.strokeStyle = `rgba(255, 78, 34, ${opacity})`
       ctx.lineWidth = 1.5
       ctx.beginPath()
       ctx.moveTo(prev.pixelX, prev.pixelY)
@@ -236,7 +236,7 @@ function drawPoints(
 
     // Point appearance
     const radius = isCurrent ? 7 : 5
-    const fillColor = isCurrent ? '#fbbf24' : `rgba(239, 68, 68, ${opacity})`
+    const fillColor = isCurrent ? '#fbbf24' : `rgba(255, 78, 34, ${opacity})`
 
     // Outer glow for current point
     if (isCurrent) {
