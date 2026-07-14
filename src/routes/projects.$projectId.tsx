@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { Undo2, Redo2, ChevronLeft, Settings, Crosshair, LineChart, RefreshCw } from 'lucide-react'
+import { Undo2, Redo2, ChevronLeft, Settings, Crosshair, LineChart, RefreshCw, Loader2 } from 'lucide-react'
 
 export const Route = createFileRoute('/projects/$projectId')({
   component: ProjectEditor,
@@ -56,7 +56,7 @@ function ProjectEditorContent() {
   const { projectId } = Route.useParams()
 
   // Load this project into the stores and keep it saved (fetch → hydrate → debounced auto-save)
-  useProjectSync(projectId)
+  const { saveStatus } = useProjectSync(projectId)
 
   const [mode, setMode] = useState<Mode>('setup')
   const [placementMode, setPlacementMode] = useState<PlacementMode>(null)
@@ -195,6 +195,29 @@ function ProjectEditorContent() {
                   Speck<span className="text-primary">.</span>
                 </span>
               </div>
+
+              {saveStatus !== 'idle' && (
+                <span className="flex items-center gap-1.5 font-mono text-xs">
+                  {saveStatus === 'saving' && (
+                    <>
+                      <Loader2 className="h-3 w-3 animate-spin text-zinc-500" />
+                      <span className="text-zinc-500">Saving…</span>
+                    </>
+                  )}
+                  {saveStatus === 'saved' && (
+                    <>
+                      <span className="h-1.5 w-1.5 rounded-full bg-plasma" />
+                      <span className="text-zinc-400">Saved</span>
+                    </>
+                  )}
+                  {saveStatus === 'error' && (
+                    <>
+                      <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                      <span className="text-red-400">Save failed</span>
+                    </>
+                  )}
+                </span>
+              )}
             </div>
 
             {/* Mode tabs */}
