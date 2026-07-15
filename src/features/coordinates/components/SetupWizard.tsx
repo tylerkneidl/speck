@@ -41,18 +41,31 @@ function targetFor(step: StepId, hasBothScalePoints: boolean, originSet: boolean
   }
 }
 
+interface Rect {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
 interface Anchor {
   left: number
   top: number
   arrowTop: number
   side: 'left' | 'right' | 'none'
+  ready: boolean
+  target: Rect | null
 }
 
 /**
- * Positions the card beside its target: on whichever horizontal side has room,
- * vertically centered on the target (clamped to the viewport), with the arrow
- * offset to point back at the target's center. Recomputes on step/target change,
- * card resize, and window resize/scroll — this is what makes it "bump around".
+ * Positions the card and reports the target's rect (for the highlight). The card
+ * always stays within the video ("stage") panel so it never covers the sidebar
+ * controls it's pointing at:
+ *  - Video target → sit inside the video hugging its right edge (no arrow); the
+ *    highlight ring around the video conveys "interact here".
+ *  - Sidebar target → sit to the panel's left, clamped into the video, arrow
+ *    pointing right at the panel.
+ * Recomputes on step/target change, resize, and scroll — the "bump around".
  */
 function useAnchor(
   targetSel: string,
@@ -64,47 +77,58 @@ function useAnchor(
     top: -9999,
     arrowTop: 0,
     side: 'none',
+    ready: false,
+    target: null,
   })
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `key` intentionally forces a re-anchor when the step's sub-state changes; cardRef is a stable ref.
   useLayoutEffect(() => {
     const recompute = () => {
       const target = document.querySelector(targetSel) as HTMLElement | null
+      const stage = document.querySelector('[data-tour="stage"]') as HTMLElement | null
       const card = cardRef.current
       if (!target || !card) return
       const t = target.getBoundingClientRect()
+      const stageR = (stage ?? target).getBoundingClientRect()
       const cw = card.offsetWidth || CARD_WIDTH
       const ch = card.offsetHeight || 168
       const gap = 18
-      const vw = window.innerWidth
       const vh = window.innerHeight
 
-      const spaceRight = vw - t.right
-      const spaceLeft = t.left
-      let side: 'left' | 'right'
+      const isVideoTarget = targetSel === '[data-tour="stage"]'
       let left: number
-      if (spaceRight >= cw + gap) {
-        side = 'right'
-        left = t.right + gap
-      } else if (spaceLeft >= cw + gap) {
-        side = 'left'
-        left = t.left - gap - cw
+      let side: 'left' | 'right' | 'none'
+      if (isVideoTarget) {
+        // Inside the video, hugging the right edge — leaves the left ~half (where
+        // you click scale/origin) clear, and never spills into the sidebar.
+        left = stageR.right - cw - gap
+        side = 'none'
       } else {
-        side = spaceRight >= spaceLeft ? 'right' : 'left'
-        left =
-          side === 'right' ? Math.min(t.right + gap, vw - cw - 8) : Math.max(8, t.left - gap - cw)
+        // Left of the panel, clamped so the card's right edge stays on the video.
+        left = Math.min(t.left - gap - cw, stageR.right - cw - gap)
+        side = 'right'
       }
+      left = Math.max(8, left)
 
       const targetCenterY = t.top + t.height / 2
       const top = Math.max(8, Math.min(targetCenterY - ch / 2, vh - ch - 8))
       const arrowTop = Math.max(18, Math.min(targetCenterY - top, ch - 18))
-      setAnchor({ left, top, arrowTop, side })
+      setAnchor({
+        left,
+        top,
+        arrowTop,
+        side,
+        ready: true,
+        target: { left: t.left, top: t.top, width: t.width, height: t.height },
+      })
     }
 
     recompute()
     const target = document.querySelector(targetSel) as HTMLElement | null
+    const stage = document.querySelector('[data-tour="stage"]') as HTMLElement | null
     const ro = new ResizeObserver(recompute)
     if (target) ro.observe(target)
+    if (stage) ro.observe(stage)
     if (cardRef.current) ro.observe(cardRef.current)
     window.addEventListener('resize', recompute)
     window.addEventListener('scroll', recompute, true)
@@ -182,169 +206,186 @@ export function SetupWizard({
       : 0
 
   return (
-    <div
-      ref={cardRef}
-      style={{ left: anchor.left, top: anchor.top, width: CARD_WIDTH }}
-      className={cn(
-        'fixed z-50 rounded-xl border border-zinc-700 bg-zinc-900 shadow-2xl shadow-black/50 transition-[left,top] duration-300 ease-out',
-        anchor.side === 'none' && 'pointer-events-none opacity-0',
-      )}
-    >
-      {/* Pointer arrow toward the target */}
-      {anchor.side !== 'none' && (
-        <span
+    <>
+      {/* Highlight ring around the element the guide is pointing at */}
+      {anchor.ready && anchor.target && (
+        <div
           aria-hidden
-          style={{ top: anchor.arrowTop }}
-          className={cn(
-            'absolute h-3 w-3 rotate-45 border-zinc-700 bg-zinc-900',
-            anchor.side === 'right'
-              ? '-left-1.5 border-b border-l'
-              : '-right-1.5 border-r border-t',
-          )}
+          className="tour-highlight pointer-events-none fixed z-40 rounded-lg"
+          style={{
+            left: anchor.target.left - 5,
+            top: anchor.target.top - 5,
+            width: anchor.target.width + 10,
+            height: anchor.target.height + 10,
+          }}
         />
       )}
 
-      <div className="p-4">
-        {/* Header: identity + step count + close */}
-        <div className="mb-2.5 flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Compass className="h-3.5 w-3.5 text-primary" />
-            <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-zinc-300">
-              Setup Guide
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-[10px] tabular-nums text-zinc-500">
-              {stepIndex + 1} / {STEPS.length}
-            </span>
-            <button
-              type="button"
-              onClick={onClose}
-              className="-mr-1 rounded p-1 text-zinc-600 transition-colors hover:bg-zinc-800 hover:text-zinc-300"
-              title="Close guide"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        </div>
+      <div
+        ref={cardRef}
+        style={{ left: anchor.left, top: anchor.top, width: CARD_WIDTH }}
+        className={cn(
+          'fixed z-50 rounded-xl border border-primary/50 bg-zinc-800 ring-1 ring-primary/20 transition-[left,top] duration-300 ease-out',
+          'shadow-[0_18px_50px_-12px_rgba(0,0,0,0.85)]',
+          !anchor.ready && 'pointer-events-none opacity-0',
+        )}
+      >
+        {/* Pointer arrow toward the target */}
+        {anchor.side !== 'none' && (
+          <span
+            aria-hidden
+            style={{ top: anchor.arrowTop }}
+            className={cn(
+              'absolute h-3 w-3 rotate-45 border-primary/50 bg-zinc-800',
+              anchor.side === 'right'
+                ? '-left-1.5 border-b border-l'
+                : '-right-1.5 border-r border-t',
+            )}
+          />
+        )}
 
-        {/* Progress dots */}
-        <div className="mb-3 flex items-center gap-1.5">
-          {STEPS.map((s, i) => (
-            <span
-              key={s}
-              className={cn(
-                'h-1.5 rounded-full transition-all',
-                i === stepIndex
-                  ? 'w-5 bg-primary'
-                  : i < stepIndex
-                    ? 'w-1.5 bg-plasma'
-                    : 'w-1.5 bg-zinc-700',
+        <div className="p-4">
+          {/* Header: identity + step count + close */}
+          <div className="mb-2.5 flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Compass className="h-3.5 w-3.5 text-primary" />
+              <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-zinc-300">
+                Setup Guide
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] tabular-nums text-zinc-500">
+                {stepIndex + 1} / {STEPS.length}
+              </span>
+              <button
+                type="button"
+                onClick={onClose}
+                className="-mr-1 rounded p-1 text-zinc-600 transition-colors hover:bg-zinc-800 hover:text-zinc-300"
+                title="Close guide"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Progress dots */}
+          <div className="mb-3 flex items-center gap-1.5">
+            {STEPS.map((s, i) => (
+              <span
+                key={s}
+                className={cn(
+                  'h-1.5 rounded-full transition-all',
+                  i === stepIndex
+                    ? 'w-5 bg-primary'
+                    : i < stepIndex
+                      ? 'w-1.5 bg-plasma'
+                      : 'w-1.5 bg-zinc-700',
+                )}
+              />
+            ))}
+          </div>
+
+          {/* Step body */}
+          <StepBody
+            step={step}
+            uploadDone={uploadDone}
+            fileName={metadata?.fileName}
+            dims={metadata ? `${metadata.width}×${metadata.height}` : ''}
+            frameRate={metadata?.frameRate ?? 0}
+            scalePoint1={!!scalePoint1}
+            scalePoint2={!!scalePoint2}
+            scaleDone={scaleDone}
+            scaleDistance={scaleDistance}
+            scaleUnit={scaleUnit}
+            pixelsPerUnit={pixelsPerUnit}
+            pxDist={pxDist}
+            originSet={originSet}
+            rotation={rotation}
+            placementArmed={placementMode !== null}
+            onRearmScale={rearmScale}
+            onRearmOrigin={() => setPlacementMode('origin')}
+          />
+
+          {/* Actions */}
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              {stepIndex > 0 && (
+                <button
+                  type="button"
+                  onClick={goBack}
+                  className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-zinc-500 transition-colors hover:text-zinc-300"
+                >
+                  <ArrowLeft className="h-3 w-3" /> Back
+                </button>
               )}
-            />
-          ))}
-        </div>
+            </div>
 
-        {/* Step body */}
-        <StepBody
-          step={step}
-          uploadDone={uploadDone}
-          fileName={metadata?.fileName}
-          dims={metadata ? `${metadata.width}×${metadata.height}` : ''}
-          frameRate={metadata?.frameRate ?? 0}
-          scalePoint1={!!scalePoint1}
-          scalePoint2={!!scalePoint2}
-          scaleDone={scaleDone}
-          scaleDistance={scaleDistance}
-          scaleUnit={scaleUnit}
-          pixelsPerUnit={pixelsPerUnit}
-          pxDist={pxDist}
-          originSet={originSet}
-          rotation={rotation}
-          placementArmed={placementMode !== null}
-          onRearmScale={rearmScale}
-          onRearmOrigin={() => setPlacementMode('origin')}
-        />
+            <div className="flex items-center gap-2">
+              {step === 'scale' && scaleDone && (
+                <RedoButton
+                  onClick={() => {
+                    resetScale()
+                    setPlacementMode('scale1')
+                  }}
+                />
+              )}
+              {step === 'origin' && originSet && (
+                <RedoButton
+                  onClick={() => {
+                    resetOrigin()
+                    setPlacementMode('origin')
+                  }}
+                />
+              )}
 
-        {/* Actions */}
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            {stepIndex > 0 && (
-              <button
-                type="button"
-                onClick={goBack}
-                className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-zinc-500 transition-colors hover:text-zinc-300"
-              >
-                <ArrowLeft className="h-3 w-3" /> Back
-              </button>
-            )}
+              {(step === 'axes' || step === 'fps') && (
+                <button
+                  type="button"
+                  onClick={goNext}
+                  className="rounded-md px-2 py-1.5 text-xs text-zinc-500 transition-colors hover:text-zinc-300"
+                >
+                  Skip
+                </button>
+              )}
+
+              {step === 'done' ? (
+                <button
+                  type="button"
+                  onClick={onStartTracking}
+                  className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-flare-hi"
+                >
+                  Start tracking <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+              ) : (
+                <PrimaryButton
+                  step={step}
+                  enabled={
+                    step === 'upload'
+                      ? uploadDone
+                      : step === 'scale'
+                        ? scaleDone
+                        : step === 'origin'
+                          ? originSet
+                          : true // axes / fps are optional — always continuable
+                  }
+                  optional={step === 'axes' || step === 'fps'}
+                  onClick={goNext}
+                />
+              )}
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {step === 'scale' && scaleDone && (
-              <RedoButton
-                onClick={() => {
-                  resetScale()
-                  setPlacementMode('scale1')
-                }}
-              />
-            )}
-            {step === 'origin' && originSet && (
-              <RedoButton
-                onClick={() => {
-                  resetOrigin()
-                  setPlacementMode('origin')
-                }}
-              />
-            )}
-
-            {(step === 'axes' || step === 'fps') && (
-              <button
-                type="button"
-                onClick={goNext}
-                className="rounded-md px-2 py-1.5 text-xs text-zinc-500 transition-colors hover:text-zinc-300"
-              >
-                Skip
-              </button>
-            )}
-
-            {step === 'done' ? (
-              <button
-                type="button"
-                onClick={onStartTracking}
-                className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-flare-hi"
-              >
-                Start tracking <ArrowRight className="h-3.5 w-3.5" />
-              </button>
-            ) : (
-              <PrimaryButton
-                step={step}
-                enabled={
-                  step === 'upload'
-                    ? uploadDone
-                    : step === 'scale'
-                      ? scaleDone
-                      : step === 'origin'
-                        ? originSet
-                        : true // axes / fps are optional — always continuable
-                }
-                optional={step === 'axes' || step === 'fps'}
-                onClick={goNext}
-              />
-            )}
-          </div>
+          {/* Don't show again */}
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="mt-3 w-full text-center text-[11px] text-zinc-600 transition-colors hover:text-zinc-400"
+          >
+            Don't show this again
+          </button>
         </div>
-
-        {/* Don't show again */}
-        <button
-          type="button"
-          onClick={onDismiss}
-          className="mt-3 w-full text-center text-[11px] text-zinc-600 transition-colors hover:text-zinc-400"
-        >
-          Don't show this again
-        </button>
       </div>
-    </div>
+    </>
   )
 }
 
