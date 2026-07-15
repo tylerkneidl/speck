@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TryRouteImport } from './routes/try'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShareShareTokenRouteImport } from './routes/share.$shareToken'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
 
+const TryRoute = TryRouteImport.update({
+  id: '/try',
+  path: '/try',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,36 +37,47 @@ const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/try': typeof TryRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/share/$shareToken': typeof ShareShareTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/try': typeof TryRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/share/$shareToken': typeof ShareShareTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/try': typeof TryRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/share/$shareToken': typeof ShareShareTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/projects/$projectId' | '/share/$shareToken'
+  fullPaths: '/' | '/try' | '/projects/$projectId' | '/share/$shareToken'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/projects/$projectId' | '/share/$shareToken'
-  id: '__root__' | '/' | '/projects/$projectId' | '/share/$shareToken'
+  to: '/' | '/try' | '/projects/$projectId' | '/share/$shareToken'
+  id: '__root__' | '/' | '/try' | '/projects/$projectId' | '/share/$shareToken'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  TryRoute: typeof TryRoute
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
   ShareShareTokenRoute: typeof ShareShareTokenRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/try': {
+      id: '/try'
+      path: '/try'
+      fullPath: '/try'
+      preLoaderRoute: typeof TryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  TryRoute: TryRoute,
   ProjectsProjectIdRoute: ProjectsProjectIdRoute,
   ShareShareTokenRoute: ShareShareTokenRoute,
 }

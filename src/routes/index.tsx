@@ -1,10 +1,3 @@
-import { useState } from 'react'
-import { SignInButton, UserButton } from '@clerk/clerk-react'
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useApiClient } from '@/lib/api'
-import { SignedIn, SignedOut, useIsClerkAvailable } from '@/lib/auth'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Trash2, Loader2, Video, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -18,6 +11,13 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useApiClient } from '@/lib/api'
+import { SignedIn, SignedOut, useIsClerkAvailable } from '@/lib/auth'
+import { SignInButton, UserButton } from '@clerk/clerk-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { ArrowRight, Loader2, Plus, Trash2, Video } from 'lucide-react'
+import { useState } from 'react'
 
 export const Route = createFileRoute('/')({
   component: HomePage,
@@ -148,13 +148,23 @@ function LandingContent() {
           a time. Built for the physics classroom, fast enough to feel like play.
         </p>
 
-        <div className="mt-8 flex items-center justify-center gap-4">
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <SignInButton mode="modal">
             <Button className="gap-2 bg-emerald-600 font-semibold text-zinc-950 hover:bg-emerald-500">
               Start tracking
               <ArrowRight className="h-4 w-4" />
             </Button>
           </SignInButton>
+          <Button
+            asChild
+            variant="outline"
+            className="gap-2 border-zinc-700 bg-zinc-800/50 text-zinc-200 hover:bg-zinc-800 hover:text-zinc-100"
+          >
+            <Link to="/try">
+              Try a sample — no sign-in
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
         </div>
 
         {/* Feature highlights */}
