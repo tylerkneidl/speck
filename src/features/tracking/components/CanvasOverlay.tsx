@@ -239,24 +239,32 @@ function drawCoordinateSystem(
 
   ctx.restore()
 
-  // Draw scale reference line
+  // Draw each scale marker as it's placed (so you see point 1 before point 2),
+  // and connect them with the reference line once both exist.
+  ctx.setLineDash([])
   if (scalePoint1 && scalePoint2) {
     ctx.strokeStyle = '#2f83bb'
     ctx.lineWidth = 2
     ctx.setLineDash([8, 4])
-
     ctx.beginPath()
     ctx.moveTo(scalePoint1.x, scalePoint1.y)
     ctx.lineTo(scalePoint2.x, scalePoint2.y)
     ctx.stroke()
-
-    // Scale point markers - diamond shape for distinctiveness
-    ctx.fillStyle = '#2f83bb'
     ctx.setLineDash([])
-
-    drawDiamond(ctx, scalePoint1.x, scalePoint1.y, 8)
-    drawDiamond(ctx, scalePoint2.x, scalePoint2.y, 8)
   }
+  if (scalePoint1) drawScaleMarker(ctx, scalePoint1.x, scalePoint1.y, '1')
+  if (scalePoint2) drawScaleMarker(ctx, scalePoint2.x, scalePoint2.y, '2')
+}
+
+function drawScaleMarker(ctx: CanvasRenderingContext2D, x: number, y: number, label: string) {
+  ctx.fillStyle = '#2f83bb'
+  drawDiamond(ctx, x, y, 8)
+  // number label above the marker so you can tell point 1 from point 2
+  ctx.fillStyle = '#bfe0ff'
+  ctx.font = 'bold 11px ui-monospace, monospace'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'bottom'
+  ctx.fillText(label, x, y - 11)
 }
 
 function drawDiamond(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { RedirectToSignIn } from '@clerk/clerk-react'
 import { useHotkeys } from 'react-hotkeys-hook'
@@ -76,9 +76,49 @@ function ProjectEditorContent() {
   const { metadata, reset: resetVideo } = useVideoStore()
   const { addPoint, autoAdvance, setAutoAdvance, selectPoint, dataPoints, reset: resetTracking } =
     useTrackingStore()
-  const { setScalePoint1, setScalePoint2, setOrigin, scalePoint1, pixelsPerUnit, reset: resetCoordinates } =
-    useCoordinateStore()
+  const {
+    setScalePoint1,
+    setScalePoint2,
+    setOrigin,
+    scalePoint1,
+    pixelsPerUnit,
+    originSet,
+    reset: resetCoordinates,
+  } = useCoordinateStore()
   const { nextFrame } = useVideoStore()
+
+  // Setup Guide flow — drive the user straight through calibration.
+  const autoScaleStarted = useRef(false)
+  const autoOriginStarted = useRef(false)
+
+  // Once a video is loaded (and not already calibrated), jump right into placing scale point 1.
+  useEffect(() => {
+    if (
+      mode === 'setup' &&
+      metadata &&
+      pixelsPerUnit === null &&
+      scalePoint1 === null &&
+      placementMode === null &&
+      !autoScaleStarted.current
+    ) {
+      autoScaleStarted.current = true
+      setPlacementMode('scale1')
+    }
+  }, [mode, metadata, pixelsPerUnit, scalePoint1, placementMode])
+
+  // Once the scale is calibrated, auto-advance to placing the origin.
+  useEffect(() => {
+    if (
+      mode === 'setup' &&
+      pixelsPerUnit !== null &&
+      !originSet &&
+      placementMode === null &&
+      !autoOriginStarted.current
+    ) {
+      autoOriginStarted.current = true
+      setPlacementMode('origin')
+    }
+  }, [mode, pixelsPerUnit, originSet, placementMode])
 
   // Undo/redo keyboard shortcuts
   useHotkeys(

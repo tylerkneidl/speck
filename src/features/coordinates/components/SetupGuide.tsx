@@ -15,11 +15,10 @@ interface SetupGuideProps {
  * is disabled until the scale is set.
  */
 export function SetupGuide({ onStartTracking }: SetupGuideProps) {
-  const { pixelsPerUnit, originSet, rotation, yAxisUp } = useCoordinateStore()
+  const { pixelsPerUnit, originSet } = useCoordinateStore()
 
   const scaleDone = pixelsPerUnit !== null
   const originDone = originSet
-  const axesAdjusted = rotation !== 0 || yAxisUp === false
 
   // Auto-open until calibrated; the header toggle overrides (per project).
   const [override, setOverride] = useState<boolean | null>(null)
@@ -46,19 +45,17 @@ export function SetupGuide({ onStartTracking }: SetupGuideProps) {
       key: 'axes',
       title: 'Aim the axes',
       tag: 'optional',
-      hint: 'Y points up by default. Rotate the axes to match a ramp or tilted surface.',
-      done: axesAdjusted,
+      hint: 'Y is up and level by default — only rotate for a ramp or tilted surface.',
+      done: true,
     },
     {
       key: 'fps',
       title: 'Check the frame rate',
       tag: 'optional',
-      hint: 'Match your camera (30 / 60 / 240 for slow-mo) — it sets the clock for speed & acceleration.',
-      done: false,
+      hint: 'Auto-detected. Adjust only if it doesn’t match your camera (e.g. 240 for slow-mo).',
+      done: true,
     },
   ]
-  const completed = steps.filter((s) => s.done).length
-
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900">
       <button
@@ -68,7 +65,7 @@ export function SetupGuide({ onStartTracking }: SetupGuideProps) {
       >
         <span className="font-mono text-xs uppercase tracking-wider text-zinc-400">Setup Guide</span>
         <span className={cn('font-mono text-[11px]', scaleDone ? 'text-plasma' : 'text-zinc-600')}>
-          {scaleDone ? 'Ready to track' : `${completed}/${steps.length}`}
+          {scaleDone ? 'Ready to track' : 'Set the scale to begin'}
         </span>
         {open ? (
           <ChevronUp className="ml-auto h-4 w-4 text-zinc-500" />
@@ -110,7 +107,7 @@ export function SetupGuide({ onStartTracking }: SetupGuideProps) {
                       </span>
                     )}
                   </div>
-                  {(isCurrent || (!s.done && s.tag === 'optional')) && (
+                  {(isCurrent || s.tag === 'optional') && (
                     <p className={cn('mt-0.5 text-xs leading-relaxed', isCurrent ? 'text-zinc-400' : 'text-zinc-600')}>
                       {s.hint}
                     </p>

@@ -105,8 +105,11 @@ export const useCoordinateStore = create<CoordinateState>()(
         if (system.scalePoint2 !== undefined) state.scalePoint2 = system.scalePoint2
         if (system.scaleDistance !== undefined) state.scaleDistance = system.scaleDistance
         if (system.scaleUnit !== undefined) state.scaleUnit = system.scaleUnit
-        if (system.origin !== undefined) {
-          state.origin = system.origin
+        if (system.origin !== undefined) state.origin = system.origin
+        if (system.originSet !== undefined) {
+          state.originSet = system.originSet
+        } else if (system.origin && (system.origin.x !== 0 || system.origin.y !== 0)) {
+          // Legacy saves had no originSet flag — a non-default origin implies it was placed.
           state.originSet = true
         }
         if (system.rotation !== undefined) state.rotation = system.rotation
