@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { useTrackingStore } from '@/stores/tracking'
 import { useVideoStore } from '@/stores/video'
 import { useCoordinateStore } from '@/stores/coordinates'
+import { useUiStore } from '@/stores/ui'
 import { useTableData, type TableRow as DataRow } from '../hooks/useTableData'
 import { exportTableData } from '@/lib/export'
 import { cn } from '@/lib/utils'
@@ -24,6 +25,8 @@ export function DataTable({ className }: DataTableProps) {
   const { selectedPointId, selectPoint, deletePoint } = useTrackingStore()
   const { setCurrentFrame } = useVideoStore()
   const { scaleUnit } = useCoordinateStore()
+  const { detailLevel, setDetailLevel } = useUiStore()
+  const advanced = detailLevel === 'advanced'
   const data = useTableData()
 
   const handleRowClick = useCallback(
@@ -45,6 +48,28 @@ export function DataTable({ className }: DataTableProps) {
       <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2">
         <span className="font-mono text-xs uppercase tracking-wider text-zinc-500">Motion Data</span>
         <div className="flex items-center gap-3">
+          <div className="flex items-center rounded-md border border-zinc-700 p-0.5">
+            <button
+              type="button"
+              onClick={() => setDetailLevel('basic')}
+              className={cn(
+                'rounded px-2 py-0.5 font-mono text-[11px] font-medium transition-colors',
+                !advanced ? 'bg-zinc-700 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'
+              )}
+            >
+              Basic
+            </button>
+            <button
+              type="button"
+              onClick={() => setDetailLevel('advanced')}
+              className={cn(
+                'rounded px-2 py-0.5 font-mono text-[11px] font-medium transition-colors',
+                advanced ? 'bg-zinc-700 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'
+              )}
+            >
+              Advanced
+            </button>
+          </div>
           <span className="font-mono text-xs text-zinc-600">
             {data.length} {data.length === 1 ? 'point' : 'points'}
           </span>
@@ -70,11 +95,15 @@ export function DataTable({ className }: DataTableProps) {
               <TableHead className="font-mono text-xs text-zinc-500">t (s)</TableHead>
               <TableHead className="font-mono text-xs text-zinc-500">x ({scaleUnit})</TableHead>
               <TableHead className="font-mono text-xs text-zinc-500">y ({scaleUnit})</TableHead>
-              <TableHead className="font-mono text-xs text-zinc-500">vx ({scaleUnit}/s)</TableHead>
-              <TableHead className="font-mono text-xs text-zinc-500">vy ({scaleUnit}/s)</TableHead>
-              <TableHead className="font-mono text-xs text-zinc-500">|v| ({scaleUnit}/s)</TableHead>
-              <TableHead className="font-mono text-xs text-zinc-500">ax ({scaleUnit}/s²)</TableHead>
-              <TableHead className="font-mono text-xs text-zinc-500">ay ({scaleUnit}/s²)</TableHead>
+              {advanced && (
+                <>
+                  <TableHead className="font-mono text-xs text-zinc-500">vx ({scaleUnit}/s)</TableHead>
+                  <TableHead className="font-mono text-xs text-zinc-500">vy ({scaleUnit}/s)</TableHead>
+                  <TableHead className="font-mono text-xs text-zinc-500">|v| ({scaleUnit}/s)</TableHead>
+                  <TableHead className="font-mono text-xs text-zinc-500">ax ({scaleUnit}/s²)</TableHead>
+                  <TableHead className="font-mono text-xs text-zinc-500">ay ({scaleUnit}/s²)</TableHead>
+                </>
+              )}
               <TableHead className="w-8" />
             </TableRow>
           </TableHeader>
@@ -96,13 +125,17 @@ export function DataTable({ className }: DataTableProps) {
                 <TableCell className="font-mono text-xs tabular-nums">{formatNumber(row.time)}</TableCell>
                 <TableCell className="font-mono text-xs tabular-nums">{formatNumber(row.worldX)}</TableCell>
                 <TableCell className="font-mono text-xs tabular-nums">{formatNumber(row.worldY)}</TableCell>
-                <TableCell className="font-mono text-xs tabular-nums">{formatNumber(row.vx)}</TableCell>
-                <TableCell className="font-mono text-xs tabular-nums">{formatNumber(row.vy)}</TableCell>
-                <TableCell className="font-mono text-xs tabular-nums">
-                  <span className={row.speed !== null ? 'text-primary' : ''}>{formatNumber(row.speed)}</span>
-                </TableCell>
-                <TableCell className="font-mono text-xs tabular-nums">{formatNumber(row.ax)}</TableCell>
-                <TableCell className="font-mono text-xs tabular-nums">{formatNumber(row.ay)}</TableCell>
+                {advanced && (
+                  <>
+                    <TableCell className="font-mono text-xs tabular-nums">{formatNumber(row.vx)}</TableCell>
+                    <TableCell className="font-mono text-xs tabular-nums">{formatNumber(row.vy)}</TableCell>
+                    <TableCell className="font-mono text-xs tabular-nums">
+                      <span className={row.speed !== null ? 'text-primary' : ''}>{formatNumber(row.speed)}</span>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs tabular-nums">{formatNumber(row.ax)}</TableCell>
+                    <TableCell className="font-mono text-xs tabular-nums">{formatNumber(row.ay)}</TableCell>
+                  </>
+                )}
                 <TableCell className="w-8 p-0">
                   <button
                     type="button"
@@ -120,7 +153,7 @@ export function DataTable({ className }: DataTableProps) {
             ))}
             {data.length === 0 && (
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={10} className="h-32 text-center">
+                <TableCell colSpan={advanced ? 10 : 5} className="h-32 text-center">
                   <div className="flex flex-col items-center gap-2">
                     <span className="font-mono text-xs uppercase tracking-wider text-zinc-600">
                       No data points tracked

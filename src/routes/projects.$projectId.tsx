@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { RedirectToSignIn } from '@clerk/clerk-react'
 import { useHotkeys } from 'react-hotkeys-hook'
@@ -14,6 +14,7 @@ import { useProjectSync } from '@/features/projects/hooks/useProjectSync'
 import { useVideoStore } from '@/stores/video'
 import { useTrackingStore } from '@/stores/tracking'
 import { useCoordinateStore } from '@/stores/coordinates'
+import { useUiStore } from '@/stores/ui'
 
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -62,6 +63,15 @@ function ProjectEditorContent() {
   const [placementMode, setPlacementMode] = useState<PlacementMode>(null)
   const [graphType, setGraphType] = useState<GraphType>('x-t')
   const [showRegression, setShowRegression] = useState(false)
+  const { detailLevel } = useUiStore()
+  const advanced = detailLevel === 'advanced'
+
+  // Basic view offers position graphs only — reset if a velocity graph was selected.
+  useEffect(() => {
+    if (!advanced && (graphType === 'vx-t' || graphType === 'vy-t')) {
+      setGraphType('x-t')
+    }
+  }, [advanced, graphType])
 
   const { metadata, reset: resetVideo } = useVideoStore()
   const { addPoint, autoAdvance, setAutoAdvance, selectPoint, dataPoints, reset: resetTracking } =
@@ -428,8 +438,12 @@ function ProjectEditorContent() {
                       <SelectContent className="border-zinc-700 bg-zinc-800">
                         <SelectItem value="x-t" className="text-zinc-200">x vs t</SelectItem>
                         <SelectItem value="y-t" className="text-zinc-200">y vs t</SelectItem>
-                        <SelectItem value="vx-t" className="text-zinc-200">vx vs t</SelectItem>
-                        <SelectItem value="vy-t" className="text-zinc-200">vy vs t</SelectItem>
+                        {advanced && (
+                          <>
+                            <SelectItem value="vx-t" className="text-zinc-200">vx vs t</SelectItem>
+                            <SelectItem value="vy-t" className="text-zinc-200">vy vs t</SelectItem>
+                          </>
+                        )}
                         <SelectItem value="y-x" className="text-zinc-200">y vs x</SelectItem>
                       </SelectContent>
                     </Select>
