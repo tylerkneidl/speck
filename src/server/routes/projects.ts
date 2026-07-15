@@ -1,4 +1,4 @@
-import { and, eq, inArray } from 'drizzle-orm'
+import { and, eq, inArray, sql } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { dataPoints, db, projectSettings, projects } from '../db'
 import { getUserId } from '../lib/auth'
@@ -166,14 +166,15 @@ projectsRouter.post('/:id/points', async (c) => {
     return c.json({ error: 'Project not found' }, 404)
   }
 
-  logger.info({ projectId, count: body.points.length }, 'Adding data points')
+  logger.info({ projectId, count: body.points.length }, 'Upserting data points')
 
+  // Upsert: new points insert, and points sent again with the same client id
+  // (e.g. after dragging one to a new position) update in place. Keyed on the
+  // client-generated id, so add / move / delete all round-trip through this id.
   const insertedPoints = await db
     .insert(dataPoints)
     .values(
       body.points.map((p) => ({
-        // Accept a client-generated id so the client and server stay in sync
-        // (add/delete diffing keys on this id). Falls back to a random uuid.
         ...(p.id ? { id: p.id } : {}),
         projectId,
         frameNumber: p.frameNumber,
@@ -182,6 +183,15 @@ projectsRouter.post('/:id/points', async (c) => {
         pixelY: p.pixelY.toString(),
       })),
     )
+    .onConflictDoUpdate({
+      target: dataPoints.id,
+      set: {
+        frameNumber: sql`excluded.frame_number`,
+        timeSeconds: sql`excluded.time_seconds`,
+        pixelX: sql`excluded.pixel_x`,
+        pixelY: sql`excluded.pixel_y`,
+      },
+    })
     .returning()
 
   // Update project timestamp

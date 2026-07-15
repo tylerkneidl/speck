@@ -1,21 +1,35 @@
-import { useCallback, useEffect, useRef } from 'react'
-import { useTrackingStore } from '@/stores/tracking'
 import { useCoordinateStore } from '@/stores/coordinates'
+import { useTrackingStore } from '@/stores/tracking'
 import { useVideoStore } from '@/stores/video'
+import { useCallback, useEffect, useRef } from 'react'
 
 interface CanvasOverlayProps {
   width: number
   height: number
   onClick?: (pixelX: number, pixelY: number) => void
+  /** Allow dragging existing tracked points to reposition them (Track mode). */
+  enableDrag?: boolean
 }
 
 const LOUPE_SIZE = 132 // magnifier diameter, display px
 const LOUPE_CROP = 48 // native px sampled under the cursor
 const LOUPE_ZOOM = LOUPE_SIZE / LOUPE_CROP
+const HIT_RADIUS = 14 // native px — how close a click/grab must be to a point
 
-export function CanvasOverlay({ width, height, onClick }: CanvasOverlayProps) {
+interface DragState {
+  id: string
+  startX: number
+  startY: number
+  x: number
+  y: number
+  moved: boolean
+}
+
+export function CanvasOverlay({ width, height, onClick, enableDrag = false }: CanvasOverlayProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const loupeRef = useRef<HTMLCanvasElement>(null)
+  const dragRef = useRef<DragState | null>(null)
+  const didDragRef = useRef(false)
 
   const { dataPoints, selectedPointId, trailLength } = useTrackingStore()
   const { origin, rotation, scalePoint1, scalePoint2 } = useCoordinateStore()
@@ -35,8 +49,15 @@ export function CanvasOverlay({ width, height, onClick }: CanvasOverlayProps) {
     // Draw coordinate system
     drawCoordinateSystem(ctx, origin, rotation, scalePoint1, scalePoint2, width, height)
 
+    // While a point is being dragged, render it at the live cursor position
+    // (the store isn't touched until pointer-up, so undo stays one step).
+    const drag = dragRef.current
+    const points = drag
+      ? dataPoints.map((p) => (p.id === drag.id ? { ...p, pixelX: drag.x, pixelY: drag.y } : p))
+      : dataPoints
+
     // Draw tracked points and path
-    drawPoints(ctx, dataPoints, selectedPointId, currentFrame, trailLength)
+    drawPoints(ctx, points, selectedPointId, currentFrame, trailLength)
   }, [
     width,
     height,
@@ -54,23 +75,74 @@ export function CanvasOverlay({ width, height, onClick }: CanvasOverlayProps) {
     draw()
   }, [draw])
 
+  // Convert a client (screen) coordinate to a native canvas pixel.
+  const toNative = useCallback((clientX: number, clientY: number) => {
+    const canvas = canvasRef.current!
+    const rect = canvas.getBoundingClientRect()
+    return {
+      x: (clientX - rect.left) * (canvas.width / rect.width),
+      y: (clientY - rect.top) * (canvas.height / rect.height),
+    }
+  }, [])
+
+  // Nearest tracked point within HIT_RADIUS of (x, y), or null.
+  const hitTest = useCallback((x: number, y: number): string | null => {
+    let best: string | null = null
+    let bestDist = HIT_RADIUS
+    for (const p of useTrackingStore.getState().dataPoints) {
+      const d = Math.hypot(p.pixelX - x, p.pixelY - y)
+      if (d <= bestDist) {
+        best = p.id
+        bestDist = d
+      }
+    }
+    return best
+  }, [])
+
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
+      // Swallow the click that ends a drag so it doesn't also add/select.
+      if (didDragRef.current) {
+        didDragRef.current = false
+        return
+      }
       if (!onClick) return
-
-      const canvas = canvasRef.current
-      if (!canvas) return
-
-      const rect = canvas.getBoundingClientRect()
-      const scaleX = canvas.width / rect.width
-      const scaleY = canvas.height / rect.height
-
-      const pixelX = (e.clientX - rect.left) * scaleX
-      const pixelY = (e.clientY - rect.top) * scaleY
-
-      onClick(pixelX, pixelY)
+      const { x, y } = toNative(e.clientX, e.clientY)
+      onClick(x, y)
     },
-    [onClick]
+    [onClick, toNative],
+  )
+
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      didDragRef.current = false
+      if (!enableDrag) return
+      const { x, y } = toNative(e.clientX, e.clientY)
+      const id = hitTest(x, y)
+      if (!id) return // empty space → let the click add a point
+      canvasRef.current?.setPointerCapture(e.pointerId)
+      dragRef.current = { id, startX: x, startY: y, x, y, moved: false }
+      useTrackingStore.getState().selectPoint(id)
+      if (canvasRef.current) canvasRef.current.style.cursor = 'grabbing'
+    },
+    [enableDrag, toNative, hitTest],
+  )
+
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      const drag = dragRef.current
+      if (!drag) return
+      canvasRef.current?.releasePointerCapture(e.pointerId)
+      if (drag.moved) {
+        // One store write for the whole drag → one clean undo step.
+        useTrackingStore.getState().updatePoint(drag.id, { x: drag.x, y: drag.y })
+        didDragRef.current = true
+      }
+      dragRef.current = null
+      if (canvasRef.current) canvasRef.current.style.cursor = 'grab'
+      draw()
+    },
+    [draw],
   )
 
   // Magnifier: sample the video frame under the cursor at native resolution so
@@ -95,7 +167,17 @@ export function CanvasOverlay({ width, height, onClick }: CanvasOverlayProps) {
     lctx.fillStyle = '#090b11'
     lctx.fillRect(0, 0, LOUPE_SIZE, LOUPE_SIZE)
     if (video?.videoWidth) {
-      lctx.drawImage(video, nx - LOUPE_CROP / 2, ny - LOUPE_CROP / 2, LOUPE_CROP, LOUPE_CROP, 0, 0, LOUPE_SIZE, LOUPE_SIZE)
+      lctx.drawImage(
+        video,
+        nx - LOUPE_CROP / 2,
+        ny - LOUPE_CROP / 2,
+        LOUPE_CROP,
+        LOUPE_CROP,
+        0,
+        0,
+        LOUPE_SIZE,
+        LOUPE_SIZE,
+      )
     }
 
     // Existing tracked points, magnified into the loupe
@@ -138,14 +220,42 @@ export function CanvasOverlay({ width, height, onClick }: CanvasOverlayProps) {
     if (loupe) loupe.style.opacity = '0'
   }, [])
 
+  // Defined after drawLoupe (which it calls). Handles the loupe, live dragging,
+  // and the hover cursor in one pointer-move pass.
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      drawLoupe(e.clientX, e.clientY)
+      const drag = dragRef.current
+      if (drag) {
+        const { x, y } = toNative(e.clientX, e.clientY)
+        drag.x = x
+        drag.y = y
+        if (!drag.moved && Math.hypot(x - drag.startX, y - drag.startY) > 3) drag.moved = true
+        draw()
+        return
+      }
+      // Hover affordance: grab cursor when over a draggable point.
+      const canvas = canvasRef.current
+      if (canvas) {
+        const { x, y } = toNative(e.clientX, e.clientY)
+        canvas.style.cursor = enableDrag && hitTest(x, y) ? 'grab' : 'crosshair'
+      }
+    },
+    [drawLoupe, toNative, draw, enableDrag, hitTest],
+  )
+
   return (
     <>
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: pixel-coordinate canvas — clicks/drags carry an (x,y) that has no keyboard equivalent. */}
       <canvas
         ref={canvasRef}
         width={width}
         height={height}
         onClick={handleClick}
-        onPointerMove={(e) => drawLoupe(e.clientX, e.clientY)}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
         onPointerLeave={hideLoupe}
         className="absolute inset-0 z-10 h-full w-full cursor-crosshair"
       />
@@ -171,7 +281,7 @@ function drawCoordinateSystem(
   scalePoint1: { x: number; y: number } | null,
   scalePoint2: { x: number; y: number } | null,
   canvasWidth: number,
-  canvasHeight: number
+  canvasHeight: number,
 ) {
   const rotationRad = (rotation * Math.PI) / 180
 
@@ -203,7 +313,11 @@ function drawCoordinateSystem(
   const tickSpacing = 50
   const tickSize = 6
 
-  for (let i = -Math.ceil(canvasWidth / tickSpacing); i <= Math.ceil(canvasWidth / tickSpacing); i++) {
+  for (
+    let i = -Math.ceil(canvasWidth / tickSpacing);
+    i <= Math.ceil(canvasWidth / tickSpacing);
+    i++
+  ) {
     if (i === 0) continue
     const x = i * tickSpacing
     ctx.beginPath()
@@ -212,7 +326,11 @@ function drawCoordinateSystem(
     ctx.stroke()
   }
 
-  for (let i = -Math.ceil(canvasHeight / tickSpacing); i <= Math.ceil(canvasHeight / tickSpacing); i++) {
+  for (
+    let i = -Math.ceil(canvasHeight / tickSpacing);
+    i <= Math.ceil(canvasHeight / tickSpacing);
+    i++
+  ) {
     if (i === 0) continue
     const y = i * tickSpacing
     ctx.beginPath()
@@ -282,7 +400,7 @@ function drawPoints(
   dataPoints: Array<{ id: string; frameNumber: number; pixelX: number; pixelY: number }>,
   selectedPointId: string | null,
   currentFrame: number,
-  trailLength: number
+  trailLength: number,
 ) {
   if (dataPoints.length === 0) return
 
