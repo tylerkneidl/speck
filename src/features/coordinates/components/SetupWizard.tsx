@@ -51,84 +51,101 @@ interface Rect {
 interface Anchor {
   left: number
   top: number
-  arrowTop: number
-  side: 'left' | 'right' | 'none'
+  arrowOffset: number
+  side: 'up' | 'down' | 'none'
   ready: boolean
-  target: Rect | null
+  ring: Rect | null
+}
+
+/** Which sidebar element the card docks beside for each step. */
+function anchorFor(step: StepId): string {
+  switch (step) {
+    case 'upload':
+    case 'scale':
+      return '[data-tour="scale"]'
+    case 'origin':
+      return '[data-tour="origin"]'
+    case 'axes':
+      return '[data-tour="axes"]'
+    case 'fps':
+      return '[data-tour="fps"]'
+    case 'done':
+      return '[data-tour="track-tab"]'
+  }
 }
 
 /**
- * Positions the card and reports the target's rect (for the highlight). The card
- * always stays within the video ("stage") panel so it never covers the sidebar
- * controls it's pointing at:
- *  - Video target → sit inside the video hugging its right edge (no arrow); the
- *    highlight ring around the video conveys "interact here".
- *  - Sidebar target → sit to the panel's left, clamped into the video, arrow
- *    pointing right at the panel.
- * Recomputes on step/target change, resize, and scroll — the "bump around".
+ * Docks the card in the sidebar beside the step's controls — never over the
+ * video, so it can't hide the object being tracked on any clip. It sits just
+ * below its anchor panel (or above, if there's no room) with an arrow pointing
+ * at it. The separate `ringSel` element gets the highlight ring, which moves to
+ * whatever you should act on (the video while clicking, the panel while typing).
+ * Recomputes on step/target change, resize, and scroll.
  */
 function useAnchor(
-  targetSel: string,
+  anchorSel: string,
+  ringSel: string,
   cardRef: React.RefObject<HTMLDivElement | null>,
   key: string,
 ): Anchor {
   const [anchor, setAnchor] = useState<Anchor>({
     left: -9999,
     top: -9999,
-    arrowTop: 0,
+    arrowOffset: 0,
     side: 'none',
     ready: false,
-    target: null,
+    ring: null,
   })
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `key` intentionally forces a re-anchor when the step's sub-state changes; cardRef is a stable ref.
   useLayoutEffect(() => {
     const recompute = () => {
-      const target = document.querySelector(targetSel) as HTMLElement | null
+      const anchorEl = document.querySelector(anchorSel) as HTMLElement | null
+      const ringEl = document.querySelector(ringSel) as HTMLElement | null
       const stage = document.querySelector('[data-tour="stage"]') as HTMLElement | null
       const card = cardRef.current
-      if (!target || !card) return
-      const t = target.getBoundingClientRect()
-      const stageR = (stage ?? target).getBoundingClientRect()
+      if (!anchorEl || !card) return
+      const a = anchorEl.getBoundingClientRect()
       const cw = card.offsetWidth || CARD_WIDTH
       const ch = card.offsetHeight || 168
-      const gap = 18
+      const gap = 12
+      const vw = window.innerWidth
       const vh = window.innerHeight
+      const sidebarLeft = stage ? stage.getBoundingClientRect().right : a.left
 
-      const isVideoTarget = targetSel === '[data-tour="stage"]'
-      let left: number
-      let side: 'left' | 'right' | 'none'
-      if (isVideoTarget) {
-        // Inside the video, hugging the right edge — leaves the left ~half (where
-        // you click scale/origin) clear, and never spills into the sidebar.
-        left = stageR.right - cw - gap
-        side = 'none'
+      // Keep the card in the sidebar column, aligned under its anchor panel.
+      const left = Math.min(Math.max(a.left, sidebarLeft + 8), vw - cw - 8)
+
+      // Below the panel if it fits, else above — so the panel stays visible.
+      let top: number
+      let side: 'up' | 'down'
+      if (a.bottom + gap + ch <= vh - 8) {
+        top = a.bottom + gap
+        side = 'up'
       } else {
-        // Left of the panel, clamped so the card's right edge stays on the video.
-        left = Math.min(t.left - gap - cw, stageR.right - cw - gap)
-        side = 'right'
+        top = Math.max(8, a.top - gap - ch)
+        side = 'down'
       }
-      left = Math.max(8, left)
 
-      const targetCenterY = t.top + t.height / 2
-      const top = Math.max(8, Math.min(targetCenterY - ch / 2, vh - ch - 8))
-      const arrowTop = Math.max(18, Math.min(targetCenterY - top, ch - 18))
+      const anchorCenterX = a.left + a.width / 2
+      const arrowOffset = Math.max(18, Math.min(anchorCenterX - left, cw - 18))
+      const r = ringEl?.getBoundingClientRect()
       setAnchor({
         left,
         top,
-        arrowTop,
+        arrowOffset,
         side,
         ready: true,
-        target: { left: t.left, top: t.top, width: t.width, height: t.height },
+        ring: r ? { left: r.left, top: r.top, width: r.width, height: r.height } : null,
       })
     }
 
     recompute()
-    const target = document.querySelector(targetSel) as HTMLElement | null
-    const stage = document.querySelector('[data-tour="stage"]') as HTMLElement | null
+    const anchorEl = document.querySelector(anchorSel) as HTMLElement | null
+    const ringEl = document.querySelector(ringSel) as HTMLElement | null
     const ro = new ResizeObserver(recompute)
-    if (target) ro.observe(target)
-    if (stage) ro.observe(stage)
+    if (anchorEl) ro.observe(anchorEl)
+    if (ringEl) ro.observe(ringEl)
     if (cardRef.current) ro.observe(cardRef.current)
     window.addEventListener('resize', recompute)
     window.addEventListener('scroll', recompute, true)
@@ -137,7 +154,7 @@ function useAnchor(
       window.removeEventListener('resize', recompute)
       window.removeEventListener('scroll', recompute, true)
     }
-  }, [targetSel, key])
+  }, [anchorSel, ringSel, key])
 
   return anchor
 }
@@ -191,9 +208,10 @@ export function SetupWizard({
   const goNext = useCallback(() => setStepIndex((i) => Math.min(i + 1, STEPS.length - 1)), [])
   const goBack = useCallback(() => setStepIndex((i) => Math.max(i - 1, 0)), [])
 
-  const targetSel = targetFor(step, bothScalePoints, originSet)
+  const ringSel = targetFor(step, bothScalePoints, originSet)
+  const anchorSel = anchorFor(step)
   const key = `${step}:${!!scalePoint1}:${!!scalePoint2}:${scaleDone}:${originSet}:${uploadDone}`
-  const anchor = useAnchor(targetSel, cardRef, key)
+  const anchor = useAnchor(anchorSel, ringSel, cardRef, key)
 
   // Re-arm placement if the user cancelled (Esc) but the step still needs a click.
   const rearmScale = useCallback(() => {
@@ -208,15 +226,15 @@ export function SetupWizard({
   return (
     <>
       {/* Highlight ring around the element the guide is pointing at */}
-      {anchor.ready && anchor.target && (
+      {anchor.ready && anchor.ring && (
         <div
           aria-hidden
           className="tour-highlight pointer-events-none fixed z-40 rounded-lg"
           style={{
-            left: anchor.target.left - 5,
-            top: anchor.target.top - 5,
-            width: anchor.target.width + 10,
-            height: anchor.target.height + 10,
+            left: anchor.ring.left - 5,
+            top: anchor.ring.top - 5,
+            width: anchor.ring.width + 10,
+            height: anchor.ring.height + 10,
           }}
         />
       )}
@@ -230,16 +248,14 @@ export function SetupWizard({
           !anchor.ready && 'pointer-events-none opacity-0',
         )}
       >
-        {/* Pointer arrow toward the target */}
+        {/* Pointer arrow toward the anchored panel */}
         {anchor.side !== 'none' && (
           <span
             aria-hidden
-            style={{ top: anchor.arrowTop }}
+            style={{ left: anchor.arrowOffset }}
             className={cn(
               'absolute h-3 w-3 rotate-45 border-primary/50 bg-zinc-800',
-              anchor.side === 'right'
-                ? '-left-1.5 border-b border-l'
-                : '-right-1.5 border-r border-t',
+              anchor.side === 'up' ? '-top-1.5 border-l border-t' : '-bottom-1.5 border-b border-r',
             )}
           />
         )}
