@@ -1,18 +1,20 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { RedirectToSignIn } from '@clerk/clerk-react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { SignedIn, SignedOut, useIsClerkAvailable } from '@/lib/auth'
 
-import { VideoPlayer, VideoControls, VideoUpload } from '@/features/video/components'
+import { VideoPlayer, VideoControls, VideoUpload, FrameRateControl } from '@/features/video/components'
 import { CanvasOverlay } from '@/features/tracking/components'
 import { DataTable } from '@/features/data-table/components'
 import { Graph, type GraphType } from '@/features/graphing/components'
 import { ScaleCalibration, OriginTool, AxisRotation } from '@/features/coordinates/components'
+import { useProjectSync } from '@/features/projects/hooks/useProjectSync'
 
 import { useVideoStore } from '@/stores/video'
 import { useTrackingStore } from '@/stores/tracking'
 import { useCoordinateStore } from '@/stores/coordinates'
+import { useUiStore } from '@/stores/ui'
 
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -25,7 +27,7 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { Undo2, Redo2, ChevronLeft, Settings, Crosshair, LineChart, RefreshCw } from 'lucide-react'
+import { Undo2, Redo2, ChevronLeft, Settings, Crosshair, LineChart, RefreshCw, Loader2 } from 'lucide-react'
 
 export const Route = createFileRoute('/projects/$projectId')({
   component: ProjectEditor,
@@ -54,13 +56,26 @@ function ProjectEditor() {
 function ProjectEditorContent() {
   const { projectId } = Route.useParams()
 
+  // Load this project into the stores and keep it saved (fetch → hydrate → debounced auto-save)
+  const { saveStatus } = useProjectSync(projectId)
+
   const [mode, setMode] = useState<Mode>('setup')
   const [placementMode, setPlacementMode] = useState<PlacementMode>(null)
   const [graphType, setGraphType] = useState<GraphType>('x-t')
   const [showRegression, setShowRegression] = useState(false)
+  const { detailLevel } = useUiStore()
+  const advanced = detailLevel === 'advanced'
+
+  // Basic view offers position graphs only — reset if a velocity graph was selected.
+  useEffect(() => {
+    if (!advanced && (graphType === 'vx-t' || graphType === 'vy-t')) {
+      setGraphType('x-t')
+    }
+  }, [advanced, graphType])
 
   const { metadata, reset: resetVideo } = useVideoStore()
-  const { addPoint, autoAdvance, setAutoAdvance, reset: resetTracking } = useTrackingStore()
+  const { addPoint, autoAdvance, setAutoAdvance, selectPoint, dataPoints, reset: resetTracking } =
+    useTrackingStore()
   const { setScalePoint1, setScalePoint2, setOrigin, scalePoint1, pixelsPerUnit, reset: resetCoordinates } =
     useCoordinateStore()
   const { nextFrame } = useVideoStore()
@@ -93,6 +108,16 @@ function ProjectEditorContent() {
     [placementMode]
   )
 
+  // Delete the selected point
+  useHotkeys(
+    'delete, backspace',
+    () => {
+      const { selectedPointId, deletePoint } = useTrackingStore.getState()
+      if (selectedPointId) deletePoint(selectedPointId)
+    },
+    []
+  )
+
   // Handle canvas click based on mode
   const handleCanvasClick = useCallback(
     (pixelX: number, pixelY: number) => {
@@ -116,8 +141,14 @@ function ProjectEditorContent() {
         return
       }
 
-      // Track mode: add data points
+      // Track mode: select a nearby point (to delete/inspect) or add a new one
       if (mode === 'track' && metadata) {
+        const hit = dataPoints.find((p) => Math.hypot(p.pixelX - pixelX, p.pixelY - pixelY) <= 14)
+        if (hit) {
+          selectPoint(hit.id)
+          return
+        }
+
         const { currentFrame, currentTime } = useVideoStore.getState()
         addPoint({
           frameNumber: currentFrame,
@@ -142,6 +173,8 @@ function ProjectEditorContent() {
       addPoint,
       autoAdvance,
       nextFrame,
+      dataPoints,
+      selectPoint,
     ]
   )
 
@@ -181,9 +214,39 @@ function ProjectEditorContent() {
 
               <div className="h-4 w-px bg-zinc-800" />
 
-              <span className="font-mono text-xs uppercase tracking-wider text-zinc-500">
-                {projectId}
-              </span>
+              <div className="flex items-center gap-2">
+                <svg width="18" height="18" viewBox="0 0 30 30" aria-hidden="true">
+                  <circle cx="22.5" cy="8.5" r="4.8" fill="#ff4e22" />
+                  <circle cx="14" cy="14" r="3.1" fill="#ff4e22" opacity=".6" />
+                  <circle cx="7.8" cy="19.2" r="2.1" fill="#ff4e22" opacity=".34" />
+                </svg>
+                <span className="font-display text-sm font-extrabold tracking-tight text-zinc-100">
+                  Speck<span className="text-primary">.</span>
+                </span>
+              </div>
+
+              {saveStatus !== 'idle' && (
+                <span className="flex items-center gap-1.5 font-mono text-xs">
+                  {saveStatus === 'saving' && (
+                    <>
+                      <Loader2 className="h-3 w-3 animate-spin text-zinc-500" />
+                      <span className="text-zinc-500">Saving…</span>
+                    </>
+                  )}
+                  {saveStatus === 'saved' && (
+                    <>
+                      <span className="h-1.5 w-1.5 rounded-full bg-plasma" />
+                      <span className="text-zinc-400">Saved</span>
+                    </>
+                  )}
+                  {saveStatus === 'error' && (
+                    <>
+                      <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                      <span className="text-red-400">Save failed</span>
+                    </>
+                  )}
+                </span>
+              )}
             </div>
 
             {/* Mode tabs */}
@@ -197,14 +260,14 @@ function ProjectEditorContent() {
               <TabsList className="bg-zinc-800/50">
                 <TabsTrigger
                   value="setup"
-                  className="gap-2 data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100"
+                  className="gap-2 font-semibold data-[state=active]:bg-emerald-600 data-[state=active]:text-zinc-950"
                 >
                   <Settings className="h-3.5 w-3.5" />
                   Setup
                 </TabsTrigger>
                 <TabsTrigger
                   value="track"
-                  className="gap-2 data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100"
+                  className="gap-2 font-semibold data-[state=active]:bg-emerald-600 data-[state=active]:text-zinc-950"
                   disabled={!pixelsPerUnit}
                 >
                   <Crosshair className="h-3.5 w-3.5" />
@@ -212,7 +275,7 @@ function ProjectEditorContent() {
                 </TabsTrigger>
                 <TabsTrigger
                   value="analyze"
-                  className="gap-2 data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100"
+                  className="gap-2 font-semibold data-[state=active]:bg-emerald-600 data-[state=active]:text-zinc-950"
                 >
                   <LineChart className="h-3.5 w-3.5" />
                   Analyze
@@ -250,7 +313,7 @@ function ProjectEditorContent() {
               <div className="relative flex-1 overflow-hidden bg-zinc-950">
                 {metadata ? (
                   <>
-                    <VideoPlayer src={metadata.storageUrl} />
+                    <VideoPlayer src={metadata.storageUrl}>
                     <CanvasOverlay
                       width={metadata.width}
                       height={metadata.height}
@@ -287,10 +350,11 @@ function ProjectEditorContent() {
                         </button>
                       </div>
                     )}
+                    </VideoPlayer>
                   </>
                 ) : (
                   <div className="flex h-full items-center justify-center p-8">
-                    <VideoUpload />
+                    <VideoUpload projectId={projectId} />
                   </div>
                 )}
               </div>
@@ -317,6 +381,7 @@ function ProjectEditorContent() {
                     isPlacing={placementMode === 'origin'}
                   />
                   <AxisRotation />
+                  <FrameRateControl />
 
                   {/* Calibration status */}
                   {pixelsPerUnit && (
@@ -374,8 +439,12 @@ function ProjectEditorContent() {
                       <SelectContent className="border-zinc-700 bg-zinc-800">
                         <SelectItem value="x-t" className="text-zinc-200">x vs t</SelectItem>
                         <SelectItem value="y-t" className="text-zinc-200">y vs t</SelectItem>
-                        <SelectItem value="vx-t" className="text-zinc-200">vx vs t</SelectItem>
-                        <SelectItem value="vy-t" className="text-zinc-200">vy vs t</SelectItem>
+                        {advanced && (
+                          <>
+                            <SelectItem value="vx-t" className="text-zinc-200">vx vs t</SelectItem>
+                            <SelectItem value="vy-t" className="text-zinc-200">vy vs t</SelectItem>
+                          </>
+                        )}
                         <SelectItem value="y-x" className="text-zinc-200">y vs x</SelectItem>
                       </SelectContent>
                     </Select>

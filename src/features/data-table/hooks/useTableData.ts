@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useTrackingStore } from '@/stores/tracking'
 import { useCoordinateStore } from '@/stores/coordinates'
+import { useVideoStore } from '@/stores/video'
 import { pixelToWorld, type CoordinateSystem } from '@/lib/transforms'
 import { calculateVelocity, calculateAcceleration } from '@/lib/kinematics'
 
@@ -23,6 +24,9 @@ export interface TableRow {
 export function useTableData(): TableRow[] {
   const { dataPoints } = useTrackingStore()
   const { origin, rotation, yAxisUp, pixelsPerUnit } = useCoordinateStore()
+  // Time is derived from frame number ÷ frame rate (not the stored value), so
+  // correcting the fps retroactively fixes every point's time + kinematics.
+  const frameRate = useVideoStore((s) => s.metadata?.frameRate ?? 30)
 
   return useMemo(() => {
     const coordinateSystem: CoordinateSystem = {
@@ -48,16 +52,15 @@ export function useTableData(): TableRow[] {
     const kinematicsData = sortedPoints
       .filter((p) => p.worldX !== null && p.worldY !== null)
       .map((p) => ({
-        time: p.time,
+        time: p.frameNumber / frameRate,
         x: p.worldX!,
         y: p.worldY!,
       }))
 
     // Calculate velocities and accelerations
     return sortedPoints.map((point, index) => {
-      const kinematicsIndex = kinematicsData.findIndex(
-        (k) => Math.abs(k.time - point.time) < 0.0001
-      )
+      const time = point.frameNumber / frameRate
+      const kinematicsIndex = kinematicsData.findIndex((k) => Math.abs(k.time - time) < 0.0001)
 
       const velocity =
         kinematicsIndex >= 0 ? calculateVelocity(kinematicsData, kinematicsIndex) : null
@@ -69,7 +72,7 @@ export function useTableData(): TableRow[] {
         id: point.id,
         rowNumber: index + 1,
         frameNumber: point.frameNumber,
-        time: point.time,
+        time,
         pixelX: point.pixelX,
         pixelY: point.pixelY,
         worldX: point.worldX,
@@ -81,5 +84,5 @@ export function useTableData(): TableRow[] {
         ay: acceleration?.ay ?? null,
       }
     })
-  }, [dataPoints, origin, rotation, yAxisUp, pixelsPerUnit])
+  }, [dataPoints, origin, rotation, yAxisUp, pixelsPerUnit, frameRate])
 }

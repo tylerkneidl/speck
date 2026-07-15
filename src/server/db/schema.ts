@@ -57,11 +57,13 @@ export const dataPoints = pgTable(
 // Type definitions for JSONB columns
 export interface VideoMetadata {
   storageUrl: string
+  storageKey?: string
   fileName: string
   duration: number
   frameRate: number
   width: number
   height: number
+  totalFrames?: number
   thumbnailUrl?: string
 }
 

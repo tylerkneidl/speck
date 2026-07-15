@@ -1,10 +1,13 @@
+import 'dotenv/config'
+import { clerkMiddleware } from '@hono/clerk-auth'
 import { serve } from '@hono/node-server'
 import { serveStatic } from '@hono/node-server/serve-static'
+import { existsSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger as honoLogger } from 'hono/logger'
-import { readFileSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { AUTH_BYPASS, requireAuth } from './lib/auth'
 import { logger } from './lib/logger'
 import { projectsRouter } from './routes/projects'
 import { uploadRouter } from './routes/upload'
@@ -15,8 +18,19 @@ const app = new Hono()
 app.use('*', cors())
 app.use('*', honoLogger())
 
-// Health check
+// Health check (public)
 app.get('/api/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }))
+
+// Authentication on protected API routes.
+// clerkMiddleware() verifies the session token; requireAuth() enforces it and sets userId.
+if (!AUTH_BYPASS) {
+  app.use('/api/projects/*', clerkMiddleware())
+  app.use('/api/upload/*', clerkMiddleware())
+} else {
+  logger.warn('DEV_AUTH_BYPASS enabled — API authentication is disabled (never use in production)')
+}
+app.use('/api/projects/*', requireAuth())
+app.use('/api/upload/*', requireAuth())
 
 // Routes
 app.route('/api/projects', projectsRouter)

@@ -3,49 +3,51 @@
 @tailwind utilities;
 
 @layer base {
+  /* Speck — dark-first "ink" world. Values mirror the flare/plasma brand. */
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+    --background: 224 31% 5%;
+    --foreground: 222 42% 95%;
+    --card: 224 26% 9%;
+    --card-foreground: 222 42% 95%;
+    --popover: 224 26% 9%;
+    --popover-foreground: 222 42% 95%;
+    --primary: 12 100% 57%;
+    --primary-foreground: 18 70% 8%;
+    --secondary: 224 30% 15%;
+    --secondary-foreground: 222 42% 95%;
+    --muted: 224 30% 15%;
+    --muted-foreground: 222 14% 60%;
+    --accent: 224 30% 15%;
+    --accent-foreground: 222 42% 95%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 222 42% 95%;
+    --border: 221 21% 22%;
+    --input: 221 21% 22%;
+    --ring: 12 100% 57%;
+    --radius: 0.7rem;
   }
 
+  /* .dark kept identical so a stray class never flips the app to a broken light theme */
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --background: 224 31% 5%;
+    --foreground: 222 42% 95%;
+    --card: 224 26% 9%;
+    --card-foreground: 222 42% 95%;
+    --popover: 224 26% 9%;
+    --popover-foreground: 222 42% 95%;
+    --primary: 12 100% 57%;
+    --primary-foreground: 18 70% 8%;
+    --secondary: 224 30% 15%;
+    --secondary-foreground: 222 42% 95%;
+    --muted: 224 30% 15%;
+    --muted-foreground: 222 14% 60%;
+    --accent: 224 30% 15%;
+    --accent-foreground: 222 42% 95%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 222 42% 95%;
+    --border: 221 21% 22%;
+    --input: 221 21% 22%;
+    --ring: 12 100% 57%;
   }
 }
 
@@ -54,6 +56,77 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
+  /* Headings default to the display face; components can still opt into mono for data. */
+  h1, h2, h3 {
+    font-family: "Archivo Variable", "Hanken Grotesk Variable", ui-sans-serif, sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* ---------- Speck brand motion (strobe trajectory + cycling tagline) ---------- */
+.speck-traj-line {
+  fill: none;
+  stroke: hsl(174 75% 52%);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 9;
+  opacity: 0.4;
+}
+.speck-live {
+  fill: #ff4e22;
+  filter: drop-shadow(0 0 8px #ff4e22);
+}
+.speck-cycle {
+  display: inline-block;
+  height: 1.1em;
+  line-height: 1.1em;
+  overflow: hidden;
+  vertical-align: bottom;
+  position: relative;
+  color: hsl(var(--primary));
+}
+.speck-cycle > .speck-words > span {
+  display: block;
+  height: 1.1em;
+  line-height: 1.1em;
+  white-space: nowrap;
+}
+.speck-cycle::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.04em;
+  height: 0.05em;
+  background: hsl(var(--primary));
+  opacity: 0.5;
+  border-radius: 3px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .speck-live {
+    offset-path: path("M 10 210 Q 300 -50 590 210");
+    animation: speck-fly 3.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+  @keyframes speck-fly {
+    0% { offset-distance: 0%; opacity: 0; }
+    8% { opacity: 1; }
+    92% { opacity: 1; }
+    100% { offset-distance: 100%; opacity: 0; }
+  }
+  .speck-words {
+    animation: speck-cyc 8.4s cubic-bezier(0.76, 0, 0.24, 1) infinite;
+  }
+  @keyframes speck-cyc {
+    0%, 17% { transform: translateY(0); }
+    25%, 42% { transform: translateY(-1.1em); }
+    50%, 67% { transform: translateY(-2.2em); }
+    75%, 92% { transform: translateY(-3.3em); }
+    100% { transform: translateY(-4.4em); }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .speck-live { display: none; }
 }

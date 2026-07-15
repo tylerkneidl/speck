@@ -9,8 +9,13 @@ interface CanvasOverlayProps {
   onClick?: (pixelX: number, pixelY: number) => void
 }
 
+const LOUPE_SIZE = 132 // magnifier diameter, display px
+const LOUPE_CROP = 48 // native px sampled under the cursor
+const LOUPE_ZOOM = LOUPE_SIZE / LOUPE_CROP
+
 export function CanvasOverlay({ width, height, onClick }: CanvasOverlayProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const loupeRef = useRef<HTMLCanvasElement>(null)
 
   const { dataPoints, selectedPointId, trailLength } = useTrackingStore()
   const { origin, rotation, scalePoint1, scalePoint2 } = useCoordinateStore()
@@ -68,15 +73,94 @@ export function CanvasOverlay({ width, height, onClick }: CanvasOverlayProps) {
     [onClick]
   )
 
+  // Magnifier: sample the video frame under the cursor at native resolution so
+  // students can place points on the exact pixel. Drawn imperatively (no React
+  // re-render per pointer move) for smoothness.
+  const drawLoupe = useCallback((clientX: number, clientY: number) => {
+    const canvas = canvasRef.current
+    const loupe = loupeRef.current
+    if (!canvas || !loupe) return
+    const lctx = loupe.getContext('2d')
+    if (!lctx) return
+
+    const rect = canvas.getBoundingClientRect()
+    if (rect.width === 0) return
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    const nx = (clientX - rect.left) * scaleX // native pixel under cursor
+    const ny = (clientY - rect.top) * scaleY
+    const video = canvas.parentElement?.querySelector('video') as HTMLVideoElement | null
+
+    lctx.imageSmoothingEnabled = false // crisp pixels for precise placement
+    lctx.fillStyle = '#090b11'
+    lctx.fillRect(0, 0, LOUPE_SIZE, LOUPE_SIZE)
+    if (video?.videoWidth) {
+      lctx.drawImage(video, nx - LOUPE_CROP / 2, ny - LOUPE_CROP / 2, LOUPE_CROP, LOUPE_CROP, 0, 0, LOUPE_SIZE, LOUPE_SIZE)
+    }
+
+    // Existing tracked points, magnified into the loupe
+    for (const p of useTrackingStore.getState().dataPoints) {
+      const dx = (p.pixelX - nx) * LOUPE_ZOOM + LOUPE_SIZE / 2
+      const dy = (p.pixelY - ny) * LOUPE_ZOOM + LOUPE_SIZE / 2
+      if (dx >= 0 && dx <= LOUPE_SIZE && dy >= 0 && dy <= LOUPE_SIZE) {
+        lctx.fillStyle = 'rgba(255, 78, 34, 0.85)'
+        lctx.beginPath()
+        lctx.arc(dx, dy, 4, 0, 2 * Math.PI)
+        lctx.fill()
+      }
+    }
+
+    // Crosshair on the exact target pixel
+    lctx.strokeStyle = 'rgba(255, 122, 69, 0.95)'
+    lctx.lineWidth = 1
+    lctx.beginPath()
+    lctx.moveTo(LOUPE_SIZE / 2, 0)
+    lctx.lineTo(LOUPE_SIZE / 2, LOUPE_SIZE)
+    lctx.moveTo(0, LOUPE_SIZE / 2)
+    lctx.lineTo(LOUPE_SIZE, LOUPE_SIZE / 2)
+    lctx.stroke()
+
+    // Position near the cursor, flipping at edges to stay in view
+    const localX = clientX - rect.left
+    const localY = clientY - rect.top
+    const off = 28
+    let lx = localX + off
+    let ly = localY + off
+    if (lx + LOUPE_SIZE > rect.width) lx = localX - off - LOUPE_SIZE
+    if (ly + LOUPE_SIZE > rect.height) ly = localY - off - LOUPE_SIZE
+    loupe.style.left = `${Math.max(4, lx)}px`
+    loupe.style.top = `${Math.max(4, ly)}px`
+    loupe.style.opacity = '1'
+  }, [])
+
+  const hideLoupe = useCallback(() => {
+    const loupe = loupeRef.current
+    if (loupe) loupe.style.opacity = '0'
+  }, [])
+
   return (
-    <canvas
-      ref={canvasRef}
-      width={width}
-      height={height}
-      onClick={handleClick}
-      className="absolute inset-0 cursor-crosshair"
-      style={{ width, height }}
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        width={width}
+        height={height}
+        onClick={handleClick}
+        onPointerMove={(e) => drawLoupe(e.clientX, e.clientY)}
+        onPointerLeave={hideLoupe}
+        className="absolute inset-0 z-10 h-full w-full cursor-crosshair"
+      />
+      <canvas
+        ref={loupeRef}
+        width={LOUPE_SIZE}
+        height={LOUPE_SIZE}
+        className="pointer-events-none absolute z-30 rounded-full opacity-0 transition-opacity duration-100"
+        style={{
+          width: LOUPE_SIZE,
+          height: LOUPE_SIZE,
+          boxShadow: '0 0 0 2px #ff4e22, 0 6px 20px rgba(0,0,0,0.55)',
+        }}
+      />
+    </>
   )
 }
 
@@ -97,7 +181,7 @@ function drawCoordinateSystem(
   ctx.rotate(rotationRad)
 
   // Axis style - technical green
-  ctx.strokeStyle = '#22c55e'
+  ctx.strokeStyle = '#27e0cf'
   ctx.lineWidth = 1.5
   ctx.setLineDash([])
 
@@ -114,7 +198,7 @@ function drawCoordinateSystem(
   ctx.stroke()
 
   // Tick marks on axes
-  ctx.strokeStyle = '#22c55e80'
+  ctx.strokeStyle = '#27e0cf80'
   ctx.lineWidth = 1
   const tickSpacing = 50
   const tickSize = 6
@@ -138,7 +222,7 @@ function drawCoordinateSystem(
   }
 
   // Origin marker - concentric circles for precision look
-  ctx.fillStyle = '#22c55e'
+  ctx.fillStyle = '#27e0cf'
   ctx.beginPath()
   ctx.arc(0, 0, 8, 0, 2 * Math.PI)
   ctx.fill()
@@ -148,7 +232,7 @@ function drawCoordinateSystem(
   ctx.arc(0, 0, 5, 0, 2 * Math.PI)
   ctx.fill()
 
-  ctx.fillStyle = '#22c55e'
+  ctx.fillStyle = '#27e0cf'
   ctx.beginPath()
   ctx.arc(0, 0, 2, 0, 2 * Math.PI)
   ctx.fill()
@@ -157,7 +241,7 @@ function drawCoordinateSystem(
 
   // Draw scale reference line
   if (scalePoint1 && scalePoint2) {
-    ctx.strokeStyle = '#3b82f6'
+    ctx.strokeStyle = '#2f83bb'
     ctx.lineWidth = 2
     ctx.setLineDash([8, 4])
 
@@ -167,7 +251,7 @@ function drawCoordinateSystem(
     ctx.stroke()
 
     // Scale point markers - diamond shape for distinctiveness
-    ctx.fillStyle = '#3b82f6'
+    ctx.fillStyle = '#2f83bb'
     ctx.setLineDash([])
 
     drawDiamond(ctx, scalePoint1.x, scalePoint1.y, 8)
@@ -216,7 +300,7 @@ function drawPoints(
       // Calculate opacity based on position in trail
       const opacity = trailLength > 0 ? 0.3 + (0.7 * i) / visiblePoints.length : 0.8
 
-      ctx.strokeStyle = `rgba(239, 68, 68, ${opacity})`
+      ctx.strokeStyle = `rgba(255, 78, 34, ${opacity})`
       ctx.lineWidth = 1.5
       ctx.beginPath()
       ctx.moveTo(prev.pixelX, prev.pixelY)
@@ -236,7 +320,7 @@ function drawPoints(
 
     // Point appearance
     const radius = isCurrent ? 7 : 5
-    const fillColor = isCurrent ? '#fbbf24' : `rgba(239, 68, 68, ${opacity})`
+    const fillColor = isCurrent ? '#fbbf24' : `rgba(255, 78, 34, ${opacity})`
 
     // Outer glow for current point
     if (isCurrent) {

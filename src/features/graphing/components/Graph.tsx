@@ -13,6 +13,7 @@ import { useTableData } from '@/features/data-table/hooks/useTableData'
 import { useVideoStore } from '@/stores/video'
 import { useCoordinateStore } from '@/stores/coordinates'
 import { linearRegression } from '@/lib/kinematics'
+import { Tooltip as InfoTip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 export type GraphType = 'x-t' | 'y-t' | 'vx-t' | 'vy-t' | 'y-x'
@@ -33,10 +34,10 @@ const GRAPH_LABELS: Record<GraphType, string> = {
 
 export function Graph({ type, showRegression = false, className }: GraphProps) {
   const data = useTableData()
-  const { currentTime } = useVideoStore()
+  const { currentTime, setCurrentFrame } = useVideoStore()
   const { scaleUnit } = useCoordinateStore()
 
-  const { chartData, xKey, yKey, xLabel, yLabel, regression } = useMemo(() => {
+  const { chartData, xKey, yKey, xLabel, yLabel, regression, yDomain } = useMemo(() => {
     let xKey: string
     let yKey: string
     let xLabel: string
@@ -82,6 +83,23 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
       return xVal !== null && yVal !== null
     })
 
+    // Anchor the y-axis at zero and autoscale from there. A tight [min,max]
+    // window magnifies a physically-constant series (e.g. vx for constant-
+    // velocity motion) — its pixel-quantization jitter fills the chart and
+    // looks chaotic. With zero as the baseline, that variance is shown in honest
+    // proportion to the value's magnitude (a near-constant series reads flat).
+    // Negatives anchor at the top instead (e.g. a ≈ -9.8 sits below a zero line).
+    let yDomain: [number, number] | ['auto', 'auto'] = ['auto', 'auto']
+    const yVals = chartData
+      .map((row) => row[yKey as keyof typeof row])
+      .filter((v): v is number => typeof v === 'number')
+    if (yVals.length > 0) {
+      const bottom = Math.min(0, ...yVals)
+      const top = Math.max(0, ...yVals)
+      const pad = (top - bottom || 1) * 0.05
+      yDomain = [bottom < 0 ? bottom - pad : 0, top > 0 ? top + pad : 0]
+    }
+
     // Calculate regression if requested
     let regression = null
     if (showRegression && chartData.length >= 2) {
@@ -92,7 +110,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
       regression = linearRegression(points)
     }
 
-    return { chartData, xKey, yKey, xLabel, yLabel, regression }
+    return { chartData, xKey, yKey, xLabel, yLabel, regression, yDomain }
   }, [data, type, showRegression, scaleUnit])
 
   // Generate regression line data
@@ -103,9 +121,12 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
     const minX = Math.min(...xValues)
     const maxX = Math.max(...xValues)
 
+    // Key the x-value with the chart's actual xKey ('time'/'worldX') so recharts
+    // can place these points on the shared X-axis; a literal `x` key leaves the
+    // x-domain undefined and blanks the whole chart.
     return [
-      { x: minX, y: regression.slope * minX + regression.intercept },
-      { x: maxX, y: regression.slope * maxX + regression.intercept },
+      { [xKey]: minX, y: regression.slope * minX + regression.intercept },
+      { [xKey]: maxX, y: regression.slope * maxX + regression.intercept },
     ]
   }, [regression, chartData, xKey])
 
@@ -118,19 +139,42 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
     >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2">
-        <span className="font-mono text-xs uppercase tracking-wider text-zinc-500">
-          {GRAPH_LABELS[type]}
-        </span>
+        <div className="flex items-baseline gap-2">
+          <span className="font-mono text-xs uppercase tracking-wider text-zinc-500">
+            {GRAPH_LABELS[type]}
+          </span>
+          {chartData.length > 0 && (
+            <span className="hidden font-mono text-[10px] text-zinc-600 md:inline">
+              · click a point to jump the video
+            </span>
+          )}
+        </div>
         {regression && (
           <div className="flex items-center gap-4 font-mono text-xs">
-            <span className="text-zinc-400">
-              y = <span className="text-blue-400">{regression.slope.toFixed(4)}</span>x +{' '}
-              <span className="text-blue-400">{regression.intercept.toFixed(4)}</span>
-            </span>
+            <InfoTip>
+              <TooltipTrigger asChild>
+                <span className="cursor-help text-zinc-400">
+                  y = <span className="text-plasma">{regression.slope.toFixed(4)}</span>x +{' '}
+                  <span className="text-plasma">{regression.intercept.toFixed(4)}</span>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                The best-fit straight line through your points. On a position-vs-time graph the
+                slope is the velocity; on a velocity-vs-time graph it's the acceleration.
+              </TooltipContent>
+            </InfoTip>
             <span className="text-zinc-600">|</span>
-            <span className="text-zinc-400">
-              R² = <span className="text-emerald-400">{regression.rSquared.toFixed(4)}</span>
-            </span>
+            <InfoTip>
+              <TooltipTrigger asChild>
+                <span className="cursor-help text-zinc-400">
+                  R² = <span className="text-emerald-400">{regression.rSquared.toFixed(4)}</span>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                How well the straight line fits your data — 1.0 is a perfect fit; lower means more
+                scatter.
+              </TooltipContent>
+            </InfoTip>
           </div>
         )}
       </div>
@@ -145,7 +189,17 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
+            <LineChart
+              data={chartData}
+              margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
+              className="cursor-pointer"
+              onClick={(state) => {
+                const frame = (
+                  state as { activePayload?: Array<{ payload?: { frameNumber?: number } }> }
+                )?.activePayload?.[0]?.payload?.frameNumber
+                if (typeof frame === 'number') setCurrentFrame(frame)
+              }}
+            >
               <CartesianGrid stroke="#27272a" strokeDasharray="3 3" />
               <XAxis
                 dataKey={xKey}
@@ -174,7 +228,12 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                   fontFamily: 'monospace',
                 }}
                 type="number"
-                domain={['auto', 'auto']}
+                domain={yDomain}
+                allowDecimals
+                tickFormatter={(v: number) => {
+                  const a = Math.abs(v)
+                  return a >= 100 ? v.toFixed(0) : a >= 1 ? v.toFixed(2) : v.toFixed(3)
+                }}
                 tick={{ fill: '#71717a', fontSize: 10, fontFamily: 'monospace' }}
                 axisLine={{ stroke: '#3f3f46' }}
                 tickLine={{ stroke: '#3f3f46' }}
@@ -188,7 +247,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                   fontSize: '11px',
                 }}
                 labelStyle={{ color: '#a1a1aa' }}
-                itemStyle={{ color: '#ef4444' }}
+                itemStyle={{ color: '#ff4e22' }}
                 formatter={(value: number) => value.toFixed(4)}
                 labelFormatter={(label: number) => `${xLabel}: ${label.toFixed(4)}`}
               />
@@ -207,9 +266,9 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
               <Line
                 type="monotone"
                 dataKey={yKey}
-                stroke="#ef4444"
+                stroke="#ff4e22"
                 strokeWidth={2}
-                dot={{ r: 4, fill: '#ef4444', strokeWidth: 0 }}
+                dot={{ r: 4, fill: '#ff4e22', strokeWidth: 0 }}
                 activeDot={{ r: 6, fill: '#fbbf24', strokeWidth: 0 }}
               />
 
@@ -219,7 +278,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                   data={regressionLineData}
                   type="linear"
                   dataKey="y"
-                  stroke="#3b82f6"
+                  stroke="#27e0cf"
                   strokeWidth={1.5}
                   strokeDasharray="6 4"
                   dot={false}
