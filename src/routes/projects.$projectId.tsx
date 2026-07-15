@@ -8,7 +8,7 @@ import { VideoPlayer, VideoControls, VideoUpload, FrameRateControl } from '@/fea
 import { CanvasOverlay } from '@/features/tracking/components'
 import { DataTable } from '@/features/data-table/components'
 import { Graph, type GraphType } from '@/features/graphing/components'
-import { ScaleCalibration, OriginTool, AxisRotation } from '@/features/coordinates/components'
+import { ScaleCalibration, OriginTool, AxisRotation, SetupGuide } from '@/features/coordinates/components'
 import { useProjectSync } from '@/features/projects/hooks/useProjectSync'
 
 import { useVideoStore } from '@/stores/video'
@@ -366,6 +366,7 @@ function ProjectEditorContent() {
               {/* Setup mode: Coordinate tools */}
               {mode === 'setup' && (
                 <div className="flex-1 space-y-4 overflow-auto p-4">
+                  <SetupGuide onStartTracking={() => setMode('track')} />
                   <ScaleCalibration
                     onStartPlacement={handleScaleToolStart}
                     placementMode={

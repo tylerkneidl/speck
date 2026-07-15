@@ -14,6 +14,7 @@ interface CoordinateState {
   scaleDistance: number | null
   scaleUnit: ScaleUnit
   origin: Point
+  originSet: boolean
   rotation: number
   yAxisUp: boolean
   pixelsPerUnit: number | null
@@ -35,6 +36,7 @@ const initialState = {
   scaleDistance: null,
   scaleUnit: 'm' as ScaleUnit,
   origin: { x: 0, y: 0 },
+  originSet: false,
   rotation: 0,
   yAxisUp: true,
   pixelsPerUnit: null,
@@ -84,6 +86,7 @@ export const useCoordinateStore = create<CoordinateState>()(
     setOrigin: (point) =>
       set((state) => {
         state.origin = point
+        state.originSet = true
       }),
 
     setRotation: (degrees) =>
@@ -102,7 +105,10 @@ export const useCoordinateStore = create<CoordinateState>()(
         if (system.scalePoint2 !== undefined) state.scalePoint2 = system.scalePoint2
         if (system.scaleDistance !== undefined) state.scaleDistance = system.scaleDistance
         if (system.scaleUnit !== undefined) state.scaleUnit = system.scaleUnit
-        if (system.origin !== undefined) state.origin = system.origin
+        if (system.origin !== undefined) {
+          state.origin = system.origin
+          state.originSet = true
+        }
         if (system.rotation !== undefined) state.rotation = system.rotation
         if (system.yAxisUp !== undefined) state.yAxisUp = system.yAxisUp
         state.pixelsPerUnit = calculatePixelsPerUnit(
