@@ -70,10 +70,10 @@ export function ProjectWorkspace({
   saveStatus = 'idle',
   sample = false,
 }: ProjectWorkspaceProps) {
-  const [mode, setMode] = useState<Mode>(sample ? 'analyze' : 'setup')
+  const [mode, setMode] = useState<Mode>('setup')
   const [placementMode, setPlacementMode] = useState<PlacementMode>(null)
   const [graphType, setGraphType] = useState<GraphType>('x-t')
-  const [showRegression, setShowRegression] = useState(sample)
+  const [showRegression, setShowRegression] = useState(false)
   const { detailLevel, setupWizardDismissed, setSetupWizardDismissed } = useUiStore()
   const advanced = detailLevel === 'advanced'
 
@@ -102,18 +102,19 @@ export function ProjectWorkspace({
   } = useCoordinateStore()
   const { nextFrame } = useVideoStore()
 
-  // Setup wizard — the guided overlay drives the calibration flow. It opens once
-  // per project unless permanently dismissed; never auto-opens on the sample
-  // (already calibrated) or after a session close (✕).
+  // Setup wizard — the guided overlay drives the calibration flow. Opens once
+  // per session unless permanently dismissed (applies to the sample too, so a
+  // visitor on /try is walked through scale → track → analyze). A session close
+  // (✕) hides it without persisting.
   const [wizardOpen, setWizardOpen] = useState(false)
   const wizardBootstrapped = useRef(false)
   useEffect(() => {
-    if (wizardBootstrapped.current || setupWizardDismissed || sample) return
+    if (wizardBootstrapped.current || setupWizardDismissed) return
     if (mode === 'setup') {
       setWizardOpen(true)
       wizardBootstrapped.current = true
     }
-  }, [mode, setupWizardDismissed, sample])
+  }, [mode, setupWizardDismissed])
 
   const openGuide = useCallback(() => {
     setSetupWizardDismissed(false)
