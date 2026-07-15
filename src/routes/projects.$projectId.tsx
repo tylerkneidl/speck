@@ -387,6 +387,7 @@ function ProjectEditorContent() {
                     width={metadata.width}
                     height={metadata.height}
                     onClick={handleCanvasClick}
+                    enableDrag={mode === 'track' && !placementMode}
                   />
 
                   {/* Change video button */}

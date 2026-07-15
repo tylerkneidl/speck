@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query'
-import { useEffect, useRef, useState } from 'react'
 import { useApiClient } from '@/lib/api'
 import { type ScaleUnit, useCoordinateStore } from '@/stores/coordinates'
 import { type DataPoint, useTrackingStore } from '@/stores/tracking'
 import { type VideoMetadata, useVideoStore } from '@/stores/video'
+import { useQuery } from '@tanstack/react-query'
+import { useEffect, useRef, useState } from 'react'
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -51,6 +51,26 @@ function toClientPoint(p: ServerPoint): DataPoint {
   }
 }
 
+/** Fingerprint of a point's persisted values — changes when it's moved. */
+export function pointPosKey(p: Pick<DataPoint, 'frameNumber' | 'pixelX' | 'pixelY'>): string {
+  return `${p.frameNumber}|${p.pixelX}|${p.pixelY}`
+}
+
+/**
+ * Diff the working points against what's saved. A point is "to upsert" if it's
+ * new OR its position changed (dragged); "to delete" if it's saved but gone.
+ * `saved` maps point id → its last-saved pointPosKey.
+ */
+export function diffPoints(
+  current: DataPoint[],
+  saved: Map<string, string>,
+): { toUpsert: DataPoint[]; toDelete: string[] } {
+  const currentIds = new Set(current.map((p) => p.id))
+  const toUpsert = current.filter((p) => saved.get(p.id) !== pointPosKey(p))
+  const toDelete = [...saved.keys()].filter((id) => !currentIds.has(id))
+  return { toUpsert, toDelete }
+}
+
 /**
  * Loads a project into the Zustand stores and keeps the server in sync.
  * - Fetches once (staleTime Infinity — we don't refetch while editing).
@@ -62,7 +82,8 @@ function toClientPoint(p: ServerPoint): DataPoint {
 export function useProjectSync(projectId: string) {
   const api = useApiClient()
   const hydratedFor = useRef<string | null>(null)
-  const savedPointIds = useRef<Set<string>>(new Set())
+  // point id → last-saved position fingerprint (for add / move / delete diffing)
+  const savedPoints = useRef<Map<string, string>>(new Map())
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
 
   const query = useQuery<ServerProject>({
@@ -92,13 +113,15 @@ export function useProjectSync(projectId: string) {
     }
     if (settings?.uiSettings) {
       const ui = settings.uiSettings
-      if (typeof ui.trailLength === 'number') useTrackingStore.getState().setTrailLength(ui.trailLength)
-      if (typeof ui.autoAdvance === 'boolean') useTrackingStore.getState().setAutoAdvance(ui.autoAdvance)
+      if (typeof ui.trailLength === 'number')
+        useTrackingStore.getState().setTrailLength(ui.trailLength)
+      if (typeof ui.autoAdvance === 'boolean')
+        useTrackingStore.getState().setAutoAdvance(ui.autoAdvance)
     }
 
     const points = (data.dataPoints ?? []).map(toClientPoint)
     useTrackingStore.getState().hydrate(points)
-    savedPointIds.current = new Set(points.map((p) => p.id))
+    savedPoints.current = new Map(points.map((p) => [p.id, pointPosKey(p)]))
 
     const vm = settings?.videoMetadata
     if (vm?.storageKey) {
@@ -192,19 +215,18 @@ export function useProjectSync(projectId: string) {
 
     const sync = async () => {
       const current = useTrackingStore.getState().dataPoints
-      const currentIds = new Set(current.map((p) => p.id))
-      const toAdd = current.filter((p) => !savedPointIds.current.has(p.id))
-      const toDelete = [...savedPointIds.current].filter((id) => !currentIds.has(id))
-      if (toAdd.length === 0 && toDelete.length === 0) return
+      const { toUpsert, toDelete } = diffPoints(current, savedPoints.current)
+      if (toUpsert.length === 0 && toDelete.length === 0) return
 
       setSaveStatus('saving')
       try {
-        if (toAdd.length > 0) {
+        if (toUpsert.length > 0) {
+          // POST upserts on the server (new points insert, moved points update).
           const res = await api(`/api/projects/${projectId}/points`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              points: toAdd.map((p) => ({
+              points: toUpsert.map((p) => ({
                 id: p.id,
                 frameNumber: p.frameNumber,
                 timeSeconds: p.time,
@@ -213,7 +235,7 @@ export function useProjectSync(projectId: string) {
               })),
             }),
           })
-          if (res.ok) for (const p of toAdd) savedPointIds.current.add(p.id)
+          if (res.ok) for (const p of toUpsert) savedPoints.current.set(p.id, pointPosKey(p))
         }
         if (toDelete.length > 0) {
           const res = await api(`/api/projects/${projectId}/points`, {
@@ -221,7 +243,7 @@ export function useProjectSync(projectId: string) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ pointIds: toDelete }),
           })
-          if (res.ok) for (const id of toDelete) savedPointIds.current.delete(id)
+          if (res.ok) for (const id of toDelete) savedPoints.current.delete(id)
         }
         setSaveStatus('saved')
       } catch {
