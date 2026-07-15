@@ -121,9 +121,12 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
     const minX = Math.min(...xValues)
     const maxX = Math.max(...xValues)
 
+    // Key the x-value with the chart's actual xKey ('time'/'worldX') so recharts
+    // can place these points on the shared X-axis; a literal `x` key leaves the
+    // x-domain undefined and blanks the whole chart.
     return [
-      { x: minX, y: regression.slope * minX + regression.intercept },
-      { x: maxX, y: regression.slope * maxX + regression.intercept },
+      { [xKey]: minX, y: regression.slope * minX + regression.intercept },
+      { [xKey]: maxX, y: regression.slope * maxX + regression.intercept },
     ]
   }, [regression, chartData, xKey])
 
