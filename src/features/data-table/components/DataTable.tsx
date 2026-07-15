@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, type ReactNode } from 'react'
 import { Download, Trash2 } from 'lucide-react'
 import {
   Table,
@@ -9,6 +9,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { useTrackingStore } from '@/stores/tracking'
 import { useVideoStore } from '@/stores/video'
 import { useCoordinateStore } from '@/stores/coordinates'
@@ -19,6 +20,20 @@ import { cn } from '@/lib/utils'
 
 interface DataTableProps {
   className?: string
+}
+
+/** A column label that explains itself in plain language on hover. */
+function HeadTip({ children, tip }: { children: ReactNode; tip: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="cursor-help underline decoration-dotted decoration-zinc-600 underline-offset-2 hover:decoration-zinc-400">
+          {children}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{tip}</TooltipContent>
+    </Tooltip>
+  )
 }
 
 export function DataTable({ className }: DataTableProps) {
@@ -92,16 +107,32 @@ export function DataTable({ className }: DataTableProps) {
           <TableHeader className="sticky top-0 bg-zinc-900">
             <TableRow className="border-zinc-800 hover:bg-transparent">
               <TableHead className="w-12 font-mono text-xs text-zinc-500">#</TableHead>
-              <TableHead className="font-mono text-xs text-zinc-500">t (s)</TableHead>
-              <TableHead className="font-mono text-xs text-zinc-500">x ({scaleUnit})</TableHead>
-              <TableHead className="font-mono text-xs text-zinc-500">y ({scaleUnit})</TableHead>
+              <TableHead className="font-mono text-xs text-zinc-500">
+                <HeadTip tip="Time since the first tracked point, in seconds.">t (s)</HeadTip>
+              </TableHead>
+              <TableHead className="font-mono text-xs text-zinc-500">
+                <HeadTip tip="Horizontal position — distance sideways from the origin you set.">x ({scaleUnit})</HeadTip>
+              </TableHead>
+              <TableHead className="font-mono text-xs text-zinc-500">
+                <HeadTip tip="Vertical position — distance up or down from the origin you set.">y ({scaleUnit})</HeadTip>
+              </TableHead>
               {advanced && (
                 <>
-                  <TableHead className="font-mono text-xs text-zinc-500">vx ({scaleUnit}/s)</TableHead>
-                  <TableHead className="font-mono text-xs text-zinc-500">vy ({scaleUnit}/s)</TableHead>
-                  <TableHead className="font-mono text-xs text-zinc-500">|v| ({scaleUnit}/s)</TableHead>
-                  <TableHead className="font-mono text-xs text-zinc-500">ax ({scaleUnit}/s²)</TableHead>
-                  <TableHead className="font-mono text-xs text-zinc-500">ay ({scaleUnit}/s²)</TableHead>
+                  <TableHead className="font-mono text-xs text-zinc-500">
+                    <HeadTip tip="Velocity in x — how fast it moves sideways (change in x each second).">vx ({scaleUnit}/s)</HeadTip>
+                  </TableHead>
+                  <TableHead className="font-mono text-xs text-zinc-500">
+                    <HeadTip tip="Velocity in y — how fast it moves up or down (change in y each second).">vy ({scaleUnit}/s)</HeadTip>
+                  </TableHead>
+                  <TableHead className="font-mono text-xs text-zinc-500">
+                    <HeadTip tip="Speed — how fast it's moving overall, combining vx and vy.">|v| ({scaleUnit}/s)</HeadTip>
+                  </TableHead>
+                  <TableHead className="font-mono text-xs text-zinc-500">
+                    <HeadTip tip="Acceleration in x — how quickly the sideways velocity changes.">ax ({scaleUnit}/s²)</HeadTip>
+                  </TableHead>
+                  <TableHead className="font-mono text-xs text-zinc-500">
+                    <HeadTip tip="Acceleration in y — how quickly the up/down velocity changes. Gravity shows up here.">ay ({scaleUnit}/s²)</HeadTip>
+                  </TableHead>
                 </>
               )}
               <TableHead className="w-8" />

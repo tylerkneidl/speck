@@ -4,6 +4,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { routeTree } from './routeTree.gen'
+import { TooltipProvider } from './components/ui/tooltip'
 import '@fontsource-variable/archivo'
 import '@fontsource-variable/hanken-grotesk'
 import '@fontsource-variable/jetbrains-mono'
@@ -52,7 +53,9 @@ const useClerk = hasValidClerkKey && !devNoAuth
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <TooltipProvider delayDuration={200} skipDelayDuration={400}>
+        <RouterProvider router={router} />
+      </TooltipProvider>
     </QueryClientProvider>
   )
 }

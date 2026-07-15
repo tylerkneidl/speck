@@ -13,6 +13,7 @@ import { useTableData } from '@/features/data-table/hooks/useTableData'
 import { useVideoStore } from '@/stores/video'
 import { useCoordinateStore } from '@/stores/coordinates'
 import { linearRegression } from '@/lib/kinematics'
+import { Tooltip as InfoTip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 export type GraphType = 'x-t' | 'y-t' | 'vx-t' | 'vy-t' | 'y-x'
@@ -123,14 +124,30 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
         </span>
         {regression && (
           <div className="flex items-center gap-4 font-mono text-xs">
-            <span className="text-zinc-400">
-              y = <span className="text-plasma">{regression.slope.toFixed(4)}</span>x +{' '}
-              <span className="text-plasma">{regression.intercept.toFixed(4)}</span>
-            </span>
+            <InfoTip>
+              <TooltipTrigger asChild>
+                <span className="cursor-help text-zinc-400">
+                  y = <span className="text-plasma">{regression.slope.toFixed(4)}</span>x +{' '}
+                  <span className="text-plasma">{regression.intercept.toFixed(4)}</span>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                The best-fit straight line through your points. On a position-vs-time graph the
+                slope is the velocity; on a velocity-vs-time graph it's the acceleration.
+              </TooltipContent>
+            </InfoTip>
             <span className="text-zinc-600">|</span>
-            <span className="text-zinc-400">
-              R² = <span className="text-emerald-400">{regression.rSquared.toFixed(4)}</span>
-            </span>
+            <InfoTip>
+              <TooltipTrigger asChild>
+                <span className="cursor-help text-zinc-400">
+                  R² = <span className="text-emerald-400">{regression.rSquared.toFixed(4)}</span>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                How well the straight line fits your data — 1.0 is a perfect fit; lower means more
+                scatter.
+              </TooltipContent>
+            </InfoTip>
           </div>
         )}
       </div>
