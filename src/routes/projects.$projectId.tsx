@@ -4,7 +4,7 @@ import { RedirectToSignIn } from '@clerk/clerk-react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { SignedIn, SignedOut, useIsClerkAvailable } from '@/lib/auth'
 
-import { VideoPlayer, VideoControls, VideoUpload } from '@/features/video/components'
+import { VideoPlayer, VideoControls, VideoUpload, FrameRateControl } from '@/features/video/components'
 import { CanvasOverlay } from '@/features/tracking/components'
 import { DataTable } from '@/features/data-table/components'
 import { Graph, type GraphType } from '@/features/graphing/components'
@@ -381,6 +381,7 @@ function ProjectEditorContent() {
                     isPlacing={placementMode === 'origin'}
                   />
                   <AxisRotation />
+                  <FrameRateControl />
 
                   {/* Calibration status */}
                   {pixelsPerUnit && (

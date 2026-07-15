@@ -22,6 +22,7 @@ interface VideoState {
 
   setMetadata: (metadata: VideoMetadata) => void
   setCurrentFrame: (frame: number) => void
+  setFrameRate: (fps: number) => void
   setIsPlaying: (playing: boolean) => void
   setPlaybackSpeed: (speed: number) => void
   nextFrame: () => void
@@ -59,6 +60,16 @@ export const useVideoStore = create<VideoState>()(
         const clampedFrame = Math.max(0, Math.min(frame, metadata.totalFrames - 1))
         state.currentFrame = clampedFrame
         state.currentTime = clampedFrame / metadata.frameRate
+      }),
+
+    setFrameRate: (fps) =>
+      set((state) => {
+        if (!state.metadata || !Number.isFinite(fps) || fps <= 0) return
+        state.metadata.frameRate = fps
+        state.metadata.totalFrames = Math.max(1, Math.floor(state.metadata.duration * fps))
+        const maxFrame = state.metadata.totalFrames - 1
+        if (state.currentFrame > maxFrame) state.currentFrame = maxFrame
+        state.currentTime = state.currentFrame / fps
       }),
 
     setIsPlaying: (playing) =>
