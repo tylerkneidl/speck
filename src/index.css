@@ -61,7 +61,9 @@
     text-rendering: optimizeLegibility;
   }
   /* Headings default to the display face; components can still opt into mono for data. */
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     font-family: "Archivo Variable", "Hanken Grotesk Variable", ui-sans-serif, sans-serif;
     letter-spacing: -0.02em;
   }
@@ -78,6 +80,21 @@
 .speck-live {
   fill: #ff4e22;
   filter: drop-shadow(0 0 8px #ff4e22);
+}
+
+/* Setup-guide target highlight — a breathing flare-colored ring drawn around
+   whatever element the wizard is pointing at. */
+.tour-highlight {
+  animation: tour-glow 1.8s ease-in-out infinite;
+}
+@keyframes tour-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(255, 78, 34, 0.45), 0 0 16px 1px rgba(255, 78, 34, 0.22);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(255, 78, 34, 0.8), 0 0 30px 3px rgba(255, 78, 34, 0.42);
+  }
 }
 .speck-cycle {
   display: inline-block;
@@ -111,22 +128,48 @@
     animation: speck-fly 3.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
   }
   @keyframes speck-fly {
-    0% { offset-distance: 0%; opacity: 0; }
-    8% { opacity: 1; }
-    92% { opacity: 1; }
-    100% { offset-distance: 100%; opacity: 0; }
+    0% {
+      offset-distance: 0%;
+      opacity: 0;
+    }
+    8% {
+      opacity: 1;
+    }
+    92% {
+      opacity: 1;
+    }
+    100% {
+      offset-distance: 100%;
+      opacity: 0;
+    }
   }
   .speck-words {
     animation: speck-cyc 8.4s cubic-bezier(0.76, 0, 0.24, 1) infinite;
   }
   @keyframes speck-cyc {
-    0%, 17% { transform: translateY(0); }
-    25%, 42% { transform: translateY(-1.1em); }
-    50%, 67% { transform: translateY(-2.2em); }
-    75%, 92% { transform: translateY(-3.3em); }
-    100% { transform: translateY(-4.4em); }
+    0%,
+    17% {
+      transform: translateY(0);
+    }
+    25%,
+    42% {
+      transform: translateY(-1.1em);
+    }
+    50%,
+    67% {
+      transform: translateY(-2.2em);
+    }
+    75%,
+    92% {
+      transform: translateY(-3.3em);
+    }
+    100% {
+      transform: translateY(-4.4em);
+    }
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .speck-live { display: none; }
+  .speck-live {
+    display: none;
+  }
 }
