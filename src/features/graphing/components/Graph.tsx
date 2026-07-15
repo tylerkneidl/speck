@@ -34,7 +34,7 @@ const GRAPH_LABELS: Record<GraphType, string> = {
 
 export function Graph({ type, showRegression = false, className }: GraphProps) {
   const data = useTableData()
-  const { currentTime } = useVideoStore()
+  const { currentTime, setCurrentFrame } = useVideoStore()
   const { scaleUnit } = useCoordinateStore()
 
   const { chartData, xKey, yKey, xLabel, yLabel, regression } = useMemo(() => {
@@ -119,9 +119,16 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
     >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2">
-        <span className="font-mono text-xs uppercase tracking-wider text-zinc-500">
-          {GRAPH_LABELS[type]}
-        </span>
+        <div className="flex items-baseline gap-2">
+          <span className="font-mono text-xs uppercase tracking-wider text-zinc-500">
+            {GRAPH_LABELS[type]}
+          </span>
+          {chartData.length > 0 && (
+            <span className="hidden font-mono text-[10px] text-zinc-600 md:inline">
+              · click a point to jump the video
+            </span>
+          )}
+        </div>
         {regression && (
           <div className="flex items-center gap-4 font-mono text-xs">
             <InfoTip>
@@ -162,7 +169,17 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
+            <LineChart
+              data={chartData}
+              margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
+              className="cursor-pointer"
+              onClick={(state) => {
+                const frame = (
+                  state as { activePayload?: Array<{ payload?: { frameNumber?: number } }> }
+                )?.activePayload?.[0]?.payload?.frameNumber
+                if (typeof frame === 'number') setCurrentFrame(frame)
+              }}
+            >
               <CartesianGrid stroke="#27272a" strokeDasharray="3 3" />
               <XAxis
                 dataKey={xKey}
