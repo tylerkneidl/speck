@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils'
 import { useCoordinateStore } from '@/stores/coordinates'
 import { useVideoStore } from '@/stores/video'
-import { ArrowLeft, ArrowRight, Check, RotateCcw, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Compass, RotateCcw, X } from 'lucide-react'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 type PlacementMode = 'scale1' | 'scale2' | 'origin' | null
@@ -205,31 +205,44 @@ export function SetupWizard({
       )}
 
       <div className="p-4">
-        {/* Header: progress dots + close */}
-        <div className="mb-3 flex items-center justify-between">
+        {/* Header: identity + step count + close */}
+        <div className="mb-2.5 flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            {STEPS.map((s, i) => (
-              <span
-                key={s}
-                className={cn(
-                  'h-1.5 rounded-full transition-all',
-                  i === stepIndex
-                    ? 'w-5 bg-primary'
-                    : i < stepIndex
-                      ? 'w-1.5 bg-plasma'
-                      : 'w-1.5 bg-zinc-700',
-                )}
-              />
-            ))}
+            <Compass className="h-3.5 w-3.5 text-primary" />
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-zinc-300">
+              Setup Guide
+            </span>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="-mr-1 -mt-1 rounded p-1 text-zinc-600 transition-colors hover:bg-zinc-800 hover:text-zinc-300"
-            title="Close guide"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[10px] tabular-nums text-zinc-500">
+              {stepIndex + 1} / {STEPS.length}
+            </span>
+            <button
+              type="button"
+              onClick={onClose}
+              className="-mr-1 rounded p-1 text-zinc-600 transition-colors hover:bg-zinc-800 hover:text-zinc-300"
+              title="Close guide"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Progress dots */}
+        <div className="mb-3 flex items-center gap-1.5">
+          {STEPS.map((s, i) => (
+            <span
+              key={s}
+              className={cn(
+                'h-1.5 rounded-full transition-all',
+                i === stepIndex
+                  ? 'w-5 bg-primary'
+                  : i < stepIndex
+                    ? 'w-1.5 bg-plasma'
+                    : 'w-1.5 bg-zinc-700',
+              )}
+            />
+          ))}
         </div>
 
         {/* Step body */}
