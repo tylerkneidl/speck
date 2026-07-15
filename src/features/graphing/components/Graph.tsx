@@ -37,7 +37,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
   const { currentTime, setCurrentFrame } = useVideoStore()
   const { scaleUnit } = useCoordinateStore()
 
-  const { chartData, xKey, yKey, xLabel, yLabel, regression } = useMemo(() => {
+  const { chartData, xKey, yKey, xLabel, yLabel, regression, yDomain } = useMemo(() => {
     let xKey: string
     let yKey: string
     let xLabel: string
@@ -83,6 +83,23 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
       return xVal !== null && yVal !== null
     })
 
+    // Anchor the y-axis at zero and autoscale from there. A tight [min,max]
+    // window magnifies a physically-constant series (e.g. vx for constant-
+    // velocity motion) — its pixel-quantization jitter fills the chart and
+    // looks chaotic. With zero as the baseline, that variance is shown in honest
+    // proportion to the value's magnitude (a near-constant series reads flat).
+    // Negatives anchor at the top instead (e.g. a ≈ -9.8 sits below a zero line).
+    let yDomain: [number, number] | ['auto', 'auto'] = ['auto', 'auto']
+    const yVals = chartData
+      .map((row) => row[yKey as keyof typeof row])
+      .filter((v): v is number => typeof v === 'number')
+    if (yVals.length > 0) {
+      const bottom = Math.min(0, ...yVals)
+      const top = Math.max(0, ...yVals)
+      const pad = (top - bottom || 1) * 0.05
+      yDomain = [bottom < 0 ? bottom - pad : 0, top > 0 ? top + pad : 0]
+    }
+
     // Calculate regression if requested
     let regression = null
     if (showRegression && chartData.length >= 2) {
@@ -93,7 +110,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
       regression = linearRegression(points)
     }
 
-    return { chartData, xKey, yKey, xLabel, yLabel, regression }
+    return { chartData, xKey, yKey, xLabel, yLabel, regression, yDomain }
   }, [data, type, showRegression, scaleUnit])
 
   // Generate regression line data
@@ -208,7 +225,12 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                   fontFamily: 'monospace',
                 }}
                 type="number"
-                domain={['auto', 'auto']}
+                domain={yDomain}
+                allowDecimals
+                tickFormatter={(v: number) => {
+                  const a = Math.abs(v)
+                  return a >= 100 ? v.toFixed(0) : a >= 1 ? v.toFixed(2) : v.toFixed(3)
+                }}
                 tick={{ fill: '#71717a', fontSize: 10, fontFamily: 'monospace' }}
                 axisLine={{ stroke: '#3f3f46' }}
                 tickLine={{ stroke: '#3f3f46' }}
