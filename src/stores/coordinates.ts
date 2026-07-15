@@ -14,6 +14,7 @@ interface CoordinateState {
   scaleDistance: number | null
   scaleUnit: ScaleUnit
   origin: Point
+  originSet: boolean
   rotation: number
   yAxisUp: boolean
   pixelsPerUnit: number | null
@@ -25,6 +26,8 @@ interface CoordinateState {
   setOrigin: (point: Point) => void
   setRotation: (degrees: number) => void
   toggleYAxis: () => void
+  resetScale: () => void
+  resetOrigin: () => void
   hydrate: (system: Partial<CoordinateState>) => void
   reset: () => void
 }
@@ -35,6 +38,7 @@ const initialState = {
   scaleDistance: null,
   scaleUnit: 'm' as ScaleUnit,
   origin: { x: 0, y: 0 },
+  originSet: false,
   rotation: 0,
   yAxisUp: true,
   pixelsPerUnit: null,
@@ -43,7 +47,7 @@ const initialState = {
 function calculatePixelsPerUnit(
   p1: Point | null,
   p2: Point | null,
-  distance: number | null
+  distance: number | null,
 ): number | null {
   if (!p1 || !p2 || !distance || distance === 0) return null
   const pixelDistance = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2))
@@ -69,11 +73,7 @@ export const useCoordinateStore = create<CoordinateState>()(
     setScaleDistance: (distance) =>
       set((state) => {
         state.scaleDistance = distance
-        state.pixelsPerUnit = calculatePixelsPerUnit(
-          state.scalePoint1,
-          state.scalePoint2,
-          distance
-        )
+        state.pixelsPerUnit = calculatePixelsPerUnit(state.scalePoint1, state.scalePoint2, distance)
       }),
 
     setScaleUnit: (unit) =>
@@ -84,6 +84,7 @@ export const useCoordinateStore = create<CoordinateState>()(
     setOrigin: (point) =>
       set((state) => {
         state.origin = point
+        state.originSet = true
       }),
 
     setRotation: (degrees) =>
@@ -96,6 +97,22 @@ export const useCoordinateStore = create<CoordinateState>()(
         state.yAxisUp = !state.yAxisUp
       }),
 
+    // Clear the scale points so they can be re-placed. Keeps the typed distance
+    // and unit, so re-clicking both ends immediately recomputes the scale.
+    resetScale: () =>
+      set((state) => {
+        state.scalePoint1 = null
+        state.scalePoint2 = null
+        state.pixelsPerUnit = null
+      }),
+
+    // Send the origin back to un-placed (default corner) so it can be re-picked.
+    resetOrigin: () =>
+      set((state) => {
+        state.origin = { x: 0, y: 0 }
+        state.originSet = false
+      }),
+
     hydrate: (system) =>
       set((state) => {
         if (system.scalePoint1 !== undefined) state.scalePoint1 = system.scalePoint1
@@ -103,15 +120,21 @@ export const useCoordinateStore = create<CoordinateState>()(
         if (system.scaleDistance !== undefined) state.scaleDistance = system.scaleDistance
         if (system.scaleUnit !== undefined) state.scaleUnit = system.scaleUnit
         if (system.origin !== undefined) state.origin = system.origin
+        if (system.originSet !== undefined) {
+          state.originSet = system.originSet
+        } else if (system.origin && (system.origin.x !== 0 || system.origin.y !== 0)) {
+          // Legacy saves had no originSet flag — a non-default origin implies it was placed.
+          state.originSet = true
+        }
         if (system.rotation !== undefined) state.rotation = system.rotation
         if (system.yAxisUp !== undefined) state.yAxisUp = system.yAxisUp
         state.pixelsPerUnit = calculatePixelsPerUnit(
           state.scalePoint1,
           state.scalePoint2,
-          state.scaleDistance
+          state.scaleDistance,
         )
       }),
 
     reset: () => set(() => initialState),
-  }))
+  })),
 )

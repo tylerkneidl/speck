@@ -22,6 +22,7 @@ interface CoordinateSystemDTO {
   scaleDistance?: number | null
   scaleUnit?: ScaleUnit
   origin?: { x: number; y: number }
+  originSet?: boolean
   rotation?: number
   yAxisUp?: boolean
 }
@@ -140,6 +141,7 @@ export function useProjectSync(projectId: string) {
             scaleDistance: c.scaleDistance,
             scaleUnit: c.scaleUnit,
             origin: c.origin,
+            originSet: c.originSet,
             rotation: c.rotation,
             yAxisUp: c.yAxisUp,
           },

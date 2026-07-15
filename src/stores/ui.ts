@@ -7,6 +7,7 @@ import { create } from 'zustand'
 export type DetailLevel = 'basic' | 'advanced'
 
 const KEY = 'speck:detailLevel'
+const WIZARD_KEY = 'speck:setupWizardDismissed'
 
 function initialDetail(): DetailLevel {
   try {
@@ -16,10 +17,21 @@ function initialDetail(): DetailLevel {
   }
 }
 
+function initialWizardDismissed(): boolean {
+  try {
+    return localStorage.getItem(WIZARD_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
 interface UiState {
   /** 'basic' shows position only; 'advanced' reveals velocity + acceleration. */
   detailLevel: DetailLevel
   setDetailLevel: (level: DetailLevel) => void
+  /** "Don't show again" for the setup wizard — persisted so it survives reloads. */
+  setupWizardDismissed: boolean
+  setSetupWizardDismissed: (dismissed: boolean) => void
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -31,5 +43,14 @@ export const useUiStore = create<UiState>((set) => ({
       // ignore (private mode / SSR)
     }
     set({ detailLevel: level })
+  },
+  setupWizardDismissed: initialWizardDismissed(),
+  setSetupWizardDismissed: (dismissed) => {
+    try {
+      localStorage.setItem(WIZARD_KEY, dismissed ? '1' : '0')
+    } catch {
+      // ignore (private mode / SSR)
+    }
+    set({ setupWizardDismissed: dismissed })
   },
 }))
