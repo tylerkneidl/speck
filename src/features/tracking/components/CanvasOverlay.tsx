@@ -74,8 +74,7 @@ export function CanvasOverlay({ width, height, onClick }: CanvasOverlayProps) {
       width={width}
       height={height}
       onClick={handleClick}
-      className="absolute inset-0 cursor-crosshair"
-      style={{ width, height }}
+      className="absolute inset-0 z-10 h-full w-full cursor-crosshair"
     />
   )
 }

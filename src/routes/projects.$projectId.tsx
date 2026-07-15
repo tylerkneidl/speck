@@ -303,7 +303,7 @@ function ProjectEditorContent() {
               <div className="relative flex-1 overflow-hidden bg-zinc-950">
                 {metadata ? (
                   <>
-                    <VideoPlayer src={metadata.storageUrl} />
+                    <VideoPlayer src={metadata.storageUrl}>
                     <CanvasOverlay
                       width={metadata.width}
                       height={metadata.height}
@@ -340,6 +340,7 @@ function ProjectEditorContent() {
                         </button>
                       </div>
                     )}
+                    </VideoPlayer>
                   </>
                 ) : (
                   <div className="flex h-full items-center justify-center p-8">

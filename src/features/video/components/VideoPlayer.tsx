@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { useVideoStore } from '@/stores/video'
 
 interface VideoPlayerProps {
   src: string | null
   onFrameChange?: (frame: number) => void
+  /** Overlay layers (tracking canvas, buttons) rendered inside the fitted video stage so they align exactly. */
+  children?: ReactNode
 }
 
-export function VideoPlayer({ src, onFrameChange }: VideoPlayerProps) {
+export function VideoPlayer({ src, onFrameChange, children }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const frameCanvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -163,44 +165,49 @@ export function VideoPlayer({ src, onFrameChange }: VideoPlayerProps) {
       ref={containerRef}
       className="relative flex h-full w-full items-center justify-center overflow-hidden bg-zinc-950"
     >
-      {/* Subtle vignette effect */}
-      <div
-        className="pointer-events-none absolute inset-0 z-10"
-        style={{
-          background:
-            'radial-gradient(ellipse at center, transparent 0%, transparent 60%, rgba(0,0,0,0.4) 100%)',
-        }}
-      />
+      {/* Fitted "stage": the video, frame-canvas, and overlay layers all fill this
+          single box, so what you see and where you click are guaranteed to align. */}
+      <div className="relative" style={{ width: dimensions.width, height: dimensions.height }}>
+        {/* Video element - shown during playback */}
+        <video
+          ref={videoRef}
+          src={src}
+          className={`absolute inset-0 h-full w-full ${isPlaying ? 'block' : 'hidden'}`}
+          onSeeked={handleSeeked}
+          onTimeUpdate={handleTimeUpdate}
+          onEnded={handleEnded}
+          playsInline
+          muted
+        />
 
-      {/* Video element - shown during playback */}
-      <video
-        ref={videoRef}
-        src={src}
-        className={isPlaying ? 'block' : 'hidden'}
-        style={{ width: dimensions.width, height: dimensions.height }}
-        onSeeked={handleSeeked}
-        onTimeUpdate={handleTimeUpdate}
-        onEnded={handleEnded}
-        playsInline
-        muted
-      />
+        {/* Canvas element - shown when paused for frame-accurate display */}
+        <canvas
+          ref={frameCanvasRef}
+          className={`absolute inset-0 h-full w-full ${isPlaying ? 'hidden' : 'block'}`}
+        />
 
-      {/* Canvas element - shown when paused for frame-accurate display */}
-      <canvas
-        ref={frameCanvasRef}
-        className={isPlaying ? 'hidden' : 'block'}
-        style={{ width: dimensions.width, height: dimensions.height }}
-      />
+        {/* Subtle vignette effect */}
+        <div
+          className="pointer-events-none absolute inset-0 z-10"
+          style={{
+            background:
+              'radial-gradient(ellipse at center, transparent 0%, transparent 60%, rgba(0,0,0,0.4) 100%)',
+          }}
+        />
 
-      {/* Frame info overlay */}
-      {metadata && (
-        <div className="absolute bottom-3 left-3 z-20 font-mono text-xs text-zinc-400">
-          <span className="rounded bg-black/60 px-2 py-1 backdrop-blur-sm">
-            {String(currentFrame).padStart(5, '0')} /{' '}
-            {String(metadata.totalFrames - 1).padStart(5, '0')}
-          </span>
-        </div>
-      )}
+        {/* Overlay layers (tracking canvas, buttons) — same stage, so aligned */}
+        {children}
+
+        {/* Frame info overlay */}
+        {metadata && (
+          <div className="absolute bottom-3 left-3 z-20 font-mono text-xs text-zinc-400">
+            <span className="rounded bg-black/60 px-2 py-1 backdrop-blur-sm">
+              {String(currentFrame).padStart(5, '0')} /{' '}
+              {String(metadata.totalFrames - 1).padStart(5, '0')}
+            </span>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
