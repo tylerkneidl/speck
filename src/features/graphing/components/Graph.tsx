@@ -1,22 +1,61 @@
-import { useMemo } from 'react'
+import { Tooltip as InfoTip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useTableData } from '@/features/data-table/hooks/useTableData'
 import {
-  LineChart,
+  FIT_MODELS,
+  type Fit,
+  type FitModel,
+  fitCurve,
+  formatCoefficient,
+  formatEquation,
+} from '@/lib/regression'
+import { cn } from '@/lib/utils'
+import { useCoordinateStore } from '@/stores/coordinates'
+import { useVideoStore } from '@/stores/video'
+import { useMemo, useState } from 'react'
+import {
+  CartesianGrid,
   Line,
+  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
 } from 'recharts'
-import { useTableData } from '@/features/data-table/hooks/useTableData'
-import { useVideoStore } from '@/stores/video'
-import { useCoordinateStore } from '@/stores/coordinates'
-import { linearRegression } from '@/lib/kinematics'
-import { Tooltip as InfoTip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { cn } from '@/lib/utils'
 
 export type GraphType = 'x-t' | 'y-t' | 'vx-t' | 'vy-t' | 'y-x'
+
+/** Axis variable symbols per graph type — used to render fits in physics form. */
+const AXIS_VARS: Record<GraphType, { dep: string; indep: string }> = {
+  'x-t': { dep: 'x', indep: 't' },
+  'y-t': { dep: 'y', indep: 't' },
+  'vx-t': { dep: 'vx', indep: 't' },
+  'vy-t': { dep: 'vy', indep: 't' },
+  'y-x': { dep: 'y', indep: 'x' },
+}
+
+/** Plain-language physics meaning of a fit, for the equation tooltip. */
+function interpretFit(type: GraphType, fit: Fit, unit: string): string {
+  const c = fit.coefficients
+  const isPosition = type === 'x-t' || type === 'y-t'
+  const isVelocity = type === 'vx-t' || type === 'vy-t'
+
+  if (fit.model === 'linear') {
+    const slope = c[1] ?? 0
+    if (isPosition)
+      return `The slope is the velocity ≈ ${formatCoefficient(slope)} ${unit}/s; the intercept is the starting position.`
+    if (isVelocity)
+      return `The slope is the acceleration ≈ ${formatCoefficient(slope)} ${unit}/s²; the intercept is the initial velocity.`
+    return 'A straight-line path through space.'
+  }
+
+  const c2 = c[2] ?? 0
+  if (isPosition)
+    return `Constant acceleration: a = 2 × ${formatCoefficient(c2)} = ${formatCoefficient(2 * c2)} ${unit}/s². The ${AXIS_VARS[type].indep}-term is the initial velocity; the constant is the starting position.`
+  if (isVelocity)
+    return 'A curved velocity–time graph means the acceleration itself is changing over time.'
+  return 'A curved path through space.'
+}
 
 interface GraphProps {
   type: GraphType
@@ -36,8 +75,9 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
   const data = useTableData()
   const { currentTime, setCurrentFrame } = useVideoStore()
   const { scaleUnit } = useCoordinateStore()
+  const [fitModel, setFitModel] = useState<FitModel>('linear')
 
-  const { chartData, xKey, yKey, xLabel, yLabel, regression, yDomain } = useMemo(() => {
+  const { chartData, xKey, yKey, xLabel, yLabel, fit, yDomain, depSym, indepSym } = useMemo(() => {
     let xKey: string
     let yKey: string
     let xLabel: string
@@ -100,41 +140,56 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
       yDomain = [bottom < 0 ? bottom - pad : 0, top > 0 ? top + pad : 0]
     }
 
-    // Calculate regression if requested
-    let regression = null
-    if (showRegression && chartData.length >= 2) {
+    // Fit the selected model if requested (fitCurve returns null below its
+    // minimum point count, so quadratic just won't show until there are 3+).
+    let fit = null
+    if (showRegression) {
       const points = chartData.map((row) => ({
         x: row[xKey as keyof typeof row] as number,
         y: row[yKey as keyof typeof row] as number,
       }))
-      regression = linearRegression(points)
+      fit = fitCurve(fitModel, points)
     }
 
-    return { chartData, xKey, yKey, xLabel, yLabel, regression, yDomain }
-  }, [data, type, showRegression, scaleUnit])
+    return {
+      chartData,
+      xKey,
+      yKey,
+      xLabel,
+      yLabel,
+      fit,
+      yDomain,
+      depSym: AXIS_VARS[type].dep,
+      indepSym: AXIS_VARS[type].indep,
+    }
+  }, [data, type, showRegression, fitModel, scaleUnit])
 
-  // Generate regression line data
-  const regressionLineData = useMemo(() => {
-    if (!regression || chartData.length < 2) return null
+  // Sample the fitted curve across the x-range. Linear needs only its two
+  // endpoints; quadratic is sampled densely so it renders as a smooth parabola.
+  const fitCurveData = useMemo(() => {
+    if (!fit || chartData.length < 2) return null
 
     const xValues = chartData.map((d) => d[xKey as keyof typeof d] as number)
     const minX = Math.min(...xValues)
     const maxX = Math.max(...xValues)
+    if (maxX === minX) return null
 
+    const samples = fit.model === 'quadratic' ? 48 : 2
+    const step = (maxX - minX) / (samples - 1)
     // Key the x-value with the chart's actual xKey ('time'/'worldX') so recharts
     // can place these points on the shared X-axis; a literal `x` key leaves the
     // x-domain undefined and blanks the whole chart.
-    return [
-      { [xKey]: minX, y: regression.slope * minX + regression.intercept },
-      { [xKey]: maxX, y: regression.slope * maxX + regression.intercept },
-    ]
-  }, [regression, chartData, xKey])
+    return Array.from({ length: samples }, (_, i) => {
+      const x = minX + step * i
+      return { [xKey]: x, y: fit.predict(x) }
+    })
+  }, [fit, chartData, xKey])
 
   return (
     <div
       className={cn(
         'flex flex-col overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900',
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -149,32 +204,65 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
             </span>
           )}
         </div>
-        {regression && (
-          <div className="flex items-center gap-4 font-mono text-xs">
-            <InfoTip>
-              <TooltipTrigger asChild>
-                <span className="cursor-help text-zinc-400">
-                  y = <span className="text-plasma">{regression.slope.toFixed(4)}</span>x +{' '}
-                  <span className="text-plasma">{regression.intercept.toFixed(4)}</span>
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>
-                The best-fit straight line through your points. On a position-vs-time graph the
-                slope is the velocity; on a velocity-vs-time graph it's the acceleration.
-              </TooltipContent>
-            </InfoTip>
-            <span className="text-zinc-600">|</span>
-            <InfoTip>
-              <TooltipTrigger asChild>
-                <span className="cursor-help text-zinc-400">
-                  R² = <span className="text-emerald-400">{regression.rSquared.toFixed(4)}</span>
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>
-                How well the straight line fits your data — 1.0 is a perfect fit; lower means more
-                scatter.
-              </TooltipContent>
-            </InfoTip>
+        {showRegression && chartData.length > 0 && (
+          <div className="flex items-center gap-3 font-mono text-xs">
+            {/* Model selector */}
+            <div className="flex rounded-md border border-zinc-700 p-0.5">
+              {FIT_MODELS.map((m) => (
+                <button
+                  key={m.value}
+                  type="button"
+                  onClick={() => setFitModel(m.value)}
+                  className={cn(
+                    'rounded px-2 py-0.5 text-[11px] font-medium transition-colors',
+                    fitModel === m.value
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-zinc-400 hover:text-zinc-200',
+                  )}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+
+            {fit ? (
+              <>
+                <InfoTip>
+                  <TooltipTrigger asChild>
+                    <span className="cursor-help text-plasma">
+                      {formatEquation(fit, depSym, indepSym)}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="max-w-xs space-y-1.5">
+                      <p>
+                        Math-class form:{' '}
+                        <span className="font-mono text-zinc-200">
+                          {formatEquation(fit, 'y', 'x')}
+                        </span>
+                      </p>
+                      <p className="text-zinc-400">{interpretFit(type, fit, scaleUnit)}</p>
+                    </div>
+                  </TooltipContent>
+                </InfoTip>
+                <span className="text-zinc-600">|</span>
+                <InfoTip>
+                  <TooltipTrigger asChild>
+                    <span className="cursor-help text-zinc-400">
+                      R² = <span className="text-emerald-400">{fit.rSquared.toFixed(4)}</span>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    How well the curve fits your data — 1.0 is a perfect fit; lower means more
+                    scatter.
+                  </TooltipContent>
+                </InfoTip>
+              </>
+            ) : (
+              <span className="text-zinc-600">
+                need ≥ {fitModel === 'quadratic' ? 3 : 2} points
+              </span>
+            )}
           </div>
         )}
       </div>
@@ -272,11 +360,11 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                 activeDot={{ r: 6, fill: '#fbbf24', strokeWidth: 0 }}
               />
 
-              {/* Regression line */}
-              {regressionLineData && (
+              {/* Fitted curve */}
+              {fitCurveData && (
                 <Line
-                  data={regressionLineData}
-                  type="linear"
+                  data={fitCurveData}
+                  type="monotone"
                   dataKey="y"
                   stroke="#27e0cf"
                   strokeWidth={1.5}
