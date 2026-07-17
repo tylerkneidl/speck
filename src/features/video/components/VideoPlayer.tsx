@@ -153,7 +153,7 @@ export function VideoPlayer({ src, onFrameChange, children }: VideoPlayerProps) 
           <div className="h-px w-8 bg-accent" />
           <div className="absolute left-1/2 top-1/2 h-8 w-px -translate-x-1/2 -translate-y-1/2 bg-accent" />
         </div>
-        <p className="font-mono text-sm tracking-wider text-muted-foreground">
+        <p className="text-sm tracking-wider text-muted-foreground">
           NO VIDEO LOADED
         </p>
       </div>

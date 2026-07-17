@@ -424,7 +424,7 @@ function StepBody(props: StepBodyProps) {
         )}
         <h3 className="text-sm font-semibold text-foreground">{title}</h3>
         {tag && (
-          <span className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">{tag}</span>
+          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{tag}</span>
         )}
       </div>
       <div className="mt-1.5 text-xs leading-relaxed text-muted-foreground">

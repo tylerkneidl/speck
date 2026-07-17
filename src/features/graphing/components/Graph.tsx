@@ -197,17 +197,17 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <div className="flex items-baseline gap-2">
-          <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+          <span className="text-xs uppercase tracking-wider text-muted-foreground">
             {GRAPH_LABELS[type]}
           </span>
           {chartData.length > 0 && (
-            <span className="hidden font-mono text-[10px] text-muted-foreground md:inline">
+            <span className="hidden text-[10px] text-muted-foreground md:inline">
               · click a point to jump the video
             </span>
           )}
         </div>
         {showRegression && chartData.length > 0 && (
-          <div className="flex items-center gap-3 font-mono text-xs">
+          <div className="flex items-center gap-3 text-xs">
             {/* Model selector */}
             <div className="flex rounded-md border border-input p-0.5">
               {FIT_MODELS.map((m) => (
@@ -231,7 +231,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
               <>
                 <InfoTip>
                   <TooltipTrigger asChild>
-                    <span className="cursor-help text-plasma">
+                    <span className="cursor-help font-mono text-plasma">
                       {formatEquation(fit, depSym, indepSym)}
                     </span>
                   </TooltipTrigger>
@@ -250,7 +250,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                 <span className="text-muted-foreground">|</span>
                 <InfoTip>
                   <TooltipTrigger asChild>
-                    <span className="cursor-help text-muted-foreground">
+                    <span className="cursor-help font-mono text-muted-foreground">
                       R² = <span className="text-primary">{fit.rSquared.toFixed(4)}</span>
                     </span>
                   </TooltipTrigger>
@@ -273,7 +273,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
       <div className="flex-1 p-4">
         {chartData.length === 0 ? (
           <div className="flex h-full items-center justify-center">
-            <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+            <span className="text-xs uppercase tracking-wider text-muted-foreground">
               No data to display
             </span>
           </div>

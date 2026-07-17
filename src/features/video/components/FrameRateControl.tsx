@@ -15,7 +15,7 @@ export function FrameRateControl() {
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="flex items-center gap-2">
-        <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Frame Rate</span>
+        <span className="text-xs uppercase tracking-wider text-muted-foreground">Frame Rate</span>
         <Tooltip>
           <TooltipTrigger asChild>
             <button type="button" className="text-muted-foreground transition-colors hover:text-foreground">
@@ -43,7 +43,7 @@ export function FrameRateControl() {
           }}
           className="w-20 rounded-md border border-input bg-secondary/50 px-2 py-1.5 font-mono text-sm text-foreground focus:border-primary focus:outline-none"
         />
-        <span className="font-mono text-sm text-muted-foreground">fps</span>
+        <span className="text-sm text-muted-foreground">fps</span>
         <span className="ml-auto font-mono text-xs text-muted-foreground">
           {metadata.totalFrames} frames · {metadata.duration.toFixed(1)}s
         </span>

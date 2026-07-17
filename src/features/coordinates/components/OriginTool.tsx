@@ -21,13 +21,13 @@ export function OriginTool({ className, onStartPlacement, isPlacing }: OriginToo
     >
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+        <span className="text-xs uppercase tracking-wider text-muted-foreground">
           Origin Point
         </span>
         {hasCustomOrigin && (
           <button
             onClick={() => setOrigin({ x: 0, y: 0 })}
-            className="font-mono text-xs text-muted-foreground transition-colors hover:text-muted-foreground"
+            className="text-xs text-muted-foreground transition-colors hover:text-muted-foreground"
           >
             Reset
           </button>
@@ -101,7 +101,7 @@ export function OriginTool({ className, onStartPlacement, isPlacing }: OriginToo
         {isPlacing && (
           <div className="ml-auto flex items-center gap-2">
             <div className="h-2 w-2 animate-pulse rounded-full bg-amber-500" />
-            <span className="font-mono text-xs text-amber-400">Click video</span>
+            <span className="text-xs text-amber-400">Click video</span>
           </div>
         )}
       </button>

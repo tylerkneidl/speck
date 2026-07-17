@@ -64,11 +64,11 @@ export function ScaleCalibration({
     >
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+        <span className="text-xs uppercase tracking-wider text-muted-foreground">
           Scale Calibration
         </span>
         {isCalibrated && (
-          <span className="flex items-center gap-1.5 font-mono text-xs">
+          <span className="flex items-center gap-1.5 text-xs">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             <span className="text-primary">Calibrated</span>
           </span>
@@ -95,7 +95,7 @@ export function ScaleCalibration({
         >
           <div
             className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-full border-2 font-mono text-sm font-bold transition-colors',
+              'flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-bold transition-colors',
               placementMode === 'point1'
                 ? 'border-amber-500 text-amber-400'
                 : scalePoint1
@@ -134,7 +134,7 @@ export function ScaleCalibration({
         >
           <div
             className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-full border-2 font-mono text-sm font-bold transition-colors',
+              'flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-bold transition-colors',
               placementMode === 'point2'
                 ? 'border-amber-500 text-amber-400'
                 : scalePoint2
@@ -164,7 +164,7 @@ export function ScaleCalibration({
       {/* Distance input */}
       <div className="flex gap-3">
         <div className="flex-1 space-y-1.5">
-          <Label htmlFor="scale-distance" className="font-mono text-xs text-muted-foreground">
+          <Label htmlFor="scale-distance" className="text-xs text-muted-foreground">
             Distance
           </Label>
           <Input
@@ -179,13 +179,13 @@ export function ScaleCalibration({
           />
         </div>
         <div className="w-28 space-y-1.5">
-          <Label htmlFor="scale-unit" className="font-mono text-xs text-muted-foreground">
+          <Label htmlFor="scale-unit" className="text-xs text-muted-foreground">
             Unit
           </Label>
           <Select value={scaleUnit} onValueChange={(v) => setScaleUnit(v as ScaleUnit)}>
             <SelectTrigger
               id="scale-unit"
-              className="h-9 border-input bg-secondary/50 font-mono text-sm text-foreground focus:ring-ring"
+              className="h-9 border-input bg-secondary/50 text-sm text-foreground focus:ring-ring"
             >
               <SelectValue />
             </SelectTrigger>
@@ -194,7 +194,7 @@ export function ScaleCalibration({
                 <SelectItem
                   key={unit.value}
                   value={unit.value}
-                  className="font-mono text-sm text-foreground focus:bg-accent focus:text-foreground"
+                  className="text-sm text-foreground focus:bg-accent focus:text-foreground"
                 >
                   {unit.label}
                 </SelectItem>
@@ -208,7 +208,7 @@ export function ScaleCalibration({
       {pixelsPerUnit !== null && (
         <div className="rounded-md border border-border bg-sunken p-3">
           <div className="flex items-baseline justify-between">
-            <span className="font-mono text-xs text-muted-foreground">Scale Factor</span>
+            <span className="text-xs text-muted-foreground">Scale Factor</span>
             <span className="font-mono text-sm tabular-nums text-foreground">
               {pixelsPerUnit.toFixed(2)} <span className="text-muted-foreground">px/{scaleUnit}</span>
             </span>

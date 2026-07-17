@@ -53,13 +53,13 @@ export function AxisRotation({ className }: AxisRotationProps) {
     >
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+        <span className="text-xs uppercase tracking-wider text-muted-foreground">
           Axis Settings
         </span>
         {rotation !== 0 && (
           <button
             onClick={handleReset}
-            className="font-mono text-xs text-muted-foreground transition-colors hover:text-muted-foreground"
+            className="text-xs text-muted-foreground transition-colors hover:text-muted-foreground"
           >
             Reset
           </button>
@@ -91,7 +91,7 @@ export function AxisRotation({ className }: AxisRotationProps) {
           >
             {/* X-axis */}
             <div className="absolute left-1/2 top-1/2 h-0.5 w-16 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-red-500/20 via-red-500 to-red-500/20" />
-            <span className="absolute left-[calc(50%+36px)] top-1/2 -translate-y-1/2 font-mono text-xs font-bold text-red-400">
+            <span className="absolute left-[calc(50%+36px)] top-1/2 -translate-y-1/2 text-xs font-bold text-red-400">
               X
             </span>
 
@@ -106,7 +106,7 @@ export function AxisRotation({ className }: AxisRotationProps) {
             />
             <span
               className={cn(
-                'absolute left-1/2 -translate-x-1/2 font-mono text-xs font-bold text-blue-400',
+                'absolute left-1/2 -translate-x-1/2 text-xs font-bold text-blue-400',
                 yAxisUp ? 'top-[calc(50%-40px)]' : 'top-[calc(50%+32px)]'
               )}
             >
@@ -129,7 +129,7 @@ export function AxisRotation({ className }: AxisRotationProps) {
       {/* Rotation slider */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label htmlFor="rotation-input" className="font-mono text-xs text-muted-foreground">
+          <Label htmlFor="rotation-input" className="text-xs text-muted-foreground">
             Rotation
           </Label>
           <div className="flex items-center gap-2">
@@ -143,7 +143,7 @@ export function AxisRotation({ className }: AxisRotationProps) {
               onChange={(e) => handleRotationInputChange(e.target.value)}
               className="h-7 w-20 border-input bg-secondary/50 text-right font-mono text-xs tabular-nums placeholder:text-muted-foreground focus:border-ring focus:ring-ring"
             />
-            <span className="font-mono text-xs text-muted-foreground">°</span>
+            <span className="text-xs text-muted-foreground">°</span>
           </div>
         </div>
         <Slider
@@ -164,7 +164,7 @@ export function AxisRotation({ className }: AxisRotationProps) {
       {/* Y-axis direction toggle */}
       <div className="flex items-center justify-between rounded-md border border-border bg-sunken p-3">
         <div className="space-y-1">
-          <Label htmlFor="y-axis-toggle" className="font-mono text-xs text-muted-foreground">
+          <Label htmlFor="y-axis-toggle" className="text-xs text-muted-foreground">
             Positive Y Direction
           </Label>
           <p className="text-xs text-muted-foreground">

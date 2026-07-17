@@ -241,7 +241,7 @@ export function VideoUpload({ projectId = 'default', onUploadComplete }: VideoUp
           </div>
 
           <div className="flex flex-col items-center gap-2">
-            <span className="font-mono text-sm uppercase tracking-wider text-muted-foreground">
+            <span className="text-sm uppercase tracking-wider text-muted-foreground">
               {uploadProgress === 0 ? 'Analyzing video...' : 'Uploading'}
             </span>
             {uploadProgress > 0 && (
@@ -315,7 +315,7 @@ export function VideoUpload({ projectId = 'default', onUploadComplete }: VideoUp
             >
               {isDragging ? 'Drop video here' : 'Drop video or click to upload'}
             </span>
-            <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+            <span className="text-xs uppercase tracking-wider text-muted-foreground">
               MP4 • WebM • MOV • Max 500MB
             </span>
           </div>

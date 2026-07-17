@@ -284,7 +284,7 @@ function ProjectEditorContent() {
           </div>
 
           {saveStatus !== 'idle' && (
-            <span className="flex items-center gap-1.5 font-mono text-xs">
+            <span className="flex items-center gap-1.5 text-xs">
               {saveStatus === 'saving' && (
                 <>
                   <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
@@ -408,7 +408,7 @@ function ProjectEditorContent() {
                   {placementMode && (
                     <div className="absolute left-4 top-4 flex items-center gap-2 rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2">
                       <div className="h-2 w-2 animate-pulse rounded-full bg-amber-500" />
-                      <span className="font-mono text-xs text-amber-400">
+                      <span className="text-xs text-amber-400">
                         {placementMode === 'scale1'
                           ? 'Click first scale point'
                           : placementMode === 'scale2'
@@ -469,7 +469,7 @@ function ProjectEditorContent() {
                 <div className="rounded-lg border border-primary/30 bg-primary/10 p-4">
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-primary" />
-                    <span className="font-mono text-xs uppercase tracking-wider text-primary">
+                    <span className="text-xs uppercase tracking-wider text-primary">
                       Ready to track
                     </span>
                   </div>
@@ -500,7 +500,7 @@ function ProjectEditorContent() {
                 </div>
 
                 {/* Click hint */}
-                <span className="font-mono text-xs text-muted-foreground">Click video to add point</span>
+                <span className="text-xs text-muted-foreground">Click video to add point</span>
               </div>
               <DataTable className="flex-1" />
             </div>

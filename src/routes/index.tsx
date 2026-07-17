@@ -74,7 +74,7 @@ function HomePage() {
                 </SignedOut>
               </>
             ) : (
-              <span className="rounded bg-amber-500/10 px-2 py-1 font-mono text-xs text-amber-400">
+              <span className="rounded bg-amber-500/10 px-2 py-1 text-xs text-amber-400">
                 Dev Mode
               </span>
             )}
@@ -321,7 +321,7 @@ function ProjectList() {
                   <CardTitle className="line-clamp-1 text-lg text-foreground group-hover:text-foreground">
                     {project.name}
                   </CardTitle>
-                  <CardDescription className="font-mono text-xs text-muted-foreground">
+                  <CardDescription className="text-xs text-muted-foreground">
                     Updated {new Date(project.updatedAt).toLocaleDateString()}
                   </CardDescription>
                 </CardHeader>

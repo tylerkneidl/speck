@@ -61,14 +61,14 @@ export function DataTable({ className }: DataTableProps) {
     <div className={cn('flex flex-col overflow-hidden rounded-lg border border-border bg-card', className)}>
       {/* Header with title + export */}
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
-        <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Motion Data</span>
+        <span className="text-xs uppercase tracking-wider text-muted-foreground">Motion Data</span>
         <div className="flex items-center gap-3">
           <div className="flex items-center rounded-md border border-input p-0.5">
             <button
               type="button"
               onClick={() => setDetailLevel('basic')}
               className={cn(
-                'rounded px-2 py-0.5 font-mono text-[11px] font-medium transition-colors',
+                'rounded px-2 py-0.5 text-[11px] font-medium transition-colors',
                 !advanced ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'
               )}
             >
@@ -78,7 +78,7 @@ export function DataTable({ className }: DataTableProps) {
               type="button"
               onClick={() => setDetailLevel('advanced')}
               className={cn(
-                'rounded px-2 py-0.5 font-mono text-[11px] font-medium transition-colors',
+                'rounded px-2 py-0.5 text-[11px] font-medium transition-colors',
                 advanced ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'
               )}
             >
@@ -186,7 +186,7 @@ export function DataTable({ className }: DataTableProps) {
               <TableRow className="hover:bg-transparent">
                 <TableCell colSpan={advanced ? 10 : 5} className="h-32 text-center">
                   <div className="flex flex-col items-center gap-2">
-                    <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground">
                       No data points tracked
                     </span>
                     <span className="text-xs text-muted-foreground">
