@@ -15,19 +15,19 @@ export function OriginTool({ className, onStartPlacement, isPlacing }: OriginToo
   return (
     <div
       className={cn(
-        'flex flex-col gap-4 rounded-lg border border-zinc-800 bg-zinc-900 p-4',
+        'flex flex-col gap-4 rounded-lg border border-border bg-card p-4',
         className
       )}
     >
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="font-mono text-xs uppercase tracking-wider text-zinc-500">
+        <span className="text-xs uppercase tracking-wider text-muted-foreground">
           Origin Point
         </span>
         {hasCustomOrigin && (
           <button
             onClick={() => setOrigin({ x: 0, y: 0 })}
-            className="font-mono text-xs text-zinc-600 transition-colors hover:text-zinc-400"
+            className="text-xs text-muted-foreground transition-colors hover:text-muted-foreground"
           >
             Reset
           </button>
@@ -35,7 +35,7 @@ export function OriginTool({ className, onStartPlacement, isPlacing }: OriginToo
       </div>
 
       {/* Instructions */}
-      <p className="text-xs leading-relaxed text-zinc-500">
+      <p className="text-xs leading-relaxed text-muted-foreground">
         Set the coordinate origin (0, 0). This is where your X and Y axes intersect.
       </p>
 
@@ -45,10 +45,10 @@ export function OriginTool({ className, onStartPlacement, isPlacing }: OriginToo
         className={cn(
           'group relative flex items-center gap-4 rounded-md border p-4 transition-all',
           isPlacing
-            ? 'border-amber-500 bg-amber-500/10'
+            ? 'border-warning bg-warning/10'
             : hasCustomOrigin
-              ? 'border-emerald-500/50 bg-emerald-500/5 hover:border-emerald-500'
-              : 'border-zinc-700 bg-zinc-800/50 hover:border-zinc-600'
+              ? 'border-primary/50 bg-primary/10 hover:border-primary'
+              : 'border-input bg-secondary/50 hover:border-ring'
         )}
       >
         {/* Origin symbol */}
@@ -56,10 +56,10 @@ export function OriginTool({ className, onStartPlacement, isPlacing }: OriginToo
           className={cn(
             'relative flex h-10 w-10 items-center justify-center',
             isPlacing
-              ? 'text-amber-500'
+              ? 'text-warning'
               : hasCustomOrigin
-                ? 'text-emerald-500'
-                : 'text-zinc-600 group-hover:text-zinc-500'
+                ? 'text-flare-ink'
+                : 'text-muted-foreground group-hover:text-foreground'
           )}
         >
           {/* Crosshair */}
@@ -75,15 +75,15 @@ export function OriginTool({ className, onStartPlacement, isPlacing }: OriginToo
             className={cn(
               'font-mono text-sm transition-colors',
               isPlacing
-                ? 'text-amber-400'
+                ? 'text-warning'
                 : hasCustomOrigin
-                  ? 'text-zinc-300'
-                  : 'text-zinc-500 group-hover:text-zinc-400'
+                  ? 'text-foreground'
+                  : 'text-muted-foreground group-hover:text-muted-foreground'
             )}
           >
             {hasCustomOrigin ? (
               <>
-                <span className="text-zinc-500">px:</span> ({origin.x.toFixed(0)},{' '}
+                <span className="text-muted-foreground">px:</span> ({origin.x.toFixed(0)},{' '}
                 {origin.y.toFixed(0)})
               </>
             ) : (
@@ -91,7 +91,7 @@ export function OriginTool({ className, onStartPlacement, isPlacing }: OriginToo
             )}
           </span>
           {hasCustomOrigin && (
-            <span className="font-mono text-xs text-zinc-500">
+            <span className="font-mono text-xs text-muted-foreground">
               World coordinates: (0, 0)
             </span>
           )}
@@ -100,14 +100,14 @@ export function OriginTool({ className, onStartPlacement, isPlacing }: OriginToo
         {/* Status indicator */}
         {isPlacing && (
           <div className="ml-auto flex items-center gap-2">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-amber-500" />
-            <span className="font-mono text-xs text-amber-400">Click video</span>
+            <div className="h-2 w-2 animate-pulse rounded-full bg-warning" />
+            <span className="text-xs text-warning">Click video</span>
           </div>
         )}
       </button>
 
       {/* Hint */}
-      <p className="text-xs text-zinc-600">
+      <p className="text-xs text-muted-foreground">
         Tip: Place origin at a convenient reference point, like the starting position of your object.
       </p>
     </div>

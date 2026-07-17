@@ -1,3 +1,4 @@
+import { getThemeColors } from '@/lib/theme-colors'
 import { useCoordinateStore } from '@/stores/coordinates'
 import { useTrackingStore } from '@/stores/tracking'
 import { useVideoStore } from '@/stores/video'
@@ -164,7 +165,7 @@ export function CanvasOverlay({ width, height, onClick, enableDrag = false }: Ca
     const video = canvas.parentElement?.querySelector('video') as HTMLVideoElement | null
 
     lctx.imageSmoothingEnabled = false // crisp pixels for precise placement
-    lctx.fillStyle = '#090b11'
+    lctx.fillStyle = getThemeColors().loupeBg
     lctx.fillRect(0, 0, LOUPE_SIZE, LOUPE_SIZE)
     if (video?.videoWidth) {
       lctx.drawImage(

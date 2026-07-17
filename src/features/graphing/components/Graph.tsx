@@ -8,6 +8,7 @@ import {
   formatCoefficient,
   formatEquation,
 } from '@/lib/regression'
+import { useThemeColors } from '@/lib/theme-colors'
 import { cn } from '@/lib/utils'
 import { useCoordinateStore } from '@/stores/coordinates'
 import { useVideoStore } from '@/stores/video'
@@ -76,6 +77,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
   const { currentTime, setCurrentFrame } = useVideoStore()
   const { scaleUnit } = useCoordinateStore()
   const [fitModel, setFitModel] = useState<FitModel>('linear')
+  const colors = useThemeColors()
 
   const { chartData, xKey, yKey, xLabel, yLabel, fit, yDomain, depSym, indepSym } = useMemo(() => {
     let xKey: string
@@ -188,26 +190,26 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
   return (
     <div
       className={cn(
-        'flex flex-col overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900',
+        'flex flex-col overflow-hidden rounded-lg border border-border bg-card',
         className,
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2">
+      <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <div className="flex items-baseline gap-2">
-          <span className="font-mono text-xs uppercase tracking-wider text-zinc-500">
+          <span className="text-xs uppercase tracking-wider text-muted-foreground">
             {GRAPH_LABELS[type]}
           </span>
           {chartData.length > 0 && (
-            <span className="hidden font-mono text-[10px] text-zinc-600 md:inline">
+            <span className="hidden text-[10px] text-muted-foreground md:inline">
               · click a point to jump the video
             </span>
           )}
         </div>
         {showRegression && chartData.length > 0 && (
-          <div className="flex items-center gap-3 font-mono text-xs">
+          <div className="flex items-center gap-3 text-xs">
             {/* Model selector */}
-            <div className="flex rounded-md border border-zinc-700 p-0.5">
+            <div className="flex rounded-md border border-input p-0.5">
               {FIT_MODELS.map((m) => (
                 <button
                   key={m.value}
@@ -217,7 +219,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                     'rounded px-2 py-0.5 text-[11px] font-medium transition-colors',
                     fitModel === m.value
                       ? 'bg-primary text-primary-foreground'
-                      : 'text-zinc-400 hover:text-zinc-200',
+                      : 'text-muted-foreground hover:text-foreground',
                   )}
                 >
                   {m.label}
@@ -229,7 +231,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
               <>
                 <InfoTip>
                   <TooltipTrigger asChild>
-                    <span className="cursor-help text-plasma">
+                    <span className="cursor-help font-mono text-plasma-ink">
                       {formatEquation(fit, depSym, indepSym)}
                     </span>
                   </TooltipTrigger>
@@ -237,19 +239,19 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                     <div className="max-w-xs space-y-1.5">
                       <p>
                         Math-class form:{' '}
-                        <span className="font-mono text-zinc-200">
+                        <span className="font-mono text-foreground">
                           {formatEquation(fit, 'y', 'x')}
                         </span>
                       </p>
-                      <p className="text-zinc-400">{interpretFit(type, fit, scaleUnit)}</p>
+                      <p className="text-muted-foreground">{interpretFit(type, fit, scaleUnit)}</p>
                     </div>
                   </TooltipContent>
                 </InfoTip>
-                <span className="text-zinc-600">|</span>
+                <span className="text-muted-foreground">|</span>
                 <InfoTip>
                   <TooltipTrigger asChild>
-                    <span className="cursor-help text-zinc-400">
-                      R² = <span className="text-emerald-400">{fit.rSquared.toFixed(4)}</span>
+                    <span className="cursor-help font-mono text-muted-foreground">
+                      R² = <span className="text-flare-ink">{fit.rSquared.toFixed(4)}</span>
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -259,7 +261,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                 </InfoTip>
               </>
             ) : (
-              <span className="text-zinc-600">
+              <span className="text-muted-foreground">
                 need ≥ {fitModel === 'quadratic' ? 3 : 2} points
               </span>
             )}
@@ -271,7 +273,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
       <div className="flex-1 p-4">
         {chartData.length === 0 ? (
           <div className="flex h-full items-center justify-center">
-            <span className="font-mono text-xs uppercase tracking-wider text-zinc-600">
+            <span className="text-xs uppercase tracking-wider text-muted-foreground">
               No data to display
             </span>
           </div>
@@ -288,22 +290,22 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                 if (typeof frame === 'number') setCurrentFrame(frame)
               }}
             >
-              <CartesianGrid stroke="#27272a" strokeDasharray="3 3" />
+              <CartesianGrid stroke={colors.chartGrid} strokeDasharray="3 3" />
               <XAxis
                 dataKey={xKey}
                 label={{
                   value: xLabel,
                   position: 'insideBottom',
                   offset: -10,
-                  fill: '#71717a',
+                  fill: colors.chartTick,
                   fontSize: 11,
                   fontFamily: 'monospace',
                 }}
                 type="number"
                 domain={['auto', 'auto']}
-                tick={{ fill: '#71717a', fontSize: 10, fontFamily: 'monospace' }}
-                axisLine={{ stroke: '#3f3f46' }}
-                tickLine={{ stroke: '#3f3f46' }}
+                tick={{ fill: colors.chartTick, fontSize: 10, fontFamily: 'monospace' }}
+                axisLine={{ stroke: colors.chartAxisLine }}
+                tickLine={{ stroke: colors.chartAxisLine }}
               />
               <YAxis
                 label={{
@@ -311,7 +313,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                   angle: -90,
                   position: 'insideLeft',
                   offset: 10,
-                  fill: '#71717a',
+                  fill: colors.chartTick,
                   fontSize: 11,
                   fontFamily: 'monospace',
                 }}
@@ -322,20 +324,20 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                   const a = Math.abs(v)
                   return a >= 100 ? v.toFixed(0) : a >= 1 ? v.toFixed(2) : v.toFixed(3)
                 }}
-                tick={{ fill: '#71717a', fontSize: 10, fontFamily: 'monospace' }}
-                axisLine={{ stroke: '#3f3f46' }}
-                tickLine={{ stroke: '#3f3f46' }}
+                tick={{ fill: colors.chartTick, fontSize: 10, fontFamily: 'monospace' }}
+                axisLine={{ stroke: colors.chartAxisLine }}
+                tickLine={{ stroke: colors.chartAxisLine }}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#18181b',
-                  border: '1px solid #3f3f46',
+                  backgroundColor: colors.tooltipBg,
+                  border: `1px solid ${colors.tooltipBorder}`,
                   borderRadius: '6px',
                   fontFamily: 'monospace',
                   fontSize: '11px',
                 }}
-                labelStyle={{ color: '#a1a1aa' }}
-                itemStyle={{ color: '#ff4e22' }}
+                labelStyle={{ color: colors.tooltipText }}
+                itemStyle={{ color: colors.dataValue }}
                 formatter={(value: number) => value.toFixed(4)}
                 labelFormatter={(label: number) => `${xLabel}: ${label.toFixed(4)}`}
               />
@@ -344,7 +346,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
               {xKey === 'time' && (
                 <ReferenceLine
                   x={currentTime}
-                  stroke="#fbbf24"
+                  stroke={colors.reference}
                   strokeDasharray="4 4"
                   strokeWidth={1.5}
                 />
@@ -354,10 +356,10 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
               <Line
                 type="monotone"
                 dataKey={yKey}
-                stroke="#ff4e22"
+                stroke={colors.dataLine}
                 strokeWidth={2}
-                dot={{ r: 4, fill: '#ff4e22', strokeWidth: 0 }}
-                activeDot={{ r: 6, fill: '#fbbf24', strokeWidth: 0 }}
+                dot={{ r: 4, fill: colors.dataLine, strokeWidth: 0 }}
+                activeDot={{ r: 6, fill: colors.reference, strokeWidth: 0 }}
               />
 
               {/* Fitted curve */}
@@ -366,7 +368,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                   data={fitCurveData}
                   type="monotone"
                   dataKey="y"
-                  stroke="#27e0cf"
+                  stroke={colors.fitCurve}
                   strokeWidth={1.5}
                   strokeDasharray="6 4"
                   dot={false}

@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
@@ -34,9 +35,9 @@ function HomePage() {
   const isClerkAvailable = useIsClerkAvailable()
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-zinc-800 bg-zinc-900">
+      <header className="border-b border-border bg-card">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <svg width="26" height="26" viewBox="0 0 30 30" aria-hidden="true">
@@ -45,37 +46,40 @@ function HomePage() {
               <circle cx="7.5" cy="19" r="2.1" fill="#ff4e22" opacity=".33" />
               <circle cx="3" cy="23.5" r="1.4" fill="#ff4e22" opacity=".18" />
             </svg>
-            <h1 className="font-display text-xl font-extrabold tracking-tight text-zinc-100">
+            <h1 className="font-display text-xl font-extrabold tracking-tight text-foreground">
               Speck<span className="text-primary">.</span>
             </h1>
           </div>
-          {isClerkAvailable ? (
-            <>
-              <SignedIn>
-                <UserButton
-                  appearance={{
-                    elements: {
-                      avatarBox: 'h-8 w-8',
-                    },
-                  }}
-                />
-              </SignedIn>
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <Button
-                    variant="outline"
-                    className="border-zinc-700 bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
-                  >
-                    Sign In
-                  </Button>
-                </SignInButton>
-              </SignedOut>
-            </>
-          ) : (
-            <span className="rounded bg-amber-500/10 px-2 py-1 font-mono text-xs text-amber-400">
-              Dev Mode
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            {isClerkAvailable ? (
+              <>
+                <SignedIn>
+                  <UserButton
+                    appearance={{
+                      elements: {
+                        avatarBox: 'h-8 w-8',
+                      },
+                    }}
+                  />
+                </SignedIn>
+                <SignedOut>
+                  <SignInButton mode="modal">
+                    <Button
+                      variant="outline"
+                      className="border-input bg-secondary/50 text-foreground hover:bg-accent hover:text-foreground"
+                    >
+                      Sign In
+                    </Button>
+                  </SignInButton>
+                </SignedOut>
+              </>
+            ) : (
+              <span className="rounded bg-warning/10 px-2 py-1 text-xs text-warning">
+                Dev Mode
+              </span>
+            )}
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
@@ -101,8 +105,8 @@ function LandingContent() {
           <div
             className="h-full w-full"
             style={{
-              backgroundImage: `linear-gradient(to right, rgb(39, 39, 42) 1px, transparent 1px),
-                                linear-gradient(to bottom, rgb(39, 39, 42) 1px, transparent 1px)`,
+              backgroundImage: `linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
+                                linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)`,
               backgroundSize: '40px 40px',
             }}
           />
@@ -128,7 +132,7 @@ function LandingContent() {
           <circle className="speck-live" r="6" />
         </svg>
 
-        <h2 className="font-display text-5xl font-extrabold leading-[0.98] tracking-tight text-zinc-100 sm:text-6xl">
+        <h2 className="font-display text-5xl font-extrabold leading-[0.98] tracking-tight text-foreground sm:text-6xl">
           See it.
           <br />
           Track it.
@@ -143,14 +147,14 @@ function LandingContent() {
             </span>
           </span>
         </h2>
-        <p className="mx-auto mt-6 max-w-md text-lg leading-relaxed text-zinc-400">
+        <p className="mx-auto mt-6 max-w-md text-lg leading-relaxed text-muted-foreground">
           Turn any video into position, velocity, and acceleration data &mdash; one tracked point at
           a time. Built for the physics classroom, fast enough to feel like play.
         </p>
 
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <SignInButton mode="modal">
-            <Button className="gap-2 bg-emerald-600 font-semibold text-zinc-950 hover:bg-emerald-500">
+            <Button className="gap-2 bg-primary font-semibold text-primary-foreground hover:bg-primary/90">
               Start tracking
               <ArrowRight className="h-4 w-4" />
             </Button>
@@ -158,7 +162,7 @@ function LandingContent() {
           <Button
             asChild
             variant="outline"
-            className="gap-2 border-zinc-700 bg-zinc-800/50 text-zinc-200 hover:bg-zinc-800 hover:text-zinc-100"
+            className="gap-2 border-input bg-secondary/50 text-foreground hover:bg-accent hover:text-foreground"
           >
             <Link to="/try">
               Try a sample — no sign-in
@@ -176,10 +180,10 @@ function LandingContent() {
           ].map((feature) => (
             <div
               key={feature.title}
-              className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4"
+              className="rounded-lg border border-border bg-card/60 p-4"
             >
-              <h3 className="font-display text-sm font-bold text-zinc-100">{feature.title}</h3>
-              <p className="mt-1 text-xs text-zinc-500">{feature.desc}</p>
+              <h3 className="font-display text-sm font-bold text-foreground">{feature.title}</h3>
+              <p className="mt-1 text-xs text-muted-foreground">{feature.desc}</p>
             </div>
           ))}
         </div>
@@ -239,7 +243,7 @@ function ProjectList() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
   }
@@ -249,30 +253,30 @@ function ProjectList() {
       {/* Header with create button */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-display text-2xl font-bold tracking-tight text-zinc-100">
+          <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">
             Your Projects
           </h2>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             {projects?.length || 0} {projects?.length === 1 ? 'project' : 'projects'}
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2 bg-emerald-600 font-semibold text-zinc-950 hover:bg-emerald-500">
+            <Button className="gap-2 bg-primary font-semibold text-primary-foreground hover:bg-primary/90">
               <Plus className="h-4 w-4" />
               New Project
             </Button>
           </DialogTrigger>
-          <DialogContent className="border-zinc-800 bg-zinc-900">
+          <DialogContent className="border-border bg-card">
             <DialogHeader>
-              <DialogTitle className="text-zinc-100">Create New Project</DialogTitle>
-              <DialogDescription className="text-zinc-500">
+              <DialogTitle className="text-foreground">Create New Project</DialogTitle>
+              <DialogDescription className="text-muted-foreground">
                 Give your project a name to get started.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-zinc-400">
+                <Label htmlFor="name" className="text-muted-foreground">
                   Project Name
                 </Label>
                 <Input
@@ -281,7 +285,7 @@ function ProjectList() {
                   onChange={(e) => setNewProjectName(e.target.value)}
                   placeholder="e.g., Ball Drop Experiment"
                   onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-                  className="border-zinc-700 bg-zinc-800/50 text-zinc-100 placeholder:text-zinc-600 focus:border-zinc-600 focus:ring-zinc-600"
+                  className="border-input bg-secondary/50 text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring"
                 />
               </div>
             </div>
@@ -289,7 +293,7 @@ function ProjectList() {
               <Button
                 onClick={handleCreate}
                 disabled={!newProjectName.trim() || createMutation.isPending}
-                className="bg-emerald-600 font-semibold text-zinc-950 hover:bg-emerald-500 disabled:opacity-50"
+                className="bg-primary font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
               >
                 {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Project
@@ -301,7 +305,7 @@ function ProjectList() {
 
       {/* Project grid or empty state */}
       {projects?.length === 0 ? (
-        <Card className="border-zinc-800 bg-zinc-900/50">
+        <Card className="border-border bg-card/60">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <svg viewBox="0 0 600 220" className="w-56 overflow-visible" aria-hidden="true">
               <path className="speck-traj-line" d="M 10 210 Q 300 -50 590 210" />
@@ -311,8 +315,8 @@ function ProjectList() {
               <circle cx="416" cy="92" r="4.2" fill="#ff4e22" opacity=".4" />
               <circle cx="532" cy="162" r="3.4" fill="#ff4e22" opacity=".22" />
             </svg>
-            <p className="mt-4 font-medium text-zinc-400">No projects yet</p>
-            <p className="text-sm text-zinc-600">Create your first project to get started</p>
+            <p className="mt-4 font-medium text-muted-foreground">No projects yet</p>
+            <p className="text-sm text-muted-foreground">Create your first project to get started</p>
           </CardContent>
         </Card>
       ) : (
@@ -320,19 +324,19 @@ function ProjectList() {
           {projects?.map((project) => (
             <Card
               key={project.id}
-              className="group relative border-zinc-800 bg-zinc-900/50 transition-colors hover:border-zinc-700 hover:bg-zinc-900"
+              className="group relative border-border bg-card/60 transition-colors hover:border-input hover:bg-card"
             >
               <Link to="/projects/$projectId" params={{ projectId: project.id }}>
                 <CardHeader className="pb-3">
-                  <CardTitle className="line-clamp-1 text-lg text-zinc-200 group-hover:text-zinc-100">
+                  <CardTitle className="line-clamp-1 text-lg text-foreground group-hover:text-foreground">
                     {project.name}
                   </CardTitle>
-                  <CardDescription className="font-mono text-xs text-zinc-600">
+                  <CardDescription className="text-xs text-muted-foreground">
                     Updated {new Date(project.updatedAt).toLocaleDateString()}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="flex items-center gap-2 text-xs text-zinc-500">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Video className="h-3 w-3" />
                     <span>Click to open</span>
                   </div>
@@ -341,7 +345,7 @@ function ProjectList() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-2 top-2 h-8 w-8 text-zinc-600 opacity-0 transition-opacity hover:bg-zinc-800 hover:text-red-400 group-hover:opacity-100"
+                className="absolute right-2 top-2 h-8 w-8 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-destructive group-hover:opacity-100"
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()

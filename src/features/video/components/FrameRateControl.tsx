@@ -13,12 +13,12 @@ export function FrameRateControl() {
   const fps = Math.round(metadata.frameRate)
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
+    <div className="rounded-lg border border-border bg-card p-4">
       <div className="flex items-center gap-2">
-        <span className="font-mono text-xs uppercase tracking-wider text-zinc-500">Frame Rate</span>
+        <span className="text-xs uppercase tracking-wider text-muted-foreground">Frame Rate</span>
         <Tooltip>
           <TooltipTrigger asChild>
-            <button type="button" className="text-zinc-600 transition-colors hover:text-zinc-300">
+            <button type="button" className="text-muted-foreground transition-colors hover:text-foreground">
               <Info className="h-3.5 w-3.5" />
             </button>
           </TooltipTrigger>
@@ -41,10 +41,10 @@ export function FrameRateControl() {
             const v = Number(e.target.value)
             if (v > 0) setFrameRate(v)
           }}
-          className="w-20 rounded-md border border-zinc-700 bg-zinc-800/50 px-2 py-1.5 font-mono text-sm text-zinc-200 focus:border-primary focus:outline-none"
+          className="w-20 rounded-md border border-input bg-secondary/50 px-2 py-1.5 font-mono text-sm text-foreground focus:border-primary focus:outline-none"
         />
-        <span className="font-mono text-sm text-zinc-500">fps</span>
-        <span className="ml-auto font-mono text-xs text-zinc-600">
+        <span className="text-sm text-muted-foreground">fps</span>
+        <span className="ml-auto font-mono text-xs text-muted-foreground">
           {metadata.totalFrames} frames · {metadata.duration.toFixed(1)}s
         </span>
       </div>
@@ -58,8 +58,8 @@ export function FrameRateControl() {
             className={cn(
               'rounded px-2 py-0.5 font-mono text-[11px] transition-colors',
               fps === f
-                ? 'bg-primary/15 text-primary'
-                : 'text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300'
+                ? 'bg-primary/15 text-flare-ink'
+                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
             )}
           >
             {f}

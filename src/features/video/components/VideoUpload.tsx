@@ -221,7 +221,7 @@ export function VideoUpload({ projectId = 'default', onUploadComplete }: VideoUp
     <div className="flex h-full w-full flex-col">
       {/* Error display */}
       {error && (
-        <div className="mb-4 flex items-center gap-3 rounded border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+        <div className="mb-4 flex items-center gap-3 rounded border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>{error}</span>
         </div>
@@ -229,23 +229,23 @@ export function VideoUpload({ projectId = 'default', onUploadComplete }: VideoUp
 
       {isUploading ? (
         /* Upload progress state */
-        <div className="flex h-full flex-col items-center justify-center gap-6 rounded-lg border-2 border-dashed border-zinc-700 bg-zinc-900 p-8">
+        <div className="flex h-full flex-col items-center justify-center gap-6 rounded-lg border-2 border-dashed border-input bg-card p-8">
           {/* Spinning loader with technical aesthetic */}
           <div className="relative">
-            <div className="h-16 w-16 rounded-full border-2 border-zinc-700" />
+            <div className="h-16 w-16 rounded-full border-2 border-input" />
             <div
-              className="absolute inset-0 h-16 w-16 animate-spin rounded-full border-2 border-transparent border-t-emerald-500"
+              className="absolute inset-0 h-16 w-16 animate-spin rounded-full border-2 border-transparent border-t-primary"
               style={{ animationDuration: '1s' }}
             />
-            <Loader2 className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-zinc-500" />
+            <Loader2 className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-muted-foreground" />
           </div>
 
           <div className="flex flex-col items-center gap-2">
-            <span className="font-mono text-sm uppercase tracking-wider text-zinc-400">
+            <span className="text-sm uppercase tracking-wider text-muted-foreground">
               {uploadProgress === 0 ? 'Analyzing video...' : 'Uploading'}
             </span>
             {uploadProgress > 0 && (
-              <span className="font-mono text-2xl tabular-nums text-zinc-100">
+              <span className="font-mono text-2xl tabular-nums text-foreground">
                 {uploadProgress}%
               </span>
             )}
@@ -255,7 +255,7 @@ export function VideoUpload({ projectId = 'default', onUploadComplete }: VideoUp
             <div className="w-64">
               <Progress
                 value={uploadProgress}
-                className="h-1 bg-zinc-800 [&>div]:bg-emerald-500"
+                className="h-1 bg-secondary [&>div]:bg-primary"
               />
             </div>
           )}
@@ -271,8 +271,8 @@ export function VideoUpload({ projectId = 'default', onUploadComplete }: VideoUp
             transition-all duration-200
             ${
               isDragging
-                ? 'border-emerald-500 bg-emerald-500/5'
-                : 'border-zinc-700 bg-zinc-900 hover:border-zinc-600 hover:bg-zinc-800/50'
+                ? 'border-primary bg-primary/10'
+                : 'border-input bg-card hover:border-ring hover:bg-secondary/50'
             }
           `}
         >
@@ -289,16 +289,16 @@ export function VideoUpload({ projectId = 'default', onUploadComplete }: VideoUp
           />
 
           {/* Corner brackets for technical feel */}
-          <div className="pointer-events-none absolute left-4 top-4 h-8 w-8 border-l-2 border-t-2 border-zinc-700" />
-          <div className="pointer-events-none absolute right-4 top-4 h-8 w-8 border-r-2 border-t-2 border-zinc-700" />
-          <div className="pointer-events-none absolute bottom-4 left-4 h-8 w-8 border-b-2 border-l-2 border-zinc-700" />
-          <div className="pointer-events-none absolute bottom-4 right-4 h-8 w-8 border-b-2 border-r-2 border-zinc-700" />
+          <div className="pointer-events-none absolute left-4 top-4 h-8 w-8 border-l-2 border-t-2 border-input" />
+          <div className="pointer-events-none absolute right-4 top-4 h-8 w-8 border-r-2 border-t-2 border-input" />
+          <div className="pointer-events-none absolute bottom-4 left-4 h-8 w-8 border-b-2 border-l-2 border-input" />
+          <div className="pointer-events-none absolute bottom-4 right-4 h-8 w-8 border-b-2 border-r-2 border-input" />
 
           {/* Icon */}
           <div
             className={`
               rounded-full p-4 transition-colors
-              ${isDragging ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-500'}
+              ${isDragging ? 'bg-primary/20 text-primary' : 'bg-secondary text-muted-foreground'}
             `}
           >
             {isDragging ? (
@@ -311,11 +311,11 @@ export function VideoUpload({ projectId = 'default', onUploadComplete }: VideoUp
           {/* Text */}
           <div className="flex flex-col items-center gap-2 text-center">
             <span
-              className={`text-lg font-medium ${isDragging ? 'text-emerald-400' : 'text-zinc-300'}`}
+              className={`text-lg font-medium ${isDragging ? 'text-primary' : 'text-foreground'}`}
             >
               {isDragging ? 'Drop video here' : 'Drop video or click to upload'}
             </span>
-            <span className="font-mono text-xs uppercase tracking-wider text-zinc-600">
+            <span className="text-xs uppercase tracking-wider text-muted-foreground">
               MP4 • WebM • MOV • Max 500MB
             </span>
           </div>

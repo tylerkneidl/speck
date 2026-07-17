@@ -79,7 +79,7 @@ export function VideoControls() {
   }
 
   return (
-    <div className="flex flex-col gap-3 border-t border-zinc-800 bg-zinc-900 p-4">
+    <div className="flex flex-col gap-3 border-t border-border bg-card p-4">
       {/* Timeline scrubber */}
       <div className="group relative">
         <Slider
@@ -94,7 +94,7 @@ export function VideoControls() {
           {[...Array(11)].map((_, i) => (
             <div
               key={i}
-              className="h-1 w-px bg-zinc-700 opacity-50"
+              className="h-1 w-px bg-accent opacity-50"
             />
           ))}
         </div>
@@ -109,7 +109,7 @@ export function VideoControls() {
             size="icon"
             onClick={goToFirstFrame}
             title="First frame (Home)"
-            className="h-9 w-9 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+            className="h-9 w-9 text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <ChevronsLeft className="h-4 w-4" />
           </Button>
@@ -118,7 +118,7 @@ export function VideoControls() {
             size="icon"
             onClick={() => jumpFrames(-10)}
             title="Back 10 frames (Shift+Left)"
-            className="h-9 w-9 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+            className="h-9 w-9 text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <Rewind className="h-4 w-4" />
           </Button>
@@ -127,7 +127,7 @@ export function VideoControls() {
             size="icon"
             onClick={prevFrame}
             title="Previous frame (Left/,)"
-            className="h-9 w-9 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+            className="h-9 w-9 text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <SkipBack className="h-4 w-4" />
           </Button>
@@ -138,7 +138,7 @@ export function VideoControls() {
             size="icon"
             onClick={togglePlayPause}
             title="Play/Pause (Space)"
-            className="mx-1 h-10 w-10 rounded-full bg-zinc-800 text-zinc-100 hover:bg-zinc-700"
+            className="mx-1 h-10 w-10 rounded-full bg-secondary text-foreground hover:bg-accent"
           >
             {isPlaying ? (
               <Pause className="h-5 w-5" />
@@ -152,7 +152,7 @@ export function VideoControls() {
             size="icon"
             onClick={nextFrame}
             title="Next frame (Right/.)"
-            className="h-9 w-9 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+            className="h-9 w-9 text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <SkipForward className="h-4 w-4" />
           </Button>
@@ -161,7 +161,7 @@ export function VideoControls() {
             size="icon"
             onClick={() => jumpFrames(10)}
             title="Forward 10 frames (Shift+Right)"
-            className="h-9 w-9 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+            className="h-9 w-9 text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <FastForward className="h-4 w-4" />
           </Button>
@@ -170,7 +170,7 @@ export function VideoControls() {
             size="icon"
             onClick={goToLastFrame}
             title="Last frame (End)"
-            className="h-9 w-9 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+            className="h-9 w-9 text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <ChevronsRight className="h-4 w-4" />
           </Button>
@@ -178,20 +178,20 @@ export function VideoControls() {
 
         {/* Center: Time and frame display */}
         <div className="flex items-center gap-3 font-mono text-sm">
-          <div className="flex items-center gap-2 rounded bg-zinc-800 px-3 py-1.5">
-            <span className="text-zinc-100">{formatTime(currentTime)}</span>
-            <span className="text-zinc-600">/</span>
-            <span className="text-zinc-500">{formatTime(metadata.duration)}</span>
+          <div className="flex items-center gap-2 rounded bg-secondary px-3 py-1.5">
+            <span className="text-foreground">{formatTime(currentTime)}</span>
+            <span className="text-muted-foreground">/</span>
+            <span className="text-muted-foreground">{formatTime(metadata.duration)}</span>
           </div>
-          <div className="flex items-center gap-2 rounded bg-zinc-800 px-3 py-1.5">
-            <span className="text-xs uppercase tracking-wider text-zinc-500">
+          <div className="flex items-center gap-2 rounded bg-secondary px-3 py-1.5">
+            <span className="text-xs uppercase tracking-wider text-muted-foreground">
               Frame
             </span>
-            <span className="text-zinc-100">
+            <span className="text-foreground">
               {String(currentFrame + 1).padStart(4, '0')}
             </span>
-            <span className="text-zinc-600">/</span>
-            <span className="text-zinc-500">{metadata.totalFrames}</span>
+            <span className="text-muted-foreground">/</span>
+            <span className="text-muted-foreground">{metadata.totalFrames}</span>
           </div>
         </div>
 
@@ -200,20 +200,20 @@ export function VideoControls() {
           value={playbackSpeed.toString()}
           onValueChange={(v) => setPlaybackSpeed(Number.parseFloat(v))}
         >
-          <SelectTrigger className="w-24 border-zinc-700 bg-zinc-800 text-zinc-100 hover:bg-zinc-700">
+          <SelectTrigger className="w-24 border-input bg-secondary text-foreground hover:bg-accent">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="border-zinc-700 bg-zinc-800">
-            <SelectItem value="0.25" className="text-zinc-100 focus:bg-zinc-700">
+          <SelectContent className="border-input bg-secondary">
+            <SelectItem value="0.25" className="text-foreground focus:bg-accent">
               0.25x
             </SelectItem>
-            <SelectItem value="0.5" className="text-zinc-100 focus:bg-zinc-700">
+            <SelectItem value="0.5" className="text-foreground focus:bg-accent">
               0.5x
             </SelectItem>
-            <SelectItem value="1" className="text-zinc-100 focus:bg-zinc-700">
+            <SelectItem value="1" className="text-foreground focus:bg-accent">
               1x
             </SelectItem>
-            <SelectItem value="2" className="text-zinc-100 focus:bg-zinc-700">
+            <SelectItem value="2" className="text-foreground focus:bg-accent">
               2x
             </SelectItem>
           </SelectContent>

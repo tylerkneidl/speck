@@ -3,51 +3,70 @@
 @tailwind utilities;
 
 @layer base {
-  /* Speck — dark-first "ink" world. Values mirror the flare/plasma brand. */
+  /* Speck — light-first "ink" world. Values mirror the flare/plasma brand. */
   :root {
-    --background: 224 31% 5%;
-    --foreground: 222 42% 95%;
-    --card: 224 26% 9%;
-    --card-foreground: 222 42% 95%;
-    --popover: 224 26% 9%;
-    --popover-foreground: 222 42% 95%;
-    --primary: 12 100% 57%;
+    --background: 220 20% 98%;
+    --foreground: 222 24% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 24% 11%;
+    --sunken: 220 20% 95%;
+    --sunken-foreground: 215 14% 40%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 24% 11%;
+    --primary: 12 100% 56%;
     --primary-foreground: 18 70% 8%;
-    --secondary: 224 30% 15%;
-    --secondary-foreground: 222 42% 95%;
-    --muted: 224 30% 15%;
-    --muted-foreground: 222 14% 60%;
-    --accent: 224 30% 15%;
-    --accent-foreground: 222 42% 95%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 222 42% 95%;
-    --border: 221 21% 22%;
-    --input: 221 21% 22%;
-    --ring: 12 100% 57%;
+    --secondary: 220 16% 93%;
+    --secondary-foreground: 222 24% 11%;
+    --muted: 220 16% 93%;
+    --muted-foreground: 215 14% 40%;
+    --accent: 220 16% 88%;
+    --accent-foreground: 222 24% 11%;
+    --destructive: 0 72% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --warning: 36 96% 44%;
+    --warning-foreground: 36 60% 12%;
+    --border: 220 16% 90%;
+    --input: 220 14% 84%;
+    --ring: 12 100% 56%;
     --radius: 0.7rem;
+
+    /* Ink tokens — theme-flipping text/icon-safe variants of flare/plasma.
+       Deep on light for legibility, vivid on dark. FILL/background uses of
+       flare/plasma stay on the brand hex values above; these are TEXT-only. */
+    --flare-ink: 14 84% 46%;
+    --plasma-ink: 174 80% 26%;
+    --on-scrim: 210 20% 96%;
   }
 
-  /* .dark kept identical so a stray class never flips the app to a broken light theme */
+  /* .dark — the real dark theme, applied when the theme hook adds "dark" to <html>. */
   .dark {
     --background: 224 31% 5%;
-    --foreground: 222 42% 95%;
+    --foreground: 222 40% 96%;
     --card: 224 26% 9%;
-    --card-foreground: 222 42% 95%;
+    --card-foreground: 222 40% 96%;
+    --sunken: 224 34% 6%;
+    --sunken-foreground: 220 12% 62%;
     --popover: 224 26% 9%;
-    --popover-foreground: 222 42% 95%;
+    --popover-foreground: 222 40% 96%;
     --primary: 12 100% 57%;
     --primary-foreground: 18 70% 8%;
-    --secondary: 224 30% 15%;
-    --secondary-foreground: 222 42% 95%;
-    --muted: 224 30% 15%;
-    --muted-foreground: 222 14% 60%;
-    --accent: 224 30% 15%;
-    --accent-foreground: 222 42% 95%;
+    --secondary: 223 24% 13%;
+    --secondary-foreground: 222 40% 96%;
+    --muted: 223 24% 13%;
+    --muted-foreground: 220 12% 62%;
+    --accent: 221 21% 21%;
+    --accent-foreground: 222 40% 96%;
     --destructive: 0 72% 51%;
-    --destructive-foreground: 222 42% 95%;
-    --border: 221 21% 22%;
-    --input: 221 21% 22%;
+    --destructive-foreground: 222 40% 96%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 38 60% 10%;
+    --border: 221 21% 20%;
+    --input: 220 18% 26%;
     --ring: 12 100% 57%;
+
+    --flare-ink: 18 100% 63%;
+    --plasma-ink: 174 74% 52%;
+    --on-scrim: 210 20% 96%;
   }
 }
 
@@ -72,7 +91,7 @@
 /* ---------- Speck brand motion (strobe trajectory + cycling tagline) ---------- */
 .speck-traj-line {
   fill: none;
-  stroke: hsl(174 75% 52%);
+  stroke: #27e0cf;
   stroke-width: 1.5;
   stroke-dasharray: 3 9;
   opacity: 0.4;
