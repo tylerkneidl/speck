@@ -186,8 +186,8 @@ export function DataTable({ className }: DataTableProps) {
               <TableRow className="hover:bg-transparent">
                 <TableCell colSpan={advanced ? 10 : 5} className="h-32 text-center">
                   <div className="flex flex-col items-center gap-2">
-                    <span className="text-xs uppercase tracking-wider text-muted-foreground">
-                      No data points tracked
+                    <span className="text-sm font-medium text-muted-foreground">
+                      No points tracked yet
                     </span>
                     <span className="text-xs text-muted-foreground">
                       Click on the video to mark object positions
