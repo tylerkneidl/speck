@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto'
 import { and, eq, inArray, sql } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { dataPoints, db, projectSettings, projects } from '../db'
@@ -138,6 +139,55 @@ projectsRouter.delete('/:id', async (c) => {
   if (deleted.length === 0) {
     return c.json({ error: 'Project not found' }, 404)
   }
+
+  return c.json({ success: true })
+})
+
+// Mint a share link (idempotent — re-sharing returns the existing token so links
+// already handed out keep working). The token is the credential for the public
+// /api/share route, so it must come from a CSPRNG, not Math.random.
+projectsRouter.post('/:id/share', async (c) => {
+  const userId = getUserId(c)
+  const projectId = c.req.param('id')
+
+  const [owned] = await db
+    .select({ id: projects.id, shareToken: projects.shareToken })
+    .from(projects)
+    .where(and(eq(projects.id, projectId), eq(projects.userId, userId)))
+
+  if (!owned) {
+    return c.json({ error: 'Project not found' }, 404)
+  }
+
+  const shareToken = owned.shareToken ?? randomBytes(24).toString('base64url')
+
+  await db
+    .update(projects)
+    .set({ isPublic: true, shareToken, updatedAt: new Date() })
+    .where(and(eq(projects.id, projectId), eq(projects.userId, userId)))
+
+  logger.info({ projectId, userId }, 'Project shared')
+
+  return c.json({ shareToken })
+})
+
+// Stop sharing. Keeps the token (so re-sharing restores the same link) and just
+// flips isPublic, which is what the public route gates on — revoked links 404.
+projectsRouter.delete('/:id/share', async (c) => {
+  const userId = getUserId(c)
+  const projectId = c.req.param('id')
+
+  const updated = await db
+    .update(projects)
+    .set({ isPublic: false, updatedAt: new Date() })
+    .where(and(eq(projects.id, projectId), eq(projects.userId, userId)))
+    .returning({ id: projects.id })
+
+  if (updated.length === 0) {
+    return c.json({ error: 'Project not found' }, 404)
+  }
+
+  logger.info({ projectId, userId }, 'Project unshared')
 
   return c.json({ success: true })
 })
