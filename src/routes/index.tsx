@@ -162,7 +162,7 @@ function LandingContent() {
           <Button
             asChild
             variant="outline"
-            className="gap-2 border-zinc-700 bg-zinc-800/50 text-zinc-200 hover:bg-zinc-800 hover:text-zinc-100"
+            className="gap-2 border-input bg-secondary/50 text-foreground hover:bg-accent hover:text-foreground"
           >
             <Link to="/try">
               Try a sample — no sign-in

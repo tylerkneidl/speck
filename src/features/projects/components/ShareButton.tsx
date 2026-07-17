@@ -43,7 +43,7 @@ export function ShareButton({ projectId }: { projectId: string }) {
           readOnly
           value={url}
           onFocus={(e) => e.currentTarget.select()}
-          className="hidden w-56 rounded border border-zinc-700 bg-zinc-800/60 px-2 py-1 font-mono text-[11px] text-zinc-300 lg:block"
+          className="hidden w-56 rounded border border-input bg-secondary/60 px-2 py-1 font-mono text-[11px] text-foreground lg:block"
           aria-label="Share link"
         />
       )}
@@ -53,7 +53,7 @@ export function ShareButton({ projectId }: { projectId: string }) {
         onClick={share}
         disabled={state === 'working'}
         title="Create a public view-only link"
-        className="gap-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+        className="gap-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
       >
         {state === 'copied' ? (
           <>

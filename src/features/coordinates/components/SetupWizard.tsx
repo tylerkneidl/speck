@@ -243,7 +243,7 @@ export function SetupWizard({
         ref={cardRef}
         style={{ left: anchor.left, top: anchor.top, width: CARD_WIDTH }}
         className={cn(
-          'fixed z-50 rounded-xl border border-primary/50 bg-zinc-800 ring-1 ring-primary/20 transition-[left,top] duration-300 ease-out',
+          'fixed z-50 rounded-xl border border-primary/50 bg-secondary ring-1 ring-primary/20 transition-[left,top] duration-300 ease-out',
           'shadow-[0_18px_50px_-12px_rgba(0,0,0,0.85)]',
           !anchor.ready && 'pointer-events-none opacity-0',
         )}
@@ -254,7 +254,7 @@ export function SetupWizard({
             aria-hidden
             style={{ left: anchor.arrowOffset }}
             className={cn(
-              'absolute h-3 w-3 rotate-45 border-primary/50 bg-zinc-800',
+              'absolute h-3 w-3 rotate-45 border-primary/50 bg-secondary',
               anchor.side === 'up' ? '-top-1.5 border-l border-t' : '-bottom-1.5 border-b border-r',
             )}
           />
@@ -265,18 +265,18 @@ export function SetupWizard({
           <div className="mb-2.5 flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <Compass className="h-3.5 w-3.5 text-primary" />
-              <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-zinc-300">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
                 Setup Guide
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] tabular-nums text-zinc-500">
+              <span className="font-mono text-[10px] tabular-nums text-muted-foreground">
                 {stepIndex + 1} / {STEPS.length}
               </span>
               <button
                 type="button"
                 onClick={onClose}
-                className="-mr-1 rounded p-1 text-zinc-600 transition-colors hover:bg-zinc-800 hover:text-zinc-300"
+                className="-mr-1 rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                 title="Close guide"
               >
                 <X className="h-3.5 w-3.5" />
@@ -295,7 +295,7 @@ export function SetupWizard({
                     ? 'w-5 bg-primary'
                     : i < stepIndex
                       ? 'w-1.5 bg-plasma'
-                      : 'w-1.5 bg-zinc-700',
+                      : 'w-1.5 bg-accent',
                 )}
               />
             ))}
@@ -329,7 +329,7 @@ export function SetupWizard({
                 <button
                   type="button"
                   onClick={goBack}
-                  className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-zinc-500 transition-colors hover:text-zinc-300"
+                  className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
                 >
                   <ArrowLeft className="h-3 w-3" /> Back
                 </button>
@@ -358,7 +358,7 @@ export function SetupWizard({
                 <button
                   type="button"
                   onClick={goNext}
-                  className="rounded-md px-2 py-1.5 text-xs text-zinc-500 transition-colors hover:text-zinc-300"
+                  className="rounded-md px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Skip
                 </button>
@@ -395,7 +395,7 @@ export function SetupWizard({
           <button
             type="button"
             onClick={onDismiss}
-            className="mt-3 w-full text-center text-[11px] text-zinc-600 transition-colors hover:text-zinc-400"
+            className="mt-3 w-full text-center text-[11px] text-muted-foreground transition-colors hover:text-muted-foreground"
           >
             Don't show this again
           </button>
@@ -427,7 +427,7 @@ function PrimaryButton({
         'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold transition-colors',
         enabled
           ? 'bg-primary text-primary-foreground hover:bg-flare-hi'
-          : 'cursor-not-allowed bg-zinc-800 text-zinc-600',
+          : 'cursor-not-allowed bg-secondary text-muted-foreground',
       )}
     >
       {label} <ArrowRight className="h-3.5 w-3.5" />
@@ -440,7 +440,7 @@ function RedoButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-zinc-400 transition-colors hover:text-zinc-200"
+      className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
     >
       <RotateCcw className="h-3 w-3" /> Redo
     </button>
@@ -492,12 +492,12 @@ function StepBody(props: StepBodyProps) {
             <Check className="h-2.5 w-2.5" />
           </span>
         )}
-        <h3 className="text-sm font-semibold text-zinc-100">{title}</h3>
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
         {tag && (
-          <span className="font-mono text-[10px] uppercase tracking-wide text-zinc-600">{tag}</span>
+          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{tag}</span>
         )}
       </div>
-      <div className="mt-1.5 text-xs leading-relaxed text-zinc-400">
+      <div className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
         <StepText {...props} />
       </div>
     </div>
@@ -528,7 +528,7 @@ function StepText(props: StepBodyProps) {
   if (step === 'upload') {
     return uploadDone ? (
       <>
-        Loaded <span className="text-zinc-200">{fileName}</span> — {dims}, {frameRate} fps.
+        Loaded <span className="text-foreground">{fileName}</span> — {dims}, {frameRate} fps.
       </>
     ) : (
       <>
@@ -542,11 +542,11 @@ function StepText(props: StepBodyProps) {
       return (
         <>
           Scale set:{' '}
-          <span className="text-zinc-200">
+          <span className="text-foreground">
             {scaleDistance} {scaleUnit}
           </span>{' '}
           across {Math.round(pxDist)} px ={' '}
-          <span className="text-zinc-200">
+          <span className="text-foreground">
             {pixelsPerUnit!.toFixed(1)} px/{scaleUnit}
           </span>
           . Look right?
@@ -564,7 +564,7 @@ function StepText(props: StepBodyProps) {
     if (!scalePoint2) {
       return (
         <>
-          Now click the <span className="text-zinc-200">other end</span> of it.{' '}
+          Now click the <span className="text-foreground">other end</span> of it.{' '}
           {!placementArmed && <RearmLink onClick={onRearmScale} label="Resume" />}
         </>
       )
@@ -583,7 +583,7 @@ function StepText(props: StepBodyProps) {
     }
     return (
       <>
-        Click where <span className="text-zinc-200">(0, 0)</span> should be — usually your object's
+        Click where <span className="text-foreground">(0, 0)</span> should be — usually your object's
         starting position.{' '}
         {!placementArmed && <RearmLink onClick={onRearmOrigin} label="Start clicking" />}
       </>
@@ -595,7 +595,7 @@ function StepText(props: StepBodyProps) {
       <>
         Y points up and level by default. On a ramp or incline, set the tilt in the panel{' '}
         <span className="text-primary">→</span>. Currently{' '}
-        <span className="text-zinc-200">{rotation}°</span>.
+        <span className="text-foreground">{rotation}°</span>.
       </>
     )
   }
@@ -603,7 +603,7 @@ function StepText(props: StepBodyProps) {
   if (step === 'fps') {
     return (
       <>
-        We detected <span className="text-zinc-200">{frameRate} fps</span>. Only change it if it
+        We detected <span className="text-foreground">{frameRate} fps</span>. Only change it if it
         doesn't match your camera — e.g. 240 for slow-mo.
       </>
     )
