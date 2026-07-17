@@ -58,25 +58,25 @@ export function ScaleCalibration({
   return (
     <div
       className={cn(
-        'flex flex-col gap-4 rounded-lg border border-zinc-800 bg-zinc-900 p-4',
+        'flex flex-col gap-4 rounded-lg border border-border bg-card p-4',
         className
       )}
     >
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="font-mono text-xs uppercase tracking-wider text-zinc-500">
+        <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
           Scale Calibration
         </span>
         {isCalibrated && (
           <span className="flex items-center gap-1.5 font-mono text-xs">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            <span className="text-emerald-400">Calibrated</span>
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            <span className="text-primary">Calibrated</span>
           </span>
         )}
       </div>
 
       {/* Instructions */}
-      <p className="text-xs leading-relaxed text-zinc-500">
+      <p className="text-xs leading-relaxed text-muted-foreground">
         Click two points on an object of known length, then enter the distance between them.
       </p>
 
@@ -89,8 +89,8 @@ export function ScaleCalibration({
             placementMode === 'point1'
               ? 'border-amber-500 bg-amber-500/10'
               : scalePoint1
-                ? 'border-emerald-500/50 bg-emerald-500/5 hover:border-emerald-500'
-                : 'border-zinc-700 bg-zinc-800/50 hover:border-zinc-600'
+                ? 'border-primary/50 bg-primary/10 hover:border-primary'
+                : 'border-input bg-secondary/50 hover:border-ring'
           )}
         >
           <div
@@ -99,8 +99,8 @@ export function ScaleCalibration({
               placementMode === 'point1'
                 ? 'border-amber-500 text-amber-400'
                 : scalePoint1
-                  ? 'border-emerald-500 text-emerald-400'
-                  : 'border-zinc-600 text-zinc-500 group-hover:border-zinc-500'
+                  ? 'border-primary text-primary'
+                  : 'border-input text-muted-foreground group-hover:border-ring'
             )}
           >
             1
@@ -111,8 +111,8 @@ export function ScaleCalibration({
               placementMode === 'point1'
                 ? 'text-amber-400'
                 : scalePoint1
-                  ? 'text-zinc-400'
-                  : 'text-zinc-500 group-hover:text-zinc-400'
+                  ? 'text-muted-foreground'
+                  : 'text-muted-foreground group-hover:text-muted-foreground'
             )}
           >
             {scalePoint1
@@ -128,8 +128,8 @@ export function ScaleCalibration({
             placementMode === 'point2'
               ? 'border-amber-500 bg-amber-500/10'
               : scalePoint2
-                ? 'border-emerald-500/50 bg-emerald-500/5 hover:border-emerald-500'
-                : 'border-zinc-700 bg-zinc-800/50 hover:border-zinc-600'
+                ? 'border-primary/50 bg-primary/10 hover:border-primary'
+                : 'border-input bg-secondary/50 hover:border-ring'
           )}
         >
           <div
@@ -138,8 +138,8 @@ export function ScaleCalibration({
               placementMode === 'point2'
                 ? 'border-amber-500 text-amber-400'
                 : scalePoint2
-                  ? 'border-emerald-500 text-emerald-400'
-                  : 'border-zinc-600 text-zinc-500 group-hover:border-zinc-500'
+                  ? 'border-primary text-primary'
+                  : 'border-input text-muted-foreground group-hover:border-ring'
             )}
           >
             2
@@ -150,8 +150,8 @@ export function ScaleCalibration({
               placementMode === 'point2'
                 ? 'text-amber-400'
                 : scalePoint2
-                  ? 'text-zinc-400'
-                  : 'text-zinc-500 group-hover:text-zinc-400'
+                  ? 'text-muted-foreground'
+                  : 'text-muted-foreground group-hover:text-muted-foreground'
             )}
           >
             {scalePoint2
@@ -164,7 +164,7 @@ export function ScaleCalibration({
       {/* Distance input */}
       <div className="flex gap-3">
         <div className="flex-1 space-y-1.5">
-          <Label htmlFor="scale-distance" className="font-mono text-xs text-zinc-500">
+          <Label htmlFor="scale-distance" className="font-mono text-xs text-muted-foreground">
             Distance
           </Label>
           <Input
@@ -175,26 +175,26 @@ export function ScaleCalibration({
             placeholder="0.00"
             value={distanceInput}
             onChange={(e) => handleDistanceChange(e.target.value)}
-            className="h-9 border-zinc-700 bg-zinc-800/50 font-mono text-sm tabular-nums placeholder:text-zinc-600 focus:border-zinc-600 focus:ring-zinc-600"
+            className="h-9 border-input bg-secondary/50 font-mono text-sm tabular-nums placeholder:text-muted-foreground focus:border-ring focus:ring-ring"
           />
         </div>
         <div className="w-28 space-y-1.5">
-          <Label htmlFor="scale-unit" className="font-mono text-xs text-zinc-500">
+          <Label htmlFor="scale-unit" className="font-mono text-xs text-muted-foreground">
             Unit
           </Label>
           <Select value={scaleUnit} onValueChange={(v) => setScaleUnit(v as ScaleUnit)}>
             <SelectTrigger
               id="scale-unit"
-              className="h-9 border-zinc-700 bg-zinc-800/50 font-mono text-sm text-zinc-200 focus:ring-zinc-600"
+              className="h-9 border-input bg-secondary/50 font-mono text-sm text-foreground focus:ring-ring"
             >
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="border-zinc-700 bg-zinc-800">
+            <SelectContent className="border-input bg-secondary">
               {UNITS.map((unit) => (
                 <SelectItem
                   key={unit.value}
                   value={unit.value}
-                  className="font-mono text-sm text-zinc-200 focus:bg-zinc-700 focus:text-zinc-100"
+                  className="font-mono text-sm text-foreground focus:bg-accent focus:text-foreground"
                 >
                   {unit.label}
                 </SelectItem>
@@ -206,11 +206,11 @@ export function ScaleCalibration({
 
       {/* Scale factor display */}
       {pixelsPerUnit !== null && (
-        <div className="rounded-md border border-zinc-800 bg-zinc-950/50 p-3">
+        <div className="rounded-md border border-border bg-sunken p-3">
           <div className="flex items-baseline justify-between">
-            <span className="font-mono text-xs text-zinc-500">Scale Factor</span>
-            <span className="font-mono text-sm tabular-nums text-zinc-300">
-              {pixelsPerUnit.toFixed(2)} <span className="text-zinc-500">px/{scaleUnit}</span>
+            <span className="font-mono text-xs text-muted-foreground">Scale Factor</span>
+            <span className="font-mono text-sm tabular-nums text-foreground">
+              {pixelsPerUnit.toFixed(2)} <span className="text-muted-foreground">px/{scaleUnit}</span>
             </span>
           </div>
         </div>
