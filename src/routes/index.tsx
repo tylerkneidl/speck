@@ -6,6 +6,7 @@ import { SignedIn, SignedOut, useIsClerkAvailable } from '@/lib/auth'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2, Loader2, Video, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
@@ -49,33 +50,36 @@ function HomePage() {
               Speck<span className="text-primary">.</span>
             </h1>
           </div>
-          {isClerkAvailable ? (
-            <>
-              <SignedIn>
-                <UserButton
-                  appearance={{
-                    elements: {
-                      avatarBox: 'h-8 w-8',
-                    },
-                  }}
-                />
-              </SignedIn>
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <Button
-                    variant="outline"
-                    className="border-zinc-700 bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
-                  >
-                    Sign In
-                  </Button>
-                </SignInButton>
-              </SignedOut>
-            </>
-          ) : (
-            <span className="rounded bg-amber-500/10 px-2 py-1 font-mono text-xs text-amber-400">
-              Dev Mode
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            {isClerkAvailable ? (
+              <>
+                <SignedIn>
+                  <UserButton
+                    appearance={{
+                      elements: {
+                        avatarBox: 'h-8 w-8',
+                      },
+                    }}
+                  />
+                </SignedIn>
+                <SignedOut>
+                  <SignInButton mode="modal">
+                    <Button
+                      variant="outline"
+                      className="border-zinc-700 bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
+                    >
+                      Sign In
+                    </Button>
+                  </SignInButton>
+                </SignedOut>
+              </>
+            ) : (
+              <span className="rounded bg-amber-500/10 px-2 py-1 font-mono text-xs text-amber-400">
+                Dev Mode
+              </span>
+            )}
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 

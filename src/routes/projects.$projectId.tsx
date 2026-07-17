@@ -26,6 +26,7 @@ import { useTrackingStore } from '@/stores/tracking'
 import { useUiStore } from '@/stores/ui'
 import { useVideoStore } from '@/stores/video'
 
+import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import {
@@ -372,6 +373,8 @@ function ProjectEditorContent() {
           >
             <Redo2 className="h-4 w-4" />
           </Button>
+          <div className="mx-1 h-4 w-px bg-zinc-800" />
+          <ThemeToggle className="h-8 w-8" />
         </div>
       </header>
 
