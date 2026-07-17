@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { clerkMiddleware } from '@hono/clerk-auth'
+import { clerkMiddleware } from '@clerk/hono'
 import { serve } from '@hono/node-server'
 import { serveStatic } from '@hono/node-server/serve-static'
 import { Hono } from 'hono'
@@ -27,7 +27,7 @@ app.get('/api/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISO
 if (!AUTH_BYPASS) {
   // Pass the keys explicitly so the server reuses the SAME publishable key the
   // client bundle is built with (VITE_CLERK_PUBLISHABLE_KEY). Left to itself,
-  // @hono/clerk-auth only reads a separate, non-VITE CLERK_PUBLISHABLE_KEY —
+  // @clerk/hono only reads a separate, non-VITE CLERK_PUBLISHABLE_KEY —
   // easy to forget when VITE_CLERK_PUBLISHABLE_KEY is already set, and its
   // absence 500s every authed request with "Missing Clerk Publishable key".
   const clerk = clerkMiddleware({
