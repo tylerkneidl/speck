@@ -125,11 +125,12 @@ export function useProjectSync(projectId: string) {
 
     const vm = settings?.videoMetadata
     if (vm?.storageKey) {
-      // The stored read URL has expired — re-presign a fresh one from the key.
+      // The stored read URL has expired — ask for a fresh one. The server
+      // resolves the key from the (ownership-checked) project; we never send it.
       api('/api/upload/presign-read', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key: vm.storageKey }),
+        body: JSON.stringify({ projectId }),
       })
         .then((r) => (r.ok ? r.json() : null))
         .then((j) => {
