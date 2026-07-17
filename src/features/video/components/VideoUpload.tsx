@@ -221,7 +221,7 @@ export function VideoUpload({ projectId = 'default', onUploadComplete }: VideoUp
     <div className="flex h-full w-full flex-col">
       {/* Error display */}
       {error && (
-        <div className="mb-4 flex items-center gap-3 rounded border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+        <div className="mb-4 flex items-center gap-3 rounded border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>{error}</span>
         </div>

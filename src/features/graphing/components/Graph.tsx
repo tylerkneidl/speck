@@ -231,7 +231,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
               <>
                 <InfoTip>
                   <TooltipTrigger asChild>
-                    <span className="cursor-help font-mono text-plasma">
+                    <span className="cursor-help font-mono text-plasma-ink">
                       {formatEquation(fit, depSym, indepSym)}
                     </span>
                   </TooltipTrigger>
@@ -251,7 +251,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                 <InfoTip>
                   <TooltipTrigger asChild>
                     <span className="cursor-help font-mono text-muted-foreground">
-                      R² = <span className="text-primary">{fit.rSquared.toFixed(4)}</span>
+                      R² = <span className="text-flare-ink">{fit.rSquared.toFixed(4)}</span>
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>

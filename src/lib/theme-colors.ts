@@ -16,7 +16,7 @@ export const THEME_COLORS = {
     tooltipText: '#5b6472',
     dataLine: '#ff4e22',
     dataValue: '#d63a12',
-    fitCurve: '#14b9ab',
+    fitCurve: '#0d7a70',
     reference: '#c2740a',
     loupeBg: '#f7f8fa',
   },

@@ -345,7 +345,7 @@ function ProjectList() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-2 top-2 h-8 w-8 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-red-400 group-hover:opacity-100"
+                className="absolute right-2 top-2 h-8 w-8 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-destructive group-hover:opacity-100"
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()

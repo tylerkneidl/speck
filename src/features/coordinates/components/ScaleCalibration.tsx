@@ -70,7 +70,7 @@ export function ScaleCalibration({
         {isCalibrated && (
           <span className="flex items-center gap-1.5 text-xs">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            <span className="text-primary">Calibrated</span>
+            <span className="text-flare-ink">Calibrated</span>
           </span>
         )}
       </div>
@@ -99,7 +99,7 @@ export function ScaleCalibration({
               placementMode === 'point1'
                 ? 'border-warning text-warning'
                 : scalePoint1
-                  ? 'border-primary text-primary'
+                  ? 'border-primary text-flare-ink'
                   : 'border-input text-muted-foreground group-hover:border-ring'
             )}
           >
@@ -138,7 +138,7 @@ export function ScaleCalibration({
               placementMode === 'point2'
                 ? 'border-warning text-warning'
                 : scalePoint2
-                  ? 'border-primary text-primary'
+                  ? 'border-primary text-flare-ink'
                   : 'border-input text-muted-foreground group-hover:border-ring'
             )}
           >

@@ -245,11 +245,11 @@ export function ProjectWorkspace({
           </div>
 
           {readOnly ? (
-            <span className="rounded bg-plasma/15 px-2 py-0.5 text-[11px] uppercase tracking-wider text-plasma">
+            <span className="rounded bg-plasma/15 px-2 py-0.5 text-[11px] uppercase tracking-wider text-plasma-ink">
               View only
             </span>
           ) : sample ? (
-            <span className="rounded bg-primary/15 px-2 py-0.5 text-[11px] uppercase tracking-wider text-primary">
+            <span className="rounded bg-primary/15 px-2 py-0.5 text-[11px] uppercase tracking-wider text-flare-ink">
               Sample
             </span>
           ) : (
@@ -269,8 +269,8 @@ export function ProjectWorkspace({
                 )}
                 {saveStatus === 'error' && (
                   <>
-                    <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                    <span className="text-red-400">Save failed</span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
+                    <span className="text-destructive">Save failed</span>
                   </>
                 )}
               </span>
@@ -396,7 +396,7 @@ export function ProjectWorkspace({
                     variant="ghost"
                     size="sm"
                     onClick={handleChangeVideo}
-                    className="absolute right-4 top-4 z-20 gap-2 bg-black/50 text-muted-foreground backdrop-blur-sm hover:bg-black/70 hover:text-foreground"
+                    className="absolute right-4 top-4 z-20 gap-2 bg-black/50 text-scrim-foreground backdrop-blur-sm hover:bg-black/70 hover:text-scrim-foreground"
                   >
                     <RefreshCw className="h-3.5 w-3.5" />
                     Change Video
@@ -468,7 +468,7 @@ export function ProjectWorkspace({
                 <div className="rounded-lg border border-primary/30 bg-primary/10 p-4">
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-primary" />
-                    <span className="text-xs uppercase tracking-wider text-primary">
+                    <span className="text-xs uppercase tracking-wider text-flare-ink">
                       Ready to track
                     </span>
                   </div>

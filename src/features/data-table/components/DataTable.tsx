@@ -161,7 +161,7 @@ export function DataTable({ className }: DataTableProps) {
                     <TableCell className="font-mono text-xs tabular-nums">{formatNumber(row.vx)}</TableCell>
                     <TableCell className="font-mono text-xs tabular-nums">{formatNumber(row.vy)}</TableCell>
                     <TableCell className="font-mono text-xs tabular-nums">
-                      <span className={row.speed !== null ? 'text-primary' : ''}>{formatNumber(row.speed)}</span>
+                      <span className={row.speed !== null ? 'text-flare-ink' : ''}>{formatNumber(row.speed)}</span>
                     </TableCell>
                     <TableCell className="font-mono text-xs tabular-nums">{formatNumber(row.ax)}</TableCell>
                     <TableCell className="font-mono text-xs tabular-nums">{formatNumber(row.ay)}</TableCell>
@@ -175,7 +175,7 @@ export function DataTable({ className }: DataTableProps) {
                       deletePoint(row.id)
                     }}
                     title="Delete point"
-                    className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
+                    className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>

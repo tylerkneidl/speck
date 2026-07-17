@@ -29,6 +29,13 @@
     --input: 220 14% 84%;
     --ring: 12 100% 56%;
     --radius: 0.7rem;
+
+    /* Ink tokens — theme-flipping text/icon-safe variants of flare/plasma.
+       Deep on light for legibility, vivid on dark. FILL/background uses of
+       flare/plasma stay on the brand hex values above; these are TEXT-only. */
+    --flare-ink: 14 84% 46%;
+    --plasma-ink: 174 80% 26%;
+    --on-scrim: 210 20% 96%;
   }
 
   /* .dark — the real dark theme, applied when the theme hook adds "dark" to <html>. */
@@ -56,6 +63,10 @@
     --border: 221 21% 20%;
     --input: 220 18% 26%;
     --ring: 12 100% 57%;
+
+    --flare-ink: 18 100% 63%;
+    --plasma-ink: 174 74% 52%;
+    --on-scrim: 210 20% 96%;
   }
 }
 

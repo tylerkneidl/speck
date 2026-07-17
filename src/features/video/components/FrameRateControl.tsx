@@ -58,7 +58,7 @@ export function FrameRateControl() {
             className={cn(
               'rounded px-2 py-0.5 font-mono text-[11px] transition-colors',
               fps === f
-                ? 'bg-primary/15 text-primary'
+                ? 'bg-primary/15 text-flare-ink'
                 : 'text-muted-foreground hover:bg-accent hover:text-foreground'
             )}
           >

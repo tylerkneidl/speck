@@ -198,7 +198,7 @@ export function VideoPlayer({ src, onFrameChange, children }: VideoPlayerProps) 
 
         {/* Frame info overlay */}
         {metadata && (
-          <div className="absolute bottom-3 left-3 z-20 font-mono text-xs text-muted-foreground">
+          <div className="absolute bottom-3 left-3 z-20 font-mono text-xs text-scrim-foreground">
             <span className="rounded bg-black/60 px-2 py-1 backdrop-blur-sm">
               {String(currentFrame).padStart(5, '0')} /{' '}
               {String(metadata.totalFrames - 1).padStart(5, '0')}

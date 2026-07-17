@@ -488,7 +488,7 @@ function StepBody(props: StepBodyProps) {
           (step === 'upload' && props.uploadDone) ||
           (step === 'scale' && props.scaleDone) ||
           (step === 'origin' && props.originSet)) && (
-          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-plasma/15 text-plasma">
+          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-plasma/15 text-plasma-ink">
             <Check className="h-2.5 w-2.5" />
           </span>
         )}
@@ -572,7 +572,7 @@ function StepText(props: StepBodyProps) {
     return (
       <>
         Nice. Now type the real distance between those points in the panel{' '}
-        <span className="text-primary">→</span>
+        <span className="text-flare-ink">→</span>
       </>
     )
   }
@@ -594,7 +594,7 @@ function StepText(props: StepBodyProps) {
     return (
       <>
         Y points up and level by default. On a ramp or incline, set the tilt in the panel{' '}
-        <span className="text-primary">→</span>. Currently{' '}
+        <span className="text-flare-ink">→</span>. Currently{' '}
         <span className="text-foreground">{rotation}°</span>.
       </>
     )
@@ -615,7 +615,7 @@ function StepText(props: StepBodyProps) {
 
 function RearmLink({ onClick, label }: { onClick: () => void; label: string }) {
   return (
-    <button type="button" onClick={onClick} className="font-medium text-primary hover:underline">
+    <button type="button" onClick={onClick} className="font-medium text-flare-ink hover:underline">
       {label}
     </button>
   )

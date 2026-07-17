@@ -49,12 +49,14 @@ export default {
           DEFAULT: '#ff4e22',
           hi: '#ff7a45',
           lo: '#d63a12',
+          ink: 'hsl(var(--flare-ink))',
         },
         // Plasma (cool data signal) — graphs, "saved", velocity cues
         plasma: {
           DEFAULT: '#27e0cf',
           hi: '#64f0e2',
           lo: '#14b9ab',
+          ink: 'hsl(var(--plasma-ink))',
         },
         // shadcn semantic tokens (used by ui/* primitives)
         border: 'hsl(var(--border))',
@@ -71,6 +73,7 @@ export default {
         card: { DEFAULT: 'hsl(var(--card))', foreground: 'hsl(var(--card-foreground))' },
         sunken: { DEFAULT: 'hsl(var(--sunken))', foreground: 'hsl(var(--sunken-foreground))' },
         warning: { DEFAULT: 'hsl(var(--warning))', foreground: 'hsl(var(--warning-foreground))' },
+        'scrim-foreground': 'hsl(var(--on-scrim))',
       },
       borderRadius: {
         lg: 'var(--radius)',
