@@ -25,8 +25,17 @@ app.get('/api/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISO
 // Authentication on protected API routes.
 // clerkMiddleware() verifies the session token; requireAuth() enforces it and sets userId.
 if (!AUTH_BYPASS) {
-  app.use('/api/projects/*', clerkMiddleware())
-  app.use('/api/upload/*', clerkMiddleware())
+  // Pass the keys explicitly so the server reuses the SAME publishable key the
+  // client bundle is built with (VITE_CLERK_PUBLISHABLE_KEY). Left to itself,
+  // @hono/clerk-auth only reads a separate, non-VITE CLERK_PUBLISHABLE_KEY —
+  // easy to forget when VITE_CLERK_PUBLISHABLE_KEY is already set, and its
+  // absence 500s every authed request with "Missing Clerk Publishable key".
+  const clerk = clerkMiddleware({
+    secretKey: process.env.CLERK_SECRET_KEY,
+    publishableKey: process.env.CLERK_PUBLISHABLE_KEY ?? process.env.VITE_CLERK_PUBLISHABLE_KEY,
+  })
+  app.use('/api/projects/*', clerk)
+  app.use('/api/upload/*', clerk)
 } else {
   logger.warn('DEV_AUTH_BYPASS enabled — API authentication is disabled (never use in production)')
 }
