@@ -1,15 +1,16 @@
 import 'dotenv/config'
+import { existsSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { clerkMiddleware } from '@hono/clerk-auth'
 import { serve } from '@hono/node-server'
 import { serveStatic } from '@hono/node-server/serve-static'
-import { existsSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger as honoLogger } from 'hono/logger'
 import { AUTH_BYPASS, requireAuth } from './lib/auth'
 import { logger } from './lib/logger'
 import { projectsRouter } from './routes/projects'
+import { shareRouter } from './routes/share'
 import { uploadRouter } from './routes/upload'
 
 const app = new Hono()
@@ -35,6 +36,11 @@ app.use('/api/upload/*', requireAuth())
 // Routes
 app.route('/api/projects', projectsRouter)
 app.route('/api/upload', uploadRouter)
+
+// Public — deliberately mounted outside the Clerk middleware above, so a share
+// link works for a signed-out visitor. Access is gated on the project's
+// isPublic flag + an unguessable token inside the router itself.
+app.route('/api/share', shareRouter)
 
 // Serve static files in production
 const distPath = join(process.cwd(), 'dist')

@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils'
 import { useCoordinateStore } from '@/stores/coordinates'
 import { useVideoStore } from '@/stores/video'
-import { ArrowLeft, ArrowRight, Check, RotateCcw, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Compass, RotateCcw, X } from 'lucide-react'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 type PlacementMode = 'scale1' | 'scale2' | 'origin' | null
@@ -41,70 +41,111 @@ function targetFor(step: StepId, hasBothScalePoints: boolean, originSet: boolean
   }
 }
 
+interface Rect {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
 interface Anchor {
   left: number
   top: number
-  arrowTop: number
-  side: 'left' | 'right' | 'none'
+  arrowOffset: number
+  side: 'up' | 'down' | 'none'
+  ready: boolean
+  ring: Rect | null
+}
+
+/** Which sidebar element the card docks beside for each step. */
+function anchorFor(step: StepId): string {
+  switch (step) {
+    case 'upload':
+    case 'scale':
+      return '[data-tour="scale"]'
+    case 'origin':
+      return '[data-tour="origin"]'
+    case 'axes':
+      return '[data-tour="axes"]'
+    case 'fps':
+      return '[data-tour="fps"]'
+    case 'done':
+      return '[data-tour="track-tab"]'
+  }
 }
 
 /**
- * Positions the card beside its target: on whichever horizontal side has room,
- * vertically centered on the target (clamped to the viewport), with the arrow
- * offset to point back at the target's center. Recomputes on step/target change,
- * card resize, and window resize/scroll — this is what makes it "bump around".
+ * Docks the card in the sidebar beside the step's controls — never over the
+ * video, so it can't hide the object being tracked on any clip. It sits just
+ * below its anchor panel (or above, if there's no room) with an arrow pointing
+ * at it. The separate `ringSel` element gets the highlight ring, which moves to
+ * whatever you should act on (the video while clicking, the panel while typing).
+ * Recomputes on step/target change, resize, and scroll.
  */
 function useAnchor(
-  targetSel: string,
+  anchorSel: string,
+  ringSel: string,
   cardRef: React.RefObject<HTMLDivElement | null>,
   key: string,
 ): Anchor {
   const [anchor, setAnchor] = useState<Anchor>({
     left: -9999,
     top: -9999,
-    arrowTop: 0,
+    arrowOffset: 0,
     side: 'none',
+    ready: false,
+    ring: null,
   })
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `key` intentionally forces a re-anchor when the step's sub-state changes; cardRef is a stable ref.
   useLayoutEffect(() => {
     const recompute = () => {
-      const target = document.querySelector(targetSel) as HTMLElement | null
+      const anchorEl = document.querySelector(anchorSel) as HTMLElement | null
+      const ringEl = document.querySelector(ringSel) as HTMLElement | null
+      const stage = document.querySelector('[data-tour="stage"]') as HTMLElement | null
       const card = cardRef.current
-      if (!target || !card) return
-      const t = target.getBoundingClientRect()
+      if (!anchorEl || !card) return
+      const a = anchorEl.getBoundingClientRect()
       const cw = card.offsetWidth || CARD_WIDTH
       const ch = card.offsetHeight || 168
-      const gap = 18
+      const gap = 12
       const vw = window.innerWidth
       const vh = window.innerHeight
+      const sidebarLeft = stage ? stage.getBoundingClientRect().right : a.left
 
-      const spaceRight = vw - t.right
-      const spaceLeft = t.left
-      let side: 'left' | 'right'
-      let left: number
-      if (spaceRight >= cw + gap) {
-        side = 'right'
-        left = t.right + gap
-      } else if (spaceLeft >= cw + gap) {
-        side = 'left'
-        left = t.left - gap - cw
+      // Keep the card in the sidebar column, aligned under its anchor panel.
+      const left = Math.min(Math.max(a.left, sidebarLeft + 8), vw - cw - 8)
+
+      // Below the panel if it fits, else above — so the panel stays visible.
+      let top: number
+      let side: 'up' | 'down'
+      if (a.bottom + gap + ch <= vh - 8) {
+        top = a.bottom + gap
+        side = 'up'
       } else {
-        side = spaceRight >= spaceLeft ? 'right' : 'left'
-        left =
-          side === 'right' ? Math.min(t.right + gap, vw - cw - 8) : Math.max(8, t.left - gap - cw)
+        top = Math.max(8, a.top - gap - ch)
+        side = 'down'
       }
 
-      const targetCenterY = t.top + t.height / 2
-      const top = Math.max(8, Math.min(targetCenterY - ch / 2, vh - ch - 8))
-      const arrowTop = Math.max(18, Math.min(targetCenterY - top, ch - 18))
-      setAnchor({ left, top, arrowTop, side })
+      const anchorCenterX = a.left + a.width / 2
+      const arrowOffset = Math.max(18, Math.min(anchorCenterX - left, cw - 18))
+      const r = ringEl?.getBoundingClientRect()
+      setAnchor({
+        left,
+        top,
+        arrowOffset,
+        side,
+        ready: true,
+        ring: r ? { left: r.left, top: r.top, width: r.width, height: r.height } : null,
+      })
     }
 
     recompute()
-    const target = document.querySelector(targetSel) as HTMLElement | null
+    const anchorEl = document.querySelector(anchorSel) as HTMLElement | null
+    const ringEl = document.querySelector(ringSel) as HTMLElement | null
     const ro = new ResizeObserver(recompute)
-    if (target) ro.observe(target)
+    if (anchorEl) ro.observe(anchorEl)
+    if (ringEl) ro.observe(ringEl)
     if (cardRef.current) ro.observe(cardRef.current)
     window.addEventListener('resize', recompute)
     window.addEventListener('scroll', recompute, true)
@@ -113,7 +154,7 @@ function useAnchor(
       window.removeEventListener('resize', recompute)
       window.removeEventListener('scroll', recompute, true)
     }
-  }, [targetSel, key])
+  }, [anchorSel, ringSel, key])
 
   return anchor
 }
@@ -167,9 +208,10 @@ export function SetupWizard({
   const goNext = useCallback(() => setStepIndex((i) => Math.min(i + 1, STEPS.length - 1)), [])
   const goBack = useCallback(() => setStepIndex((i) => Math.max(i - 1, 0)), [])
 
-  const targetSel = targetFor(step, bothScalePoints, originSet)
+  const ringSel = targetFor(step, bothScalePoints, originSet)
+  const anchorSel = anchorFor(step)
   const key = `${step}:${!!scalePoint1}:${!!scalePoint2}:${scaleDone}:${originSet}:${uploadDone}`
-  const anchor = useAnchor(targetSel, cardRef, key)
+  const anchor = useAnchor(anchorSel, ringSel, cardRef, key)
 
   // Re-arm placement if the user cancelled (Esc) but the step still needs a click.
   const rearmScale = useCallback(() => {
@@ -182,32 +224,68 @@ export function SetupWizard({
       : 0
 
   return (
-    <div
-      ref={cardRef}
-      style={{ left: anchor.left, top: anchor.top, width: CARD_WIDTH }}
-      className={cn(
-        'fixed z-50 rounded-xl border border-input bg-card shadow-2xl shadow-black/50 transition-[left,top] duration-300 ease-out',
-        anchor.side === 'none' && 'pointer-events-none opacity-0',
-      )}
-    >
-      {/* Pointer arrow toward the target */}
-      {anchor.side !== 'none' && (
-        <span
+    <>
+      {/* Highlight ring around the element the guide is pointing at */}
+      {anchor.ready && anchor.ring && (
+        <div
           aria-hidden
-          style={{ top: anchor.arrowTop }}
-          className={cn(
-            'absolute h-3 w-3 rotate-45 border-input bg-card',
-            anchor.side === 'right'
-              ? '-left-1.5 border-b border-l'
-              : '-right-1.5 border-r border-t',
-          )}
+          className="tour-highlight pointer-events-none fixed z-40 rounded-lg"
+          style={{
+            left: anchor.ring.left - 5,
+            top: anchor.ring.top - 5,
+            width: anchor.ring.width + 10,
+            height: anchor.ring.height + 10,
+          }}
         />
       )}
 
-      <div className="p-4">
-        {/* Header: progress dots + close */}
-        <div className="mb-3 flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
+      <div
+        ref={cardRef}
+        style={{ left: anchor.left, top: anchor.top, width: CARD_WIDTH }}
+        className={cn(
+          'fixed z-50 rounded-xl border border-primary/50 bg-zinc-800 ring-1 ring-primary/20 transition-[left,top] duration-300 ease-out',
+          'shadow-[0_18px_50px_-12px_rgba(0,0,0,0.85)]',
+          !anchor.ready && 'pointer-events-none opacity-0',
+        )}
+      >
+        {/* Pointer arrow toward the anchored panel */}
+        {anchor.side !== 'none' && (
+          <span
+            aria-hidden
+            style={{ left: anchor.arrowOffset }}
+            className={cn(
+              'absolute h-3 w-3 rotate-45 border-primary/50 bg-zinc-800',
+              anchor.side === 'up' ? '-top-1.5 border-l border-t' : '-bottom-1.5 border-b border-r',
+            )}
+          />
+        )}
+
+        <div className="p-4">
+          {/* Header: identity + step count + close */}
+          <div className="mb-2.5 flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Compass className="h-3.5 w-3.5 text-primary" />
+              <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-zinc-300">
+                Setup Guide
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] tabular-nums text-zinc-500">
+                {stepIndex + 1} / {STEPS.length}
+              </span>
+              <button
+                type="button"
+                onClick={onClose}
+                className="-mr-1 rounded p-1 text-zinc-600 transition-colors hover:bg-zinc-800 hover:text-zinc-300"
+                title="Close guide"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Progress dots */}
+          <div className="mb-3 flex items-center gap-1.5">
             {STEPS.map((s, i) => (
               <span
                 key={s}
@@ -217,121 +295,113 @@ export function SetupWizard({
                     ? 'w-5 bg-primary'
                     : i < stepIndex
                       ? 'w-1.5 bg-plasma'
-                      : 'w-1.5 bg-accent',
+                      : 'w-1.5 bg-zinc-700',
                 )}
               />
             ))}
           </div>
+
+          {/* Step body */}
+          <StepBody
+            step={step}
+            uploadDone={uploadDone}
+            fileName={metadata?.fileName}
+            dims={metadata ? `${metadata.width}×${metadata.height}` : ''}
+            frameRate={metadata?.frameRate ?? 0}
+            scalePoint1={!!scalePoint1}
+            scalePoint2={!!scalePoint2}
+            scaleDone={scaleDone}
+            scaleDistance={scaleDistance}
+            scaleUnit={scaleUnit}
+            pixelsPerUnit={pixelsPerUnit}
+            pxDist={pxDist}
+            originSet={originSet}
+            rotation={rotation}
+            placementArmed={placementMode !== null}
+            onRearmScale={rearmScale}
+            onRearmOrigin={() => setPlacementMode('origin')}
+          />
+
+          {/* Actions */}
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              {stepIndex > 0 && (
+                <button
+                  type="button"
+                  onClick={goBack}
+                  className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-zinc-500 transition-colors hover:text-zinc-300"
+                >
+                  <ArrowLeft className="h-3 w-3" /> Back
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              {step === 'scale' && scaleDone && (
+                <RedoButton
+                  onClick={() => {
+                    resetScale()
+                    setPlacementMode('scale1')
+                  }}
+                />
+              )}
+              {step === 'origin' && originSet && (
+                <RedoButton
+                  onClick={() => {
+                    resetOrigin()
+                    setPlacementMode('origin')
+                  }}
+                />
+              )}
+
+              {(step === 'axes' || step === 'fps') && (
+                <button
+                  type="button"
+                  onClick={goNext}
+                  className="rounded-md px-2 py-1.5 text-xs text-zinc-500 transition-colors hover:text-zinc-300"
+                >
+                  Skip
+                </button>
+              )}
+
+              {step === 'done' ? (
+                <button
+                  type="button"
+                  onClick={onStartTracking}
+                  className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-flare-hi"
+                >
+                  Start tracking <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+              ) : (
+                <PrimaryButton
+                  step={step}
+                  enabled={
+                    step === 'upload'
+                      ? uploadDone
+                      : step === 'scale'
+                        ? scaleDone
+                        : step === 'origin'
+                          ? originSet
+                          : true // axes / fps are optional — always continuable
+                  }
+                  optional={step === 'axes' || step === 'fps'}
+                  onClick={goNext}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Don't show again */}
           <button
             type="button"
-            onClick={onClose}
-            className="-mr-1 -mt-1 rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-            title="Close guide"
+            onClick={onDismiss}
+            className="mt-3 w-full text-center text-[11px] text-zinc-600 transition-colors hover:text-zinc-400"
           >
-            <X className="h-3.5 w-3.5" />
+            Don't show this again
           </button>
         </div>
-
-        {/* Step body */}
-        <StepBody
-          step={step}
-          uploadDone={uploadDone}
-          fileName={metadata?.fileName}
-          dims={metadata ? `${metadata.width}×${metadata.height}` : ''}
-          frameRate={metadata?.frameRate ?? 0}
-          scalePoint1={!!scalePoint1}
-          scalePoint2={!!scalePoint2}
-          scaleDone={scaleDone}
-          scaleDistance={scaleDistance}
-          scaleUnit={scaleUnit}
-          pixelsPerUnit={pixelsPerUnit}
-          pxDist={pxDist}
-          originSet={originSet}
-          rotation={rotation}
-          placementArmed={placementMode !== null}
-          onRearmScale={rearmScale}
-          onRearmOrigin={() => setPlacementMode('origin')}
-        />
-
-        {/* Actions */}
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            {stepIndex > 0 && (
-              <button
-                type="button"
-                onClick={goBack}
-                className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <ArrowLeft className="h-3 w-3" /> Back
-              </button>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            {step === 'scale' && scaleDone && (
-              <RedoButton
-                onClick={() => {
-                  resetScale()
-                  setPlacementMode('scale1')
-                }}
-              />
-            )}
-            {step === 'origin' && originSet && (
-              <RedoButton
-                onClick={() => {
-                  resetOrigin()
-                  setPlacementMode('origin')
-                }}
-              />
-            )}
-
-            {(step === 'axes' || step === 'fps') && (
-              <button
-                type="button"
-                onClick={goNext}
-                className="rounded-md px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Skip
-              </button>
-            )}
-
-            {step === 'done' ? (
-              <button
-                type="button"
-                onClick={onStartTracking}
-                className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                Start tracking <ArrowRight className="h-3.5 w-3.5" />
-              </button>
-            ) : (
-              <PrimaryButton
-                step={step}
-                enabled={
-                  step === 'upload'
-                    ? uploadDone
-                    : step === 'scale'
-                      ? scaleDone
-                      : step === 'origin'
-                        ? originSet
-                        : true // axes / fps are optional — always continuable
-                }
-                optional={step === 'axes' || step === 'fps'}
-                onClick={goNext}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* Don't show again */}
-        <button
-          type="button"
-          onClick={onDismiss}
-          className="mt-3 w-full text-center text-[11px] text-muted-foreground transition-colors hover:text-muted-foreground"
-        >
-          Don't show this again
-        </button>
       </div>
-    </div>
+    </>
   )
 }
 
@@ -356,8 +426,8 @@ function PrimaryButton({
       className={cn(
         'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold transition-colors',
         enabled
-          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-          : 'cursor-not-allowed bg-secondary text-muted-foreground',
+          ? 'bg-primary text-primary-foreground hover:bg-flare-hi'
+          : 'cursor-not-allowed bg-zinc-800 text-zinc-600',
       )}
     >
       {label} <ArrowRight className="h-3.5 w-3.5" />
@@ -370,7 +440,7 @@ function RedoButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+      className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-zinc-400 transition-colors hover:text-zinc-200"
     >
       <RotateCcw className="h-3 w-3" /> Redo
     </button>
@@ -422,12 +492,12 @@ function StepBody(props: StepBodyProps) {
             <Check className="h-2.5 w-2.5" />
           </span>
         )}
-        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+        <h3 className="text-sm font-semibold text-zinc-100">{title}</h3>
         {tag && (
-          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{tag}</span>
+          <span className="font-mono text-[10px] uppercase tracking-wide text-zinc-600">{tag}</span>
         )}
       </div>
-      <div className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+      <div className="mt-1.5 text-xs leading-relaxed text-zinc-400">
         <StepText {...props} />
       </div>
     </div>
@@ -458,7 +528,7 @@ function StepText(props: StepBodyProps) {
   if (step === 'upload') {
     return uploadDone ? (
       <>
-        Loaded <span className="text-foreground">{fileName}</span> — {dims}, {frameRate} fps.
+        Loaded <span className="text-zinc-200">{fileName}</span> — {dims}, {frameRate} fps.
       </>
     ) : (
       <>
@@ -472,11 +542,11 @@ function StepText(props: StepBodyProps) {
       return (
         <>
           Scale set:{' '}
-          <span className="text-foreground">
+          <span className="text-zinc-200">
             {scaleDistance} {scaleUnit}
           </span>{' '}
           across {Math.round(pxDist)} px ={' '}
-          <span className="text-foreground">
+          <span className="text-zinc-200">
             {pixelsPerUnit!.toFixed(1)} px/{scaleUnit}
           </span>
           . Look right?
@@ -494,7 +564,7 @@ function StepText(props: StepBodyProps) {
     if (!scalePoint2) {
       return (
         <>
-          Now click the <span className="text-foreground">other end</span> of it.{' '}
+          Now click the <span className="text-zinc-200">other end</span> of it.{' '}
           {!placementArmed && <RearmLink onClick={onRearmScale} label="Resume" />}
         </>
       )
@@ -513,7 +583,7 @@ function StepText(props: StepBodyProps) {
     }
     return (
       <>
-        Click where <span className="text-foreground">(0, 0)</span> should be — usually your object's
+        Click where <span className="text-zinc-200">(0, 0)</span> should be — usually your object's
         starting position.{' '}
         {!placementArmed && <RearmLink onClick={onRearmOrigin} label="Start clicking" />}
       </>
@@ -525,7 +595,7 @@ function StepText(props: StepBodyProps) {
       <>
         Y points up and level by default. On a ramp or incline, set the tilt in the panel{' '}
         <span className="text-primary">→</span>. Currently{' '}
-        <span className="text-foreground">{rotation}°</span>.
+        <span className="text-zinc-200">{rotation}°</span>.
       </>
     )
   }
@@ -533,7 +603,7 @@ function StepText(props: StepBodyProps) {
   if (step === 'fps') {
     return (
       <>
-        We detected <span className="text-foreground">{frameRate} fps</span>. Only change it if it
+        We detected <span className="text-zinc-200">{frameRate} fps</span>. Only change it if it
         doesn't match your camera — e.g. 240 for slow-mo.
       </>
     )

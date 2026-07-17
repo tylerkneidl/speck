@@ -1,34 +1,36 @@
-import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { and, eq } from 'drizzle-orm'
 import { Hono } from 'hono'
+import { db, projectSettings, projects } from '../db'
 import { getUserId } from '../lib/auth'
 import { createLogger } from '../lib/logger'
+import { BUCKET, presignReadUrl, s3Client } from '../lib/storage'
 
 const logger = createLogger('upload')
 
-// Support both Railway Buckets and MinIO (local dev)
-// Railway injects: AWS_ENDPOINT_URL, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, BUCKET
-// MinIO uses: MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET
-const isRailway = !!process.env.AWS_ENDPOINT_URL
-
-const s3Client = new S3Client({
-  endpoint: process.env.AWS_ENDPOINT_URL || process.env.MINIO_ENDPOINT,
-  region: process.env.AWS_DEFAULT_REGION || 'us-east-1',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || process.env.MINIO_ACCESS_KEY || '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || process.env.MINIO_SECRET_KEY || '',
-  },
-  forcePathStyle: !isRailway, // Railway uses virtual-hosted style, MinIO uses path style
-})
-
-const BUCKET = process.env.BUCKET || process.env.MINIO_BUCKET || 'videos'
 const PRESIGN_EXPIRY = 3600 // 1 hour
+const READ_EXPIRY = 86400 // 24 hours
 
 export const uploadRouter = new Hono()
 
 // Validation constants
 const MAX_FILE_SIZE = 500 * 1024 * 1024 // 500MB
 const ALLOWED_CONTENT_TYPES = ['video/mp4', 'video/webm', 'video/quicktime']
+
+/** Ownership is now checked against the DB rather than inferred from the key prefix. */
+async function ownsProject(userId: string, projectId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ id: projects.id })
+    .from(projects)
+    .where(and(eq(projects.id, projectId), eq(projects.userId, userId)))
+  return !!row
+}
+
+/** Keys are `${projectId}/${fileName}`, so the name must not add path segments. */
+function safeFileName(name: string): string {
+  return (name || 'video').replace(/[^\w.-]/g, '_').slice(0, 120)
+}
 
 // Get presigned URL for upload
 uploadRouter.post('/presign', async (c) => {
@@ -50,7 +52,16 @@ uploadRouter.post('/presign', async (c) => {
     return c.json({ error: 'Invalid file type. Allowed: MP4, WebM, MOV.' }, 400)
   }
 
-  const key = `${userId}/${body.projectId}/${body.fileName}`
+  // Previously the `${userId}/` key prefix was the only thing stopping a caller
+  // from presigning an upload against someone else's projectId. Now that keys
+  // don't carry the userId, ownership must be checked explicitly.
+  if (!body.projectId || !(await ownsProject(userId, body.projectId))) {
+    return c.json({ error: 'Project not found' }, 404)
+  }
+
+  // No userId in the key: a share link presigns from this key, and the URL path
+  // would otherwise expose the owner's id to every viewer.
+  const key = `${body.projectId}/${safeFileName(body.fileName)}`
 
   logger.info(
     { userId, projectId: body.projectId, fileName: body.fileName },
@@ -65,13 +76,7 @@ uploadRouter.post('/presign', async (c) => {
     })
 
     const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: PRESIGN_EXPIRY })
-
-    // Also generate a read URL for after upload completes
-    const getCommand = new GetObjectCommand({
-      Bucket: BUCKET,
-      Key: key,
-    })
-    const readUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 86400 }) // 24 hours
+    const readUrl = await presignReadUrl(key, READ_EXPIRY)
 
     return c.json({
       uploadUrl,
@@ -84,28 +89,37 @@ uploadRouter.post('/presign', async (c) => {
   }
 })
 
-// Get presigned URL for reading (refresh expired URLs)
+/**
+ * Refresh an expired read URL for a project's video.
+ *
+ * Takes a projectId — never a client-supplied key. The old contract accepted any
+ * key and authorized it with `key.startsWith(userId + '/')`, which (a) was an
+ * IDOR waiting to happen once keys stopped carrying the userId, and (b) is moot
+ * now that they don't. Resolving the key server-side from the owned project also
+ * keeps working for objects uploaded under the old `${userId}/…` layout.
+ */
 uploadRouter.post('/presign-read', async (c) => {
   const userId = getUserId(c)
-  const body = await c.req.json<{ key: string }>()
+  const body = await c.req.json<{ projectId?: string }>()
 
-  // Basic ownership guard: object keys are prefixed with the owner's userId.
-  // Full project-ownership verification is tracked in SPE-19.
-  if (!body.key || !body.key.startsWith(`${userId}/`)) {
-    return c.json({ error: 'Forbidden' }, 403)
+  if (!body.projectId || !(await ownsProject(userId, body.projectId))) {
+    return c.json({ error: 'Project not found' }, 404)
+  }
+
+  const [settings] = await db
+    .select()
+    .from(projectSettings)
+    .where(eq(projectSettings.projectId, body.projectId))
+
+  const key = settings?.videoMetadata?.storageKey
+  if (!key) {
+    return c.json({ error: 'No video for this project' }, 404)
   }
 
   try {
-    const command = new GetObjectCommand({
-      Bucket: BUCKET,
-      Key: body.key,
-    })
-
-    const readUrl = await getSignedUrl(s3Client, command, { expiresIn: 86400 })
-
-    return c.json({ readUrl })
+    return c.json({ readUrl: await presignReadUrl(key, READ_EXPIRY) })
   } catch (err) {
-    logger.error({ err, key: body.key }, 'Failed to generate read URL')
+    logger.error({ err, projectId: body.projectId }, 'Failed to generate read URL')
     return c.json({ error: 'Failed to generate read URL' }, 500)
   }
 })
