@@ -1,4 +1,4 @@
-import { getAuth } from '@hono/clerk-auth'
+import { getAuth } from '@clerk/hono'
 import type { Context, MiddlewareHandler } from 'hono'
 
 /**

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock Clerk's getAuth so we can drive the session state.
 const { getAuthMock } = vi.hoisted(() => ({ getAuthMock: vi.fn() }))
-vi.mock('@hono/clerk-auth', () => ({ getAuth: getAuthMock }))
+vi.mock('@clerk/hono', () => ({ getAuth: getAuthMock }))
 
 import { requireAuth } from './auth'
 
