@@ -258,19 +258,19 @@ function ProjectEditorContent() {
   }, [resetVideo, resetTracking, resetCoordinates])
 
   return (
-    <div className="flex h-screen flex-col bg-zinc-950">
+    <div className="flex h-screen flex-col bg-background">
       {/* Header toolbar */}
-      <header className="flex items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 py-2">
+      <header className="flex items-center justify-between border-b border-border bg-card px-4 py-2">
         <div className="flex items-center gap-4">
           <Link
             to="/"
-            className="flex items-center gap-1 text-zinc-500 transition-colors hover:text-zinc-300"
+            className="flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground"
           >
             <ChevronLeft className="h-4 w-4" />
             <span className="text-sm">Projects</span>
           </Link>
 
-          <div className="h-4 w-px bg-zinc-800" />
+          <div className="h-4 w-px bg-secondary" />
 
           <div className="flex items-center gap-2">
             <svg width="18" height="18" viewBox="0 0 30 30" aria-hidden="true">
@@ -278,7 +278,7 @@ function ProjectEditorContent() {
               <circle cx="14" cy="14" r="3.1" fill="#ff4e22" opacity=".6" />
               <circle cx="7.8" cy="19.2" r="2.1" fill="#ff4e22" opacity=".34" />
             </svg>
-            <span className="font-display text-sm font-extrabold tracking-tight text-zinc-100">
+            <span className="font-display text-sm font-extrabold tracking-tight text-foreground">
               Speck<span className="text-primary">.</span>
             </span>
           </div>
@@ -287,14 +287,14 @@ function ProjectEditorContent() {
             <span className="flex items-center gap-1.5 font-mono text-xs">
               {saveStatus === 'saving' && (
                 <>
-                  <Loader2 className="h-3 w-3 animate-spin text-zinc-500" />
-                  <span className="text-zinc-500">Saving…</span>
+                  <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                  <span className="text-muted-foreground">Saving…</span>
                 </>
               )}
               {saveStatus === 'saved' && (
                 <>
                   <span className="h-1.5 w-1.5 rounded-full bg-plasma" />
-                  <span className="text-zinc-400">Saved</span>
+                  <span className="text-muted-foreground">Saved</span>
                 </>
               )}
               {saveStatus === 'error' && (
@@ -315,10 +315,10 @@ function ProjectEditorContent() {
             setPlacementMode(null) // Cancel any placement when changing modes
           }}
         >
-          <TabsList className="bg-zinc-800/50">
+          <TabsList className="bg-secondary/50">
             <TabsTrigger
               value="setup"
-              className="gap-2 font-semibold data-[state=active]:bg-emerald-600 data-[state=active]:text-zinc-950"
+              className="gap-2 font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               <Settings className="h-3.5 w-3.5" />
               Setup
@@ -326,7 +326,7 @@ function ProjectEditorContent() {
             <TabsTrigger
               value="track"
               data-tour="track-tab"
-              className="gap-2 font-semibold data-[state=active]:bg-emerald-600 data-[state=active]:text-zinc-950"
+              className="gap-2 font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               disabled={!pixelsPerUnit}
             >
               <Crosshair className="h-3.5 w-3.5" />
@@ -334,7 +334,7 @@ function ProjectEditorContent() {
             </TabsTrigger>
             <TabsTrigger
               value="analyze"
-              className="gap-2 font-semibold data-[state=active]:bg-emerald-600 data-[state=active]:text-zinc-950"
+              className="gap-2 font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               <LineChart className="h-3.5 w-3.5" />
               Analyze
@@ -349,18 +349,18 @@ function ProjectEditorContent() {
             size="sm"
             onClick={openGuide}
             title="Open the setup guide"
-            className="gap-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+            className="gap-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <Compass className="h-4 w-4" />
             Guide
           </Button>
-          <div className="mx-1 h-4 w-px bg-zinc-800" />
+          <div className="mx-1 h-4 w-px bg-secondary" />
           <Button
             variant="ghost"
             size="icon"
             onClick={() => useTrackingStore.temporal.getState().undo()}
             title="Undo (Ctrl+Z)"
-            className="h-8 w-8 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+            className="h-8 w-8 text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <Undo2 className="h-4 w-4" />
           </Button>
@@ -369,11 +369,11 @@ function ProjectEditorContent() {
             size="icon"
             onClick={() => useTrackingStore.temporal.getState().redo()}
             title="Redo (Ctrl+Shift+Z)"
-            className="h-8 w-8 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+            className="h-8 w-8 text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <Redo2 className="h-4 w-4" />
           </Button>
-          <div className="mx-1 h-4 w-px bg-zinc-800" />
+          <div className="mx-1 h-4 w-px bg-secondary" />
           <ThemeToggle className="h-8 w-8" />
         </div>
       </header>
@@ -381,8 +381,8 @@ function ProjectEditorContent() {
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left: Video panel (60%) */}
-        <div className="flex w-3/5 flex-col border-r border-zinc-800">
-          <div data-tour="stage" className="relative flex-1 overflow-hidden bg-zinc-950">
+        <div className="flex w-3/5 flex-col border-r border-border">
+          <div data-tour="stage" className="relative flex-1 overflow-hidden bg-background">
             {metadata ? (
               <>
                 <VideoPlayer src={metadata.storageUrl}>
@@ -398,7 +398,7 @@ function ProjectEditorContent() {
                     variant="ghost"
                     size="sm"
                     onClick={handleChangeVideo}
-                    className="absolute right-4 top-4 z-20 gap-2 bg-black/50 text-zinc-400 backdrop-blur-sm hover:bg-black/70 hover:text-zinc-200"
+                    className="absolute right-4 top-4 z-20 gap-2 bg-black/50 text-muted-foreground backdrop-blur-sm hover:bg-black/70 hover:text-foreground"
                   >
                     <RefreshCw className="h-3.5 w-3.5" />
                     Change Video
@@ -435,7 +435,7 @@ function ProjectEditorContent() {
         </div>
 
         {/* Right: Tools/Data/Graph panel (40%) */}
-        <div className="flex w-2/5 flex-col bg-zinc-950">
+        <div className="flex w-2/5 flex-col bg-background">
           {/* Setup mode: Coordinate tools */}
           {mode === 'setup' && (
             <div className="flex-1 space-y-4 overflow-auto p-4">
@@ -466,14 +466,14 @@ function ProjectEditorContent() {
 
               {/* Calibration status */}
               {pixelsPerUnit && (
-                <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-4">
+                <div className="rounded-lg border border-primary/30 bg-primary/10 p-4">
                   <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                    <span className="font-mono text-xs uppercase tracking-wider text-emerald-400">
+                    <div className="h-2 w-2 rounded-full bg-primary" />
+                    <span className="font-mono text-xs uppercase tracking-wider text-primary">
                       Ready to track
                     </span>
                   </div>
-                  <p className="mt-2 text-xs text-zinc-500">
+                  <p className="mt-2 text-xs text-muted-foreground">
                     Your coordinate system is calibrated. Switch to Track mode to begin marking data
                     points.
                   </p>
@@ -486,21 +486,21 @@ function ProjectEditorContent() {
           {mode === 'track' && (
             <div className="flex flex-1 flex-col overflow-hidden">
               {/* Track mode toolbar */}
-              <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
+              <div className="flex items-center justify-between border-b border-border px-4 py-3">
                 <div className="flex items-center gap-3">
                   <Switch
                     id="auto-advance"
                     checked={autoAdvance}
                     onCheckedChange={setAutoAdvance}
-                    className="data-[state=checked]:bg-emerald-600"
+                    className="data-[state=checked]:bg-primary"
                   />
-                  <Label htmlFor="auto-advance" className="text-sm text-zinc-400">
+                  <Label htmlFor="auto-advance" className="text-sm text-muted-foreground">
                     Auto-advance frame
                   </Label>
                 </div>
 
                 {/* Click hint */}
-                <span className="font-mono text-xs text-zinc-600">Click video to add point</span>
+                <span className="font-mono text-xs text-muted-foreground">Click video to add point</span>
               </div>
               <DataTable className="flex-1" />
             </div>
@@ -510,29 +510,29 @@ function ProjectEditorContent() {
           {mode === 'analyze' && (
             <div className="flex flex-1 flex-col overflow-hidden">
               {/* Analyze toolbar */}
-              <div className="flex items-center gap-4 border-b border-zinc-800 px-4 py-3">
+              <div className="flex items-center gap-4 border-b border-border px-4 py-3">
                 <Select value={graphType} onValueChange={(v) => setGraphType(v as GraphType)}>
-                  <SelectTrigger className="w-28 border-zinc-700 bg-zinc-800/50 text-sm text-zinc-200">
+                  <SelectTrigger className="w-28 border-input bg-secondary/50 text-sm text-foreground">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="border-zinc-700 bg-zinc-800">
-                    <SelectItem value="x-t" className="text-zinc-200">
+                  <SelectContent className="border-input bg-secondary">
+                    <SelectItem value="x-t" className="text-foreground">
                       x vs t
                     </SelectItem>
-                    <SelectItem value="y-t" className="text-zinc-200">
+                    <SelectItem value="y-t" className="text-foreground">
                       y vs t
                     </SelectItem>
                     {advanced && (
                       <>
-                        <SelectItem value="vx-t" className="text-zinc-200">
+                        <SelectItem value="vx-t" className="text-foreground">
                           vx vs t
                         </SelectItem>
-                        <SelectItem value="vy-t" className="text-zinc-200">
+                        <SelectItem value="vy-t" className="text-foreground">
                           vy vs t
                         </SelectItem>
                       </>
                     )}
-                    <SelectItem value="y-x" className="text-zinc-200">
+                    <SelectItem value="y-x" className="text-foreground">
                       y vs x
                     </SelectItem>
                   </SelectContent>
@@ -543,9 +543,9 @@ function ProjectEditorContent() {
                     id="regression"
                     checked={showRegression}
                     onCheckedChange={setShowRegression}
-                    className="data-[state=checked]:bg-blue-600"
+                    className="data-[state=checked]:bg-primary"
                   />
-                  <Label htmlFor="regression" className="text-sm text-zinc-400">
+                  <Label htmlFor="regression" className="text-sm text-muted-foreground">
                     Best fit
                   </Label>
                 </div>
@@ -555,7 +555,7 @@ function ProjectEditorContent() {
               <Graph type={graphType} showRegression={showRegression} className="flex-1 m-4" />
 
               {/* Compact data table */}
-              <DataTable className="h-56 border-t border-zinc-800" />
+              <DataTable className="h-56 border-t border-border" />
             </div>
           )}
         </div>
