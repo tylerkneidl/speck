@@ -136,7 +136,7 @@ export function VideoPlayer({ src, onFrameChange, children }: VideoPlayerProps) 
 
   if (!src) {
     return (
-      <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-zinc-950">
+      <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-background">
         {/* Technical grid background */}
         <div
           className="absolute inset-0 opacity-[0.03]"
@@ -150,10 +150,10 @@ export function VideoPlayer({ src, onFrameChange, children }: VideoPlayerProps) 
         />
         {/* Center crosshair */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div className="h-px w-8 bg-zinc-700" />
-          <div className="absolute left-1/2 top-1/2 h-8 w-px -translate-x-1/2 -translate-y-1/2 bg-zinc-700" />
+          <div className="h-px w-8 bg-accent" />
+          <div className="absolute left-1/2 top-1/2 h-8 w-px -translate-x-1/2 -translate-y-1/2 bg-accent" />
         </div>
-        <p className="font-mono text-sm tracking-wider text-zinc-600">
+        <p className="font-mono text-sm tracking-wider text-muted-foreground">
           NO VIDEO LOADED
         </p>
       </div>
@@ -163,7 +163,7 @@ export function VideoPlayer({ src, onFrameChange, children }: VideoPlayerProps) 
   return (
     <div
       ref={containerRef}
-      className="relative flex h-full w-full items-center justify-center overflow-hidden bg-zinc-950"
+      className="relative flex h-full w-full items-center justify-center overflow-hidden bg-background"
     >
       {/* Fitted "stage": the video, frame-canvas, and overlay layers all fill this
           single box, so what you see and where you click are guaranteed to align. */}
@@ -200,7 +200,7 @@ export function VideoPlayer({ src, onFrameChange, children }: VideoPlayerProps) 
 
         {/* Frame info overlay */}
         {metadata && (
-          <div className="absolute bottom-3 left-3 z-20 font-mono text-xs text-zinc-400">
+          <div className="absolute bottom-3 left-3 z-20 font-mono text-xs text-muted-foreground">
             <span className="rounded bg-black/60 px-2 py-1 backdrop-blur-sm">
               {String(currentFrame).padStart(5, '0')} /{' '}
               {String(metadata.totalFrames - 1).padStart(5, '0')}

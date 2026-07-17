@@ -188,18 +188,18 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
   return (
     <div
       className={cn(
-        'flex flex-col overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900',
+        'flex flex-col overflow-hidden rounded-lg border border-border bg-card',
         className,
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2">
+      <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <div className="flex items-baseline gap-2">
-          <span className="font-mono text-xs uppercase tracking-wider text-zinc-500">
+          <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
             {GRAPH_LABELS[type]}
           </span>
           {chartData.length > 0 && (
-            <span className="hidden font-mono text-[10px] text-zinc-600 md:inline">
+            <span className="hidden font-mono text-[10px] text-muted-foreground md:inline">
               · click a point to jump the video
             </span>
           )}
@@ -207,7 +207,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
         {showRegression && chartData.length > 0 && (
           <div className="flex items-center gap-3 font-mono text-xs">
             {/* Model selector */}
-            <div className="flex rounded-md border border-zinc-700 p-0.5">
+            <div className="flex rounded-md border border-input p-0.5">
               {FIT_MODELS.map((m) => (
                 <button
                   key={m.value}
@@ -217,7 +217,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                     'rounded px-2 py-0.5 text-[11px] font-medium transition-colors',
                     fitModel === m.value
                       ? 'bg-primary text-primary-foreground'
-                      : 'text-zinc-400 hover:text-zinc-200',
+                      : 'text-muted-foreground hover:text-foreground',
                   )}
                 >
                   {m.label}
@@ -237,19 +237,19 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                     <div className="max-w-xs space-y-1.5">
                       <p>
                         Math-class form:{' '}
-                        <span className="font-mono text-zinc-200">
+                        <span className="font-mono text-foreground">
                           {formatEquation(fit, 'y', 'x')}
                         </span>
                       </p>
-                      <p className="text-zinc-400">{interpretFit(type, fit, scaleUnit)}</p>
+                      <p className="text-muted-foreground">{interpretFit(type, fit, scaleUnit)}</p>
                     </div>
                   </TooltipContent>
                 </InfoTip>
-                <span className="text-zinc-600">|</span>
+                <span className="text-muted-foreground">|</span>
                 <InfoTip>
                   <TooltipTrigger asChild>
-                    <span className="cursor-help text-zinc-400">
-                      R² = <span className="text-emerald-400">{fit.rSquared.toFixed(4)}</span>
+                    <span className="cursor-help text-muted-foreground">
+                      R² = <span className="text-primary">{fit.rSquared.toFixed(4)}</span>
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -259,7 +259,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                 </InfoTip>
               </>
             ) : (
-              <span className="text-zinc-600">
+              <span className="text-muted-foreground">
                 need ≥ {fitModel === 'quadratic' ? 3 : 2} points
               </span>
             )}
@@ -271,7 +271,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
       <div className="flex-1 p-4">
         {chartData.length === 0 ? (
           <div className="flex h-full items-center justify-center">
-            <span className="font-mono text-xs uppercase tracking-wider text-zinc-600">
+            <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
               No data to display
             </span>
           </div>

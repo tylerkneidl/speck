@@ -27,7 +27,7 @@ function HeadTip({ children, tip }: { children: ReactNode; tip: string }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="cursor-help underline decoration-dotted decoration-zinc-600 underline-offset-2 hover:decoration-zinc-400">
+        <span className="cursor-help underline decoration-dotted decoration-muted-foreground underline-offset-2 hover:decoration-foreground">
           {children}
         </span>
       </TooltipTrigger>
@@ -58,18 +58,18 @@ export function DataTable({ className }: DataTableProps) {
   }
 
   return (
-    <div className={cn('flex flex-col overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900', className)}>
+    <div className={cn('flex flex-col overflow-hidden rounded-lg border border-border bg-card', className)}>
       {/* Header with title + export */}
-      <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2">
-        <span className="font-mono text-xs uppercase tracking-wider text-zinc-500">Motion Data</span>
+      <div className="flex items-center justify-between border-b border-border px-4 py-2">
+        <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Motion Data</span>
         <div className="flex items-center gap-3">
-          <div className="flex items-center rounded-md border border-zinc-700 p-0.5">
+          <div className="flex items-center rounded-md border border-input p-0.5">
             <button
               type="button"
               onClick={() => setDetailLevel('basic')}
               className={cn(
                 'rounded px-2 py-0.5 font-mono text-[11px] font-medium transition-colors',
-                !advanced ? 'bg-zinc-700 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'
+                !advanced ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'
               )}
             >
               Basic
@@ -79,13 +79,13 @@ export function DataTable({ className }: DataTableProps) {
               onClick={() => setDetailLevel('advanced')}
               className={cn(
                 'rounded px-2 py-0.5 font-mono text-[11px] font-medium transition-colors',
-                advanced ? 'bg-zinc-700 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'
+                advanced ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'
               )}
             >
               Advanced
             </button>
           </div>
-          <span className="font-mono text-xs text-zinc-600">
+          <span className="font-mono text-xs text-muted-foreground">
             {data.length} {data.length === 1 ? 'point' : 'points'}
           </span>
           <Button
@@ -93,7 +93,7 @@ export function DataTable({ className }: DataTableProps) {
             size="sm"
             onClick={() => exportTableData(data, 'speck', scaleUnit)}
             disabled={data.length === 0}
-            className="h-7 gap-1.5 text-xs text-zinc-400 hover:text-zinc-100 disabled:opacity-40"
+            className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground disabled:opacity-40"
           >
             <Download className="h-3.5 w-3.5" />
             Export CSV
@@ -104,33 +104,33 @@ export function DataTable({ className }: DataTableProps) {
       {/* Table container */}
       <div className="flex-1 overflow-auto">
         <Table>
-          <TableHeader className="sticky top-0 bg-zinc-900">
-            <TableRow className="border-zinc-800 hover:bg-transparent">
-              <TableHead className="w-12 font-mono text-xs text-zinc-500">#</TableHead>
-              <TableHead className="font-mono text-xs text-zinc-500">
+          <TableHeader className="sticky top-0 bg-card">
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="w-12 font-mono text-xs text-muted-foreground">#</TableHead>
+              <TableHead className="font-mono text-xs text-muted-foreground">
                 <HeadTip tip="Time since the first tracked point, in seconds.">t (s)</HeadTip>
               </TableHead>
-              <TableHead className="font-mono text-xs text-zinc-500">
+              <TableHead className="font-mono text-xs text-muted-foreground">
                 <HeadTip tip="Horizontal position — distance sideways from the origin you set.">x ({scaleUnit})</HeadTip>
               </TableHead>
-              <TableHead className="font-mono text-xs text-zinc-500">
+              <TableHead className="font-mono text-xs text-muted-foreground">
                 <HeadTip tip="Vertical position — distance up or down from the origin you set.">y ({scaleUnit})</HeadTip>
               </TableHead>
               {advanced && (
                 <>
-                  <TableHead className="font-mono text-xs text-zinc-500">
+                  <TableHead className="font-mono text-xs text-muted-foreground">
                     <HeadTip tip="Velocity in x — how fast it moves sideways (change in x each second).">vx ({scaleUnit}/s)</HeadTip>
                   </TableHead>
-                  <TableHead className="font-mono text-xs text-zinc-500">
+                  <TableHead className="font-mono text-xs text-muted-foreground">
                     <HeadTip tip="Velocity in y — how fast it moves up or down (change in y each second).">vy ({scaleUnit}/s)</HeadTip>
                   </TableHead>
-                  <TableHead className="font-mono text-xs text-zinc-500">
+                  <TableHead className="font-mono text-xs text-muted-foreground">
                     <HeadTip tip="Speed — how fast it's moving overall, combining vx and vy.">|v| ({scaleUnit}/s)</HeadTip>
                   </TableHead>
-                  <TableHead className="font-mono text-xs text-zinc-500">
+                  <TableHead className="font-mono text-xs text-muted-foreground">
                     <HeadTip tip="Acceleration in x — how quickly the sideways velocity changes.">ax ({scaleUnit}/s²)</HeadTip>
                   </TableHead>
-                  <TableHead className="font-mono text-xs text-zinc-500">
+                  <TableHead className="font-mono text-xs text-muted-foreground">
                     <HeadTip tip="Acceleration in y — how quickly the up/down velocity changes. Gravity shows up here.">ay ({scaleUnit}/s²)</HeadTip>
                   </TableHead>
                 </>
@@ -144,13 +144,13 @@ export function DataTable({ className }: DataTableProps) {
                 key={row.id}
                 onClick={() => handleRowClick(row)}
                 className={cn(
-                  'group cursor-pointer border-zinc-800 transition-colors',
+                  'group cursor-pointer border-border transition-colors',
                   selectedPointId === row.id
-                    ? 'bg-zinc-800 text-zinc-100'
-                    : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
+                    ? 'bg-secondary text-foreground'
+                    : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
                 )}
               >
-                <TableCell className="font-mono text-xs font-medium text-zinc-500">
+                <TableCell className="font-mono text-xs font-medium text-muted-foreground">
                   {row.rowNumber}
                 </TableCell>
                 <TableCell className="font-mono text-xs tabular-nums">{formatNumber(row.time)}</TableCell>
@@ -175,7 +175,7 @@ export function DataTable({ className }: DataTableProps) {
                       deletePoint(row.id)
                     }}
                     title="Delete point"
-                    className="flex h-6 w-6 items-center justify-center rounded text-zinc-600 opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
+                    className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -186,10 +186,10 @@ export function DataTable({ className }: DataTableProps) {
               <TableRow className="hover:bg-transparent">
                 <TableCell colSpan={advanced ? 10 : 5} className="h-32 text-center">
                   <div className="flex flex-col items-center gap-2">
-                    <span className="font-mono text-xs uppercase tracking-wider text-zinc-600">
+                    <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                       No data points tracked
                     </span>
-                    <span className="text-xs text-zinc-700">
+                    <span className="text-xs text-muted-foreground">
                       Click on the video to mark object positions
                     </span>
                   </div>
