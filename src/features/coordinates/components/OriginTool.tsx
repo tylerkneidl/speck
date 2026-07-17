@@ -58,8 +58,8 @@ export function OriginTool({ className, onStartPlacement, isPlacing }: OriginToo
             isPlacing
               ? 'text-warning'
               : hasCustomOrigin
-                ? 'text-primary'
-                : 'text-muted-foreground group-hover:text-muted-foreground'
+                ? 'text-flare-ink'
+                : 'text-muted-foreground group-hover:text-foreground'
           )}
         >
           {/* Crosshair */}
