@@ -229,6 +229,14 @@ The interface adapts based on current task:
 - **Track Mode**: Point marking primary, auto-advance toggle, trail visualization
 - **Analyze Mode**: Graph panel maximized, regression controls, interactive data table
 
+## Theming (light-first)
+
+- **Light is the default.** shadcn semantic tokens are the source of truth: `src/index.css` defines them on `:root` (light) and `.dark` (dark). Style components through tokens (`bg-background`, `text-foreground`, `bg-card`, `border-border`, `bg-primary`, `text-muted-foreground`, `bg-secondary`/`accent`/`sunken`, `warning`, `destructive`) — NOT raw `zinc-*`/`emerald-*` shades.
+- **Theme toggle:** `src/lib/use-theme.ts` (`useTheme`, `applyTheme`, `resolveInitialTheme`); a no-flash inline script in `index.html` applies the resolved theme before paint. Tailwind `darkMode: ['class']` — the `dark` class on `<html>` drives everything.
+- **Mono is for data only.** `font-mono` (JetBrains Mono) belongs on measurements/coordinates/times/counters/R²/equations/table cells — never on UI labels, badges, status, or hints.
+- **Canvas & Recharts colors** can't use CSS classes, so they read theme-aware values from `src/lib/theme-colors.ts` (`useThemeColors` hook / `getThemeColors`). Over-video canvas markers are intentionally theme-independent (chosen for on-video legibility).
+- Physics-convention axis colors (red X / blue Y in AxisRotation) stay literal.
+
 ## Keyboard Shortcuts
 
 | Action | Shortcut |

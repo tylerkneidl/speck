@@ -45,7 +45,7 @@ export function OriginTool({ className, onStartPlacement, isPlacing }: OriginToo
         className={cn(
           'group relative flex items-center gap-4 rounded-md border p-4 transition-all',
           isPlacing
-            ? 'border-amber-500 bg-amber-500/10'
+            ? 'border-warning bg-warning/10'
             : hasCustomOrigin
               ? 'border-primary/50 bg-primary/10 hover:border-primary'
               : 'border-input bg-secondary/50 hover:border-ring'
@@ -56,7 +56,7 @@ export function OriginTool({ className, onStartPlacement, isPlacing }: OriginToo
           className={cn(
             'relative flex h-10 w-10 items-center justify-center',
             isPlacing
-              ? 'text-amber-500'
+              ? 'text-warning'
               : hasCustomOrigin
                 ? 'text-primary'
                 : 'text-muted-foreground group-hover:text-muted-foreground'
@@ -75,7 +75,7 @@ export function OriginTool({ className, onStartPlacement, isPlacing }: OriginToo
             className={cn(
               'font-mono text-sm transition-colors',
               isPlacing
-                ? 'text-amber-400'
+                ? 'text-warning'
                 : hasCustomOrigin
                   ? 'text-foreground'
                   : 'text-muted-foreground group-hover:text-muted-foreground'
@@ -100,8 +100,8 @@ export function OriginTool({ className, onStartPlacement, isPlacing }: OriginToo
         {/* Status indicator */}
         {isPlacing && (
           <div className="ml-auto flex items-center gap-2">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-amber-500" />
-            <span className="text-xs text-amber-400">Click video</span>
+            <div className="h-2 w-2 animate-pulse rounded-full bg-warning" />
+            <span className="text-xs text-warning">Click video</span>
           </div>
         )}
       </button>

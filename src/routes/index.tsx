@@ -74,7 +74,7 @@ function HomePage() {
                 </SignedOut>
               </>
             ) : (
-              <span className="rounded bg-amber-500/10 px-2 py-1 text-xs text-amber-400">
+              <span className="rounded bg-warning/10 px-2 py-1 text-xs text-warning">
                 Dev Mode
               </span>
             )}

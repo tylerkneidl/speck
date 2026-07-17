@@ -87,7 +87,7 @@ export function ScaleCalibration({
           className={cn(
             'group relative flex flex-col items-center gap-2 rounded-md border p-3 transition-all',
             placementMode === 'point1'
-              ? 'border-amber-500 bg-amber-500/10'
+              ? 'border-warning bg-warning/10'
               : scalePoint1
                 ? 'border-primary/50 bg-primary/10 hover:border-primary'
                 : 'border-input bg-secondary/50 hover:border-ring'
@@ -97,7 +97,7 @@ export function ScaleCalibration({
             className={cn(
               'flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-bold transition-colors',
               placementMode === 'point1'
-                ? 'border-amber-500 text-amber-400'
+                ? 'border-warning text-warning'
                 : scalePoint1
                   ? 'border-primary text-primary'
                   : 'border-input text-muted-foreground group-hover:border-ring'
@@ -109,7 +109,7 @@ export function ScaleCalibration({
             className={cn(
               'font-mono text-xs transition-colors',
               placementMode === 'point1'
-                ? 'text-amber-400'
+                ? 'text-warning'
                 : scalePoint1
                   ? 'text-muted-foreground'
                   : 'text-muted-foreground group-hover:text-muted-foreground'
@@ -126,7 +126,7 @@ export function ScaleCalibration({
           className={cn(
             'group relative flex flex-col items-center gap-2 rounded-md border p-3 transition-all',
             placementMode === 'point2'
-              ? 'border-amber-500 bg-amber-500/10'
+              ? 'border-warning bg-warning/10'
               : scalePoint2
                 ? 'border-primary/50 bg-primary/10 hover:border-primary'
                 : 'border-input bg-secondary/50 hover:border-ring'
@@ -136,7 +136,7 @@ export function ScaleCalibration({
             className={cn(
               'flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-bold transition-colors',
               placementMode === 'point2'
-                ? 'border-amber-500 text-amber-400'
+                ? 'border-warning text-warning'
                 : scalePoint2
                   ? 'border-primary text-primary'
                   : 'border-input text-muted-foreground group-hover:border-ring'
@@ -148,7 +148,7 @@ export function ScaleCalibration({
             className={cn(
               'font-mono text-xs transition-colors',
               placementMode === 'point2'
-                ? 'text-amber-400'
+                ? 'text-warning'
                 : scalePoint2
                   ? 'text-muted-foreground'
                   : 'text-muted-foreground group-hover:text-muted-foreground'

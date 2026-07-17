@@ -1,17 +1,17 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('Motion Tracker', () => {
+test.describe('Speck', () => {
   test('should show landing page when not authenticated', async ({ page }) => {
     await page.goto('/')
 
-    await expect(page.getByText('Motion Tracker')).toBeVisible()
-    await expect(page.getByText('Video-Based Motion Analysis')).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Speck/, level: 1 })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /See it/, level: 2 })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Sign In' })).toBeVisible()
   })
 
   test('should have correct page title', async ({ page }) => {
     await page.goto('/')
-    await expect(page).toHaveTitle(/Motion Tracker/)
+    await expect(page).toHaveTitle(/Speck/)
   })
 
   test('should display feature highlights on landing page', async ({ page }) => {
@@ -22,10 +22,10 @@ test.describe('Motion Tracker', () => {
     await expect(page.getByText('Linear Regression')).toBeVisible()
   })
 
-  test('should show Get Started button', async ({ page }) => {
+  test('should show Start tracking button', async ({ page }) => {
     await page.goto('/')
 
-    await expect(page.getByRole('button', { name: 'Get Started' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Start tracking' })).toBeVisible()
   })
 })
 
@@ -37,7 +37,7 @@ test.describe('Authenticated flows', () => {
 
     await page.getByRole('button', { name: 'New Project' }).click()
     await page.getByLabel('Project Name').fill('Test Project')
-    await page.getByRole('button', { name: 'Create' }).click()
+    await page.getByRole('button', { name: 'Create Project' }).click()
 
     await expect(page.getByText('Test Project')).toBeVisible()
   })

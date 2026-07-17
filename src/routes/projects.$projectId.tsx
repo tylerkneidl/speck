@@ -406,9 +406,9 @@ function ProjectEditorContent() {
 
                   {/* Placement mode indicator */}
                   {placementMode && (
-                    <div className="absolute left-4 top-4 flex items-center gap-2 rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2">
-                      <div className="h-2 w-2 animate-pulse rounded-full bg-amber-500" />
-                      <span className="text-xs text-amber-400">
+                    <div className="absolute left-4 top-4 flex items-center gap-2 rounded-md border border-warning/50 bg-warning/10 px-3 py-2">
+                      <div className="h-2 w-2 animate-pulse rounded-full bg-warning" />
+                      <span className="text-xs text-warning">
                         {placementMode === 'scale1'
                           ? 'Click first scale point'
                           : placementMode === 'scale2'
@@ -417,7 +417,7 @@ function ProjectEditorContent() {
                       </span>
                       <button
                         onClick={() => setPlacementMode(null)}
-                        className="ml-2 text-amber-500/70 hover:text-amber-400"
+                        className="ml-2 text-warning/70 hover:text-warning"
                       >
                         ✕
                       </button>
