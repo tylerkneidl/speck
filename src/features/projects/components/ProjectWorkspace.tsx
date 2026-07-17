@@ -22,6 +22,7 @@ import {
 } from '@/features/coordinates/components'
 import { DataTable } from '@/features/data-table/components'
 import { Graph, type GraphType } from '@/features/graphing/components'
+import { ShareButton } from '@/features/projects/components/ShareButton'
 import type { SaveStatus } from '@/features/projects/hooks/useProjectSync'
 import { CanvasOverlay } from '@/features/tracking/components'
 import {
@@ -57,6 +58,12 @@ interface ProjectWorkspaceProps {
   saveStatus?: SaveStatus
   /** Read-anywhere sample: no upload, no save, no auto-guide — just explore + a "make your own" CTA. */
   sample?: boolean
+  /**
+   * Public shared view (/share/:token): everything renders and every mode is
+   * explorable, but nothing can be edited — no point add/drag, no upload, no
+   * guide, no undo. The viewer isn't the owner and there's nothing to save to.
+   */
+  readOnly?: boolean
 }
 
 /**
@@ -69,6 +76,7 @@ export function ProjectWorkspace({
   projectId,
   saveStatus = 'idle',
   sample = false,
+  readOnly = false,
 }: ProjectWorkspaceProps) {
   const [mode, setMode] = useState<Mode>('setup')
   const [placementMode, setPlacementMode] = useState<PlacementMode>(null)
@@ -109,12 +117,12 @@ export function ProjectWorkspace({
   const [wizardOpen, setWizardOpen] = useState(false)
   const wizardBootstrapped = useRef(false)
   useEffect(() => {
-    if (wizardBootstrapped.current || setupWizardDismissed) return
+    if (wizardBootstrapped.current || setupWizardDismissed || readOnly) return
     if (mode === 'setup') {
       setWizardOpen(true)
       wizardBootstrapped.current = true
     }
-  }, [mode, setupWizardDismissed])
+  }, [mode, setupWizardDismissed, readOnly])
 
   const openGuide = useCallback(() => {
     setSetupWizardDismissed(false)
@@ -235,7 +243,11 @@ export function ProjectWorkspace({
             </span>
           </div>
 
-          {sample ? (
+          {readOnly ? (
+            <span className="rounded bg-plasma/15 px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider text-plasma">
+              View only
+            </span>
+          ) : sample ? (
             <span className="rounded bg-primary/15 px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider text-primary">
               Sample
             </span>
@@ -300,9 +312,9 @@ export function ProjectWorkspace({
           </TabsList>
         </Tabs>
 
-        {/* CTA (sample) + Guide + Undo/Redo */}
+        {/* CTA (sample / shared) + Guide + Undo/Redo */}
         <div className="flex items-center gap-1">
-          {sample && (
+          {(sample || readOnly) && (
             <>
               <Button
                 asChild
@@ -317,35 +329,48 @@ export function ProjectWorkspace({
               <div className="mx-1 h-4 w-px bg-zinc-800" />
             </>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={openGuide}
-            title="Open the setup guide"
-            className="gap-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
-          >
-            <Compass className="h-4 w-4" />
-            Guide
-          </Button>
-          <div className="mx-1 h-4 w-px bg-zinc-800" />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => useTrackingStore.temporal.getState().undo()}
-            title="Undo (Ctrl+Z)"
-            className="h-8 w-8 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
-          >
-            <Undo2 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => useTrackingStore.temporal.getState().redo()}
-            title="Redo (Ctrl+Shift+Z)"
-            className="h-8 w-8 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
-          >
-            <Redo2 className="h-4 w-4" />
-          </Button>
+          {/* Share is owner-only: the sample and shared views have nothing to share. */}
+          {projectId && !sample && !readOnly && (
+            <>
+              <ShareButton projectId={projectId} />
+              <div className="mx-1 h-4 w-px bg-zinc-800" />
+            </>
+          )}
+
+          {/* Editing affordances — meaningless for a read-only viewer */}
+          {!readOnly && (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={openGuide}
+                title="Open the setup guide"
+                className="gap-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+              >
+                <Compass className="h-4 w-4" />
+                Guide
+              </Button>
+              <div className="mx-1 h-4 w-px bg-zinc-800" />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => useTrackingStore.temporal.getState().undo()}
+                title="Undo (Ctrl+Z)"
+                className="h-8 w-8 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+              >
+                <Undo2 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => useTrackingStore.temporal.getState().redo()}
+                title="Redo (Ctrl+Shift+Z)"
+                className="h-8 w-8 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+              >
+                <Redo2 className="h-4 w-4" />
+              </Button>
+            </>
+          )}
         </div>
       </header>
 
@@ -359,12 +384,12 @@ export function ProjectWorkspace({
                 <CanvasOverlay
                   width={metadata.width}
                   height={metadata.height}
-                  onClick={handleCanvasClick}
-                  enableDrag={mode === 'track' && !placementMode}
+                  onClick={readOnly ? undefined : handleCanvasClick}
+                  enableDrag={!readOnly && mode === 'track' && !placementMode}
                 />
 
                 {/* Change video button (owner projects only) */}
-                {!sample && (
+                {!sample && !readOnly && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -528,7 +553,7 @@ export function ProjectWorkspace({
       </div>
 
       {/* Guided setup overlay — floats over the editor and points at each step */}
-      {wizardOpen && mode === 'setup' && (
+      {wizardOpen && mode === 'setup' && !readOnly && (
         <SetupWizard
           placementMode={placementMode}
           setPlacementMode={setPlacementMode}
