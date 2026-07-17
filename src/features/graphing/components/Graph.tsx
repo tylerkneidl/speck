@@ -8,6 +8,7 @@ import {
   formatCoefficient,
   formatEquation,
 } from '@/lib/regression'
+import { useThemeColors } from '@/lib/theme-colors'
 import { cn } from '@/lib/utils'
 import { useCoordinateStore } from '@/stores/coordinates'
 import { useVideoStore } from '@/stores/video'
@@ -76,6 +77,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
   const { currentTime, setCurrentFrame } = useVideoStore()
   const { scaleUnit } = useCoordinateStore()
   const [fitModel, setFitModel] = useState<FitModel>('linear')
+  const colors = useThemeColors()
 
   const { chartData, xKey, yKey, xLabel, yLabel, fit, yDomain, depSym, indepSym } = useMemo(() => {
     let xKey: string
@@ -288,22 +290,22 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                 if (typeof frame === 'number') setCurrentFrame(frame)
               }}
             >
-              <CartesianGrid stroke="#27272a" strokeDasharray="3 3" />
+              <CartesianGrid stroke={colors.chartGrid} strokeDasharray="3 3" />
               <XAxis
                 dataKey={xKey}
                 label={{
                   value: xLabel,
                   position: 'insideBottom',
                   offset: -10,
-                  fill: '#71717a',
+                  fill: colors.chartTick,
                   fontSize: 11,
                   fontFamily: 'monospace',
                 }}
                 type="number"
                 domain={['auto', 'auto']}
-                tick={{ fill: '#71717a', fontSize: 10, fontFamily: 'monospace' }}
-                axisLine={{ stroke: '#3f3f46' }}
-                tickLine={{ stroke: '#3f3f46' }}
+                tick={{ fill: colors.chartTick, fontSize: 10, fontFamily: 'monospace' }}
+                axisLine={{ stroke: colors.chartAxisLine }}
+                tickLine={{ stroke: colors.chartAxisLine }}
               />
               <YAxis
                 label={{
@@ -311,7 +313,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                   angle: -90,
                   position: 'insideLeft',
                   offset: 10,
-                  fill: '#71717a',
+                  fill: colors.chartTick,
                   fontSize: 11,
                   fontFamily: 'monospace',
                 }}
@@ -322,20 +324,20 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                   const a = Math.abs(v)
                   return a >= 100 ? v.toFixed(0) : a >= 1 ? v.toFixed(2) : v.toFixed(3)
                 }}
-                tick={{ fill: '#71717a', fontSize: 10, fontFamily: 'monospace' }}
-                axisLine={{ stroke: '#3f3f46' }}
-                tickLine={{ stroke: '#3f3f46' }}
+                tick={{ fill: colors.chartTick, fontSize: 10, fontFamily: 'monospace' }}
+                axisLine={{ stroke: colors.chartAxisLine }}
+                tickLine={{ stroke: colors.chartAxisLine }}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#18181b',
-                  border: '1px solid #3f3f46',
+                  backgroundColor: colors.tooltipBg,
+                  border: `1px solid ${colors.tooltipBorder}`,
                   borderRadius: '6px',
                   fontFamily: 'monospace',
                   fontSize: '11px',
                 }}
-                labelStyle={{ color: '#a1a1aa' }}
-                itemStyle={{ color: '#ff4e22' }}
+                labelStyle={{ color: colors.tooltipText }}
+                itemStyle={{ color: colors.dataValue }}
                 formatter={(value: number) => value.toFixed(4)}
                 labelFormatter={(label: number) => `${xLabel}: ${label.toFixed(4)}`}
               />
@@ -344,7 +346,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
               {xKey === 'time' && (
                 <ReferenceLine
                   x={currentTime}
-                  stroke="#fbbf24"
+                  stroke={colors.reference}
                   strokeDasharray="4 4"
                   strokeWidth={1.5}
                 />
@@ -354,10 +356,10 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
               <Line
                 type="monotone"
                 dataKey={yKey}
-                stroke="#ff4e22"
+                stroke={colors.dataLine}
                 strokeWidth={2}
-                dot={{ r: 4, fill: '#ff4e22', strokeWidth: 0 }}
-                activeDot={{ r: 6, fill: '#fbbf24', strokeWidth: 0 }}
+                dot={{ r: 4, fill: colors.dataLine, strokeWidth: 0 }}
+                activeDot={{ r: 6, fill: colors.reference, strokeWidth: 0 }}
               />
 
               {/* Fitted curve */}
@@ -366,7 +368,7 @@ export function Graph({ type, showRegression = false, className }: GraphProps) {
                   data={fitCurveData}
                   type="monotone"
                   dataKey="y"
-                  stroke="#27e0cf"
+                  stroke={colors.fitCurve}
                   strokeWidth={1.5}
                   strokeDasharray="6 4"
                   dot={false}

@@ -78,7 +78,7 @@
 /* ---------- Speck brand motion (strobe trajectory + cycling tagline) ---------- */
 .speck-traj-line {
   fill: none;
-  stroke: hsl(174 75% 52%);
+  stroke: #27e0cf;
   stroke-width: 1.5;
   stroke-dasharray: 3 9;
   opacity: 0.4;
