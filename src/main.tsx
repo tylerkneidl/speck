@@ -3,8 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { routeTree } from './routeTree.gen'
 import { TooltipProvider } from './components/ui/tooltip'
+import { routeTree } from './routeTree.gen'
 import '@fontsource-variable/archivo'
 import '@fontsource-variable/hanken-grotesk'
 import '@fontsource-variable/jetbrains-mono'
@@ -50,6 +50,25 @@ const rootElement = document.getElementById('root')!
 const devNoAuth = import.meta.env.DEV && import.meta.env.VITE_DEV_NO_AUTH === 'true'
 const useClerk = hasValidClerkKey && !devNoAuth
 
+// Brand the entire Clerk surface (sign-in/up modal, UserButton menu, account
+// portal) with Speck's design tokens. Values are hsl(var(--…)) so the dialog
+// tracks the light/dark toggle automatically — Clerk renders in our DOM, where
+// the CSS variables resolve.
+const clerkAppearance = {
+  layout: { logoImageUrl: '/favicon.svg' },
+  variables: {
+    colorPrimary: 'hsl(var(--primary))',
+    colorBackground: 'hsl(var(--card))',
+    colorText: 'hsl(var(--foreground))',
+    colorTextSecondary: 'hsl(var(--muted-foreground))',
+    colorInputBackground: 'hsl(var(--background))',
+    colorInputText: 'hsl(var(--foreground))',
+    colorDanger: 'hsl(var(--destructive))',
+    borderRadius: 'var(--radius)',
+    fontFamily: '"Hanken Grotesk Variable", ui-sans-serif, system-ui, sans-serif',
+  },
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -64,20 +83,20 @@ if (useClerk) {
   // Clerk authentication (production, and dev unless bypass is on)
   createRoot(rootElement).render(
     <StrictMode>
-      <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+      <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} appearance={clerkAppearance}>
         <App />
       </ClerkProvider>
-    </StrictMode>
+    </StrictMode>,
   )
 } else {
   console.warn(
     devNoAuth
       ? '🔓 Dev auth bypass ON (VITE_DEV_NO_AUTH) — running as a signed-in dev user, no Clerk.'
-      : '⚠️ Running without Clerk authentication. Set VITE_CLERK_PUBLISHABLE_KEY in .env for full functionality.'
+      : '⚠️ Running without Clerk authentication. Set VITE_CLERK_PUBLISHABLE_KEY in .env for full functionality.',
   )
   createRoot(rootElement).render(
     <StrictMode>
       <App />
-    </StrictMode>
+    </StrictMode>,
   )
 }
