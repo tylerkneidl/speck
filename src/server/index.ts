@@ -12,6 +12,7 @@ import { logger } from './lib/logger'
 import { projectsRouter } from './routes/projects'
 import { shareRouter } from './routes/share'
 import { uploadRouter } from './routes/upload'
+import { webhooksRouter } from './routes/webhooks'
 
 const app = new Hono()
 
@@ -50,6 +51,11 @@ app.route('/api/upload', uploadRouter)
 // link works for a signed-out visitor. Access is gated on the project's
 // isPublic flag + an unguessable token inside the router itself.
 app.route('/api/share', shareRouter)
+
+// Public — Clerk calls this with no session; authenticity is the Svix signature
+// verified inside the router (CLERK_WEBHOOK_SIGNING_SECRET). Never put it behind
+// clerkMiddleware/requireAuth.
+app.route('/api/webhooks', webhooksRouter)
 
 // Serve static files in production
 const distPath = join(process.cwd(), 'dist')
