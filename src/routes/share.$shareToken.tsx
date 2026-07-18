@@ -14,7 +14,7 @@ export const Route = createFileRoute('/share/$shareToken')({
  */
 function SharedProject() {
   const { shareToken } = Route.useParams()
-  const { isLoading, isError } = useSharedProject(shareToken)
+  const { isLoading, isError, ownerName } = useSharedProject(shareToken)
 
   if (isLoading) {
     return (
@@ -28,7 +28,7 @@ function SharedProject() {
     return <InvalidLink />
   }
 
-  return <ProjectWorkspace readOnly />
+  return <ProjectWorkspace readOnly sharedBy={ownerName ?? undefined} />
 }
 
 /** Same message whether the token is wrong or sharing was turned off. */
@@ -51,7 +51,12 @@ function InvalidLink() {
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </Button>
-        <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+        <Button
+          asChild
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground hover:text-foreground"
+        >
           <Link to="/">Go home</Link>
         </Button>
       </div>

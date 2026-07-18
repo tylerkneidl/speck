@@ -1,6 +1,7 @@
 import { and, eq } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { dataPoints, db, projectSettings, projects } from '../db'
+import { getOwnerDisplayName } from '../lib/clerk'
 import { createLogger } from '../lib/logger'
 import { presignReadUrl } from '../lib/storage'
 
@@ -16,16 +17,21 @@ export const shareRouter = new Hono()
  * unauthenticated — the unguessable token *is* the credential — so it is
  * deliberately narrow:
  *  - only ever matches a project with `isPublic = true` (revoking flips that)
- *  - selects an explicit field list; `userId` is never returned
- *  - drops `storageKey` (keys are `${userId}/...`, so returning one would leak
- *    the owner) and serves the video via a freshly minted short-lived URL
- *    instead of anything stored/permanent
+ *  - selects an explicit field list; `userId` is read only to resolve the
+ *    owner's display name (returned as `ownerName`) and is itself never returned
+ *  - drops `storageKey` and serves the video via a freshly minted short-lived
+ *    URL instead of anything stored/permanent
  */
 shareRouter.get('/:token', async (c) => {
   const token = c.req.param('token')
 
   const [project] = await db
-    .select({ id: projects.id, name: projects.name, updatedAt: projects.updatedAt })
+    .select({
+      id: projects.id,
+      name: projects.name,
+      updatedAt: projects.updatedAt,
+      userId: projects.userId,
+    })
     .from(projects)
     .where(and(eq(projects.shareToken, token), eq(projects.isPublic, true)))
 
@@ -60,12 +66,16 @@ shareRouter.get('/:token', async (c) => {
       : safe
   }
 
+  // Best-effort owner name for a "Shared by …" label; null if unavailable.
+  const ownerName = await getOwnerDisplayName(project.userId)
+
   logger.info({ projectId: project.id }, 'Served shared project')
 
   return c.json({
     id: project.id,
     name: project.name,
     updatedAt: project.updatedAt,
+    ownerName,
     settings: {
       videoMetadata,
       coordinateSystem: settings?.coordinateSystem ?? null,
