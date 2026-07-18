@@ -32,8 +32,8 @@ import {
   VideoUpload,
 } from '@/features/video/components'
 
-import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -65,6 +65,8 @@ interface ProjectWorkspaceProps {
    * guide, no undo. The viewer isn't the owner and there's nothing to save to.
    */
   readOnly?: boolean
+  /** Owner's display name, shown as "Shared by …" on a read-only share view. */
+  sharedBy?: string
 }
 
 /**
@@ -78,6 +80,7 @@ export function ProjectWorkspace({
   saveStatus = 'idle',
   sample = false,
   readOnly = false,
+  sharedBy,
 }: ProjectWorkspaceProps) {
   const [mode, setMode] = useState<Mode>('setup')
   const [placementMode, setPlacementMode] = useState<PlacementMode>(null)
@@ -245,9 +248,14 @@ export function ProjectWorkspace({
           </div>
 
           {readOnly ? (
-            <span className="rounded bg-plasma/15 px-2 py-0.5 text-[11px] uppercase tracking-wider text-plasma-ink">
-              View only
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="rounded bg-plasma/15 px-2 py-0.5 text-[11px] uppercase tracking-wider text-plasma-ink">
+                View only
+              </span>
+              {sharedBy && (
+                <span className="text-xs text-muted-foreground">Shared by {sharedBy}</span>
+              )}
+            </div>
           ) : sample ? (
             <span className="rounded bg-primary/15 px-2 py-0.5 text-[11px] uppercase tracking-wider text-flare-ink">
               Sample

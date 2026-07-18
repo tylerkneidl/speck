@@ -16,6 +16,7 @@ interface SharedPoint {
 interface SharedProject {
   id: string
   name: string
+  ownerName: string | null
   settings: {
     videoMetadata: VideoMetadata | null
     coordinateSystem: {
@@ -87,5 +88,10 @@ export function useSharedProject(token: string) {
     hydratedFor.current = token
   }, [data, token])
 
-  return { isLoading: query.isLoading, isError: query.isError, name: data?.name }
+  return {
+    isLoading: query.isLoading,
+    isError: query.isError,
+    name: data?.name,
+    ownerName: data?.ownerName ?? null,
+  }
 }

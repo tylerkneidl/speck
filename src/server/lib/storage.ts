@@ -1,4 +1,4 @@
-import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { DeleteObjectCommand, GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 /**
@@ -25,4 +25,16 @@ export const BUCKET = process.env.BUCKET || process.env.MINIO_BUCKET || 'videos'
 /** Mint a short-lived read URL for a stored object. */
 export function presignReadUrl(key: string, expiresIn: number): Promise<string> {
   return getSignedUrl(s3Client, new GetObjectCommand({ Bucket: BUCKET, Key: key }), { expiresIn })
+}
+
+/**
+ * Best-effort delete of stored objects. Used when a user's account is deleted —
+ * a failed delete shouldn't abort the rest of the purge, so each is caught.
+ */
+export async function deleteObjects(keys: string[]): Promise<void> {
+  await Promise.all(
+    keys.map((Key) =>
+      s3Client.send(new DeleteObjectCommand({ Bucket: BUCKET, Key })).catch(() => {}),
+    ),
+  )
 }
