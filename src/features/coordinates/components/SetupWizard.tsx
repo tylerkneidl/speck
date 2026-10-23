@@ -4,7 +4,8 @@ import { useVideoStore } from '@/stores/video'
 import { ArrowLeft, ArrowRight, Check, Compass, RotateCcw, X } from 'lucide-react'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-type PlacementMode = 'scale1' | 'scale2' | 'origin' | null
+// 'angle' is the workspace's protractor; the wizard never sets it but must accept it.
+type PlacementMode = 'scale1' | 'scale2' | 'origin' | 'angle' | null
 
 interface SetupWizardProps {
   /** Route-owned placement flow — the wizard arms it per step; the canvas handles the actual clicks. */

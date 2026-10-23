@@ -15,6 +15,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 
 import {
+  AngleTool,
   AxisRotation,
   OriginTool,
   ScaleCalibration,
@@ -45,12 +46,13 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useCoordinateStore } from '@/stores/coordinates'
+import { useMeasureStore } from '@/stores/measure'
 import { useTrackingStore } from '@/stores/tracking'
 import { useUiStore } from '@/stores/ui'
 import { useVideoStore } from '@/stores/video'
 
 type Mode = 'setup' | 'track' | 'analyze'
-type PlacementMode = 'scale1' | 'scale2' | 'origin' | null
+type PlacementMode = 'scale1' | 'scale2' | 'origin' | 'angle' | null
 
 interface ProjectWorkspaceProps {
   /** Owner project id — enables uploads and drives the live save path. Omitted for the sample. */
@@ -183,6 +185,13 @@ export function ProjectWorkspace({
         setPlacementMode(null)
         return
       }
+      if (placementMode === 'angle') {
+        const { anglePoints, addAnglePoint } = useMeasureStore.getState()
+        addAnglePoint({ x: pixelX, y: pixelY })
+        // Third click completes the angle.
+        if (anglePoints.length === 2) setPlacementMode(null)
+        return
+      }
       if (mode === 'track' && metadata) {
         const hit = dataPoints.find((p) => Math.hypot(p.pixelX - pixelX, p.pixelY - pixelY) <= 14)
         if (hit) {
@@ -217,11 +226,22 @@ export function ProjectWorkspace({
     setPlacementMode('origin')
   }, [])
 
+  // Measurements belong to the video on screen — start each workspace clean.
+  useEffect(() => {
+    useMeasureStore.getState().clearAngle()
+  }, [])
+
+  const handleAngleToolStart = useCallback(() => {
+    useMeasureStore.getState().clearAngle()
+    setPlacementMode('angle')
+  }, [])
+
   const handleChangeVideo = useCallback(() => {
     if (confirm('This will clear all tracking data. Continue?')) {
       resetVideo()
       resetTracking()
       resetCoordinates()
+      useMeasureStore.getState().clearAngle()
       setMode('setup')
       setPlacementMode(null)
     }
@@ -426,7 +446,9 @@ export function ProjectWorkspace({
                         ? 'Click first scale point'
                         : placementMode === 'scale2'
                           ? 'Click second scale point'
-                          : 'Click to set origin'}
+                          : placementMode === 'angle'
+                            ? 'Click side, corner, side'
+                            : 'Click to set origin'}
                     </span>
                     <button
                       type="button"
@@ -476,6 +498,10 @@ export function ProjectWorkspace({
               <div data-tour="fps">
                 <FrameRateControl />
               </div>
+              <AngleTool
+                onStartPlacement={handleAngleToolStart}
+                isPlacing={placementMode === 'angle'}
+              />
 
               {/* Calibration status */}
               {pixelsPerUnit && (
