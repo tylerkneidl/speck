@@ -11,8 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TryRouteImport } from './routes/try'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LibraryIndexRouteImport } from './routes/library.index'
 import { Route as ShareShareTokenRouteImport } from './routes/share.$shareToken'
+import { Route as RunTakeIdRouteImport } from './routes/run.$takeId'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
+import { Route as LibraryLabSlugRouteImport } from './routes/library.$labSlug'
 
 const TryRoute = TryRouteImport.update({
   id: '/try',
@@ -24,9 +27,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LibraryIndexRoute = LibraryIndexRouteImport.update({
+  id: '/library/',
+  path: '/library/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShareShareTokenRoute = ShareShareTokenRouteImport.update({
   id: '/share/$shareToken',
   path: '/share/$shareToken',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RunTakeIdRoute = RunTakeIdRouteImport.update({
+  id: '/run/$takeId',
+  path: '/run/$takeId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
@@ -34,39 +47,78 @@ const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
   path: '/projects/$projectId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LibraryLabSlugRoute = LibraryLabSlugRouteImport.update({
+  id: '/library/$labSlug',
+  path: '/library/$labSlug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/try': typeof TryRoute
+  '/library/$labSlug': typeof LibraryLabSlugRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/run/$takeId': typeof RunTakeIdRoute
   '/share/$shareToken': typeof ShareShareTokenRoute
+  '/library/': typeof LibraryIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/try': typeof TryRoute
+  '/library/$labSlug': typeof LibraryLabSlugRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/run/$takeId': typeof RunTakeIdRoute
   '/share/$shareToken': typeof ShareShareTokenRoute
+  '/library': typeof LibraryIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/try': typeof TryRoute
+  '/library/$labSlug': typeof LibraryLabSlugRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/run/$takeId': typeof RunTakeIdRoute
   '/share/$shareToken': typeof ShareShareTokenRoute
+  '/library/': typeof LibraryIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/try' | '/projects/$projectId' | '/share/$shareToken'
+  fullPaths:
+    | '/'
+    | '/try'
+    | '/library/$labSlug'
+    | '/projects/$projectId'
+    | '/run/$takeId'
+    | '/share/$shareToken'
+    | '/library/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/try' | '/projects/$projectId' | '/share/$shareToken'
-  id: '__root__' | '/' | '/try' | '/projects/$projectId' | '/share/$shareToken'
+  to:
+    | '/'
+    | '/try'
+    | '/library/$labSlug'
+    | '/projects/$projectId'
+    | '/run/$takeId'
+    | '/share/$shareToken'
+    | '/library'
+  id:
+    | '__root__'
+    | '/'
+    | '/try'
+    | '/library/$labSlug'
+    | '/projects/$projectId'
+    | '/run/$takeId'
+    | '/share/$shareToken'
+    | '/library/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   TryRoute: typeof TryRoute
+  LibraryLabSlugRoute: typeof LibraryLabSlugRoute
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
+  RunTakeIdRoute: typeof RunTakeIdRoute
   ShareShareTokenRoute: typeof ShareShareTokenRoute
+  LibraryIndexRoute: typeof LibraryIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -85,11 +137,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/library/': {
+      id: '/library/'
+      path: '/library'
+      fullPath: '/library/'
+      preLoaderRoute: typeof LibraryIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/share/$shareToken': {
       id: '/share/$shareToken'
       path: '/share/$shareToken'
       fullPath: '/share/$shareToken'
       preLoaderRoute: typeof ShareShareTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/run/$takeId': {
+      id: '/run/$takeId'
+      path: '/run/$takeId'
+      fullPath: '/run/$takeId'
+      preLoaderRoute: typeof RunTakeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/projects/$projectId': {
@@ -99,14 +165,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/library/$labSlug': {
+      id: '/library/$labSlug'
+      path: '/library/$labSlug'
+      fullPath: '/library/$labSlug'
+      preLoaderRoute: typeof LibraryLabSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   TryRoute: TryRoute,
+  LibraryLabSlugRoute: LibraryLabSlugRoute,
   ProjectsProjectIdRoute: ProjectsProjectIdRoute,
+  RunTakeIdRoute: RunTakeIdRoute,
   ShareShareTokenRoute: ShareShareTokenRoute,
+  LibraryIndexRoute: LibraryIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

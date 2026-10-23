@@ -17,7 +17,7 @@ import { SignedIn, SignedOut, useIsClerkAvailable } from '@/lib/auth'
 import { SignInButton, UserButton } from '@clerk/clerk-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { ArrowRight, Loader2, Plus, Trash2, Video } from 'lucide-react'
+import { ArrowRight, Library, Loader2, Plus, Trash2, Video } from 'lucide-react'
 import { useState } from 'react'
 
 export const Route = createFileRoute('/')({
@@ -74,9 +74,7 @@ function HomePage() {
                 </SignedOut>
               </>
             ) : (
-              <span className="rounded bg-warning/10 px-2 py-1 text-xs text-warning">
-                Dev Mode
-              </span>
+              <span className="rounded bg-warning/10 px-2 py-1 text-xs text-warning">Dev Mode</span>
             )}
             <ThemeToggle />
           </div>
@@ -164,12 +162,19 @@ function LandingContent() {
             variant="outline"
             className="gap-2 border-input bg-secondary/50 text-foreground hover:bg-accent hover:text-foreground"
           >
-            <Link to="/try">
-              Try a sample — no sign-in
+            <Link to="/library">
+              Browse the lab library
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
         </div>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Or{' '}
+          <Link to="/try" className="text-foreground underline-offset-4 hover:underline">
+            try a sample
+          </Link>{' '}
+          — no sign-in.
+        </p>
 
         {/* Feature highlights */}
         <div className="mt-16 grid gap-6 sm:grid-cols-3">
@@ -178,10 +183,7 @@ function LandingContent() {
             { title: 'Live Graphs', desc: 'Position, velocity, acceleration plots' },
             { title: 'Linear Regression', desc: 'Best-fit lines with R² analysis' },
           ].map((feature) => (
-            <div
-              key={feature.title}
-              className="rounded-lg border border-border bg-card/60 p-4"
-            >
+            <div key={feature.title} className="rounded-lg border border-border bg-card/60 p-4">
               <h3 className="font-display text-sm font-bold text-foreground">{feature.title}</h3>
               <p className="mt-1 text-xs text-muted-foreground">{feature.desc}</p>
             </div>
@@ -260,47 +262,59 @@ function ProjectList() {
             {projects?.length || 0} {projects?.length === 1 ? 'project' : 'projects'}
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2 bg-primary font-semibold text-primary-foreground hover:bg-primary/90">
-              <Plus className="h-4 w-4" />
-              New Project
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="border-border bg-card">
-            <DialogHeader>
-              <DialogTitle className="text-foreground">Create New Project</DialogTitle>
-              <DialogDescription className="text-muted-foreground">
-                Give your project a name to get started.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-muted-foreground">
-                  Project Name
-                </Label>
-                <Input
-                  id="name"
-                  value={newProjectName}
-                  onChange={(e) => setNewProjectName(e.target.value)}
-                  placeholder="e.g., Ball Drop Experiment"
-                  onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-                  className="border-input bg-secondary/50 text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                onClick={handleCreate}
-                disabled={!newProjectName.trim() || createMutation.isPending}
-                className="bg-primary font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-              >
-                {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create Project
+        <div className="flex items-center gap-2">
+          <Button
+            asChild
+            variant="outline"
+            className="gap-2 border-input bg-secondary/50 text-foreground hover:bg-accent hover:text-foreground"
+          >
+            <Link to="/library">
+              <Library className="h-4 w-4" />
+              Lab library
+            </Link>
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2 bg-primary font-semibold text-primary-foreground hover:bg-primary/90">
+                <Plus className="h-4 w-4" />
+                New Project
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="border-border bg-card">
+              <DialogHeader>
+                <DialogTitle className="text-foreground">Create New Project</DialogTitle>
+                <DialogDescription className="text-muted-foreground">
+                  Give your project a name to get started.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-muted-foreground">
+                    Project Name
+                  </Label>
+                  <Input
+                    id="name"
+                    value={newProjectName}
+                    onChange={(e) => setNewProjectName(e.target.value)}
+                    placeholder="e.g., Ball Drop Experiment"
+                    onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+                    className="border-input bg-secondary/50 text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  onClick={handleCreate}
+                  disabled={!newProjectName.trim() || createMutation.isPending}
+                  className="bg-primary font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Create Project
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Project grid or empty state */}
@@ -316,7 +330,9 @@ function ProjectList() {
               <circle cx="532" cy="162" r="3.4" fill="#ff4e22" opacity=".22" />
             </svg>
             <p className="mt-4 font-medium text-muted-foreground">No projects yet</p>
-            <p className="text-sm text-muted-foreground">Create your first project to get started</p>
+            <p className="text-sm text-muted-foreground">
+              Create your first project to get started
+            </p>
           </CardContent>
         </Card>
       ) : (

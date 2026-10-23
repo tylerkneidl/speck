@@ -67,6 +67,10 @@ interface ProjectWorkspaceProps {
   readOnly?: boolean
   /** Owner's display name, shown as "Shared by …" on a read-only share view. */
   sharedBy?: string
+  /** Where the back link goes. Defaults to home / the project list. */
+  back?: { to: '/' | '/library'; label: string }
+  /** Mode to open in — 'track' for a pre-calibrated library take. */
+  initialMode?: Mode
 }
 
 /**
@@ -81,8 +85,10 @@ export function ProjectWorkspace({
   sample = false,
   readOnly = false,
   sharedBy,
+  back,
+  initialMode = 'setup',
 }: ProjectWorkspaceProps) {
-  const [mode, setMode] = useState<Mode>('setup')
+  const [mode, setMode] = useState<Mode>(initialMode)
   const [placementMode, setPlacementMode] = useState<PlacementMode>(null)
   const [graphType, setGraphType] = useState<GraphType>('x-t')
   const [showRegression, setShowRegression] = useState(false)
@@ -227,11 +233,11 @@ export function ProjectWorkspace({
       <header className="flex items-center justify-between border-b border-border bg-card px-4 py-2">
         <div className="flex items-center gap-4">
           <Link
-            to="/"
+            to={back?.to ?? '/'}
             className="flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground"
           >
             <ChevronLeft className="h-4 w-4" />
-            <span className="text-sm">{sample ? 'Home' : 'Projects'}</span>
+            <span className="text-sm">{back?.label ?? (sample ? 'Home' : 'Projects')}</span>
           </Link>
 
           <div className="h-4 w-px bg-border" />
