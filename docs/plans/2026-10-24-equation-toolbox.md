@@ -22,6 +22,7 @@ Tyler taught problem solving as "equations are a toolbox": identify what you're 
 8. **Problems come from us first.** Teacher-written problems come later, once the format has settled.
 9. **It's a standalone tool, linked from labs.** Each lab and sim links to a few matching problems, but the toolbox doesn't depend on them.
 10. **It looks like the sims:** a notebook page, neat pen strokes, highlighter for tagged phrases, and red pen for feedback. The dark theme is the blueprint look.
+11. **Notation is swappable.** Textbooks disagree (v₀ vs vᵢ, Δx vs d vs s, u and v), so the teacher sets a notation once and every card, label, hint, and feedback note uses it.
 
 ## The two dials
 
@@ -56,11 +57,11 @@ Problems, equations, and glossary entries are typed content files, the same appr
 ```ts
 // src/features/toolbox/content/variables.ts
 export const variables = {
-  dx: { symbol: 'Δx', name: 'displacement', unit: 'm' },
-  v0: { symbol: 'v₀', name: 'initial velocity', unit: 'm/s' },
-  vf: { symbol: 'v_f', name: 'final velocity', unit: 'm/s' },
-  a:  { symbol: 'a', name: 'acceleration', unit: 'm/s²' },
-  t:  { symbol: 't', name: 'time', unit: 's' },
+  dx: { name: 'displacement', unit: 'm' },
+  v0: { name: 'initial velocity', unit: 'm/s' },
+  vf: { name: 'final velocity', unit: 'm/s' },
+  a:  { name: 'acceleration', unit: 'm/s²' },
+  t:  { name: 'time', unit: 's' },
   // ...
 } as const
 
@@ -68,12 +69,12 @@ export const variables = {
 export const equations: Equation[] = [
   {
     id: 'kin-vf-v0-a-t',
-    display: 'v_f = v₀ + a t',
+    display: '{vf} = {v0} + {a}{t}',   // {id} is filled from the notation set
     vars: ['vf', 'v0', 'a', 't'],
     // One rearranged form per variable, written by hand (no algebra engine).
     solveFor: {
-      vf: { display: 'v_f = v₀ + a t', fn: ({ v0, a, t }) => v0 + a * t },
-      t:  { display: 't = (v_f − v₀) / a', fn: ({ vf, v0, a }) => (vf - v0) / a },
+      vf: { display: '{vf} = {v0} + {a}{t}', fn: ({ v0, a, t }) => v0 + a * t },
+      t:  { display: '{t} = ({vf} − {v0}) / {a}', fn: ({ vf, v0, a }) => (vf - v0) / a },
       // ...
     },
   },
@@ -114,6 +115,22 @@ export default defineProblem({
 
 Multi-phase AP problems add `phases`, and their variables get a phase subscript (v₁ is the final velocity of phase 1 and the initial velocity of phase 2). The problem file states which variables are shared between phases.
 
+### Notation sets
+
+Variables have stable ids (`v0`, `vf`, `dx`); symbols live only in notation sets. Every equation, rearranged form, glossary note, and feedback message is written with `{id}` placeholders, so swapping notation never touches content.
+
+```ts
+// src/features/toolbox/content/notation.ts
+export const notations = {
+  'v0-vf':  { label: 'v₀, v_f, Δx', symbols: { v0: 'v₀', vf: 'v_f', dx: 'Δx', a: 'a', t: 't' } },
+  'vi-vf':  { label: 'vᵢ, v_f, Δx', symbols: { v0: 'vᵢ', vf: 'v_f', dx: 'Δx', a: 'a', t: 't' } },
+  'vo-v-d': { label: 'v₀, v, d',    symbols: { v0: 'v₀', vf: 'v', dx: 'd', a: 'a', t: 't' } },
+  'suvat':  { label: 's, u, v (SUVAT)', symbols: { v0: 'u', vf: 'v', dx: 's', a: 'a', t: 't' } },
+} satisfies Record<string, Notation>
+```
+
+It's a set-once setting, not something picked per problem. The first time someone opens the toolbox, a small card asks which notation their class uses (default `v0-vf`), and after that it lives in settings. It's saved per browser for now, and on the teacher's account once accounts are involved, so students later inherit their teacher's choice. A link can carry `?notation=suvat` so students on a fresh device see the class notation without being asked. A test checks that every notation set covers every variable id, and that no content string contains a raw symbol where a placeholder belongs.
+
 ### Glossary
 
 ```ts
@@ -148,7 +165,7 @@ Two functions hold the real teaching judgment. Each gets a signature, call sites
 
 **Phase 0: setup.** Scaffold `src/features/toolbox/`, routes, and content folders. Reuse the notebook primitives from the sims work (PR #20); if they haven't landed yet, build only what this needs inside the shared `notebook/` folder.
 
-**Phase 1: content model.** Variables, equations with hand-written rearranged forms, toolboxes, the glossary, and `defineProblem` with Zod validation. A test solves every authored problem along its `solution` and checks it matches `answer`.
+**Phase 1: content model.** Variables, notation sets, equations with hand-written rearranged forms, toolboxes, the glossary, and `defineProblem` with Zod validation. A test solves every authored problem along its `solution` and checks it matches `answer`.
 
 **Phase 2: logic.** `classifyEquations` and `findChains` scaffolded for Tyler, with contract tests. A stand-in version keeps the UI work moving until his lands.
 
@@ -177,7 +194,3 @@ Two functions hold the real teaching judgment. Each gets a signature, call sites
 - Saving progress, class assignments, and teacher dashboards.
 - Typed algebra (students entering their own rearranged formula). At level 4 they rearrange on paper.
 - Hiding answers from students. Answers ship to the browser so practice works without an account. That's fine for practice, but graded assignments will need answers checked on the server.
-
-## Open questions
-
-1. **Symbols.** This plan uses v₀ and v_f, matching how Tyler taught it. Some classes use vᵢ, or u and v. Should a toolbox be able to switch symbols, or is one convention enough for now?
