@@ -172,6 +172,50 @@ Nine scenes, about 255 runs, over one weekend (one indoor day, one outdoor day).
 
 A launcher riding on a moving toy was dropped: poppers are hard enough to film going straight up. The howitzer clip on `/try` is replaced by the best Nerf take instead.
 
+## Second shoot: Energy
+
+Five scenes, about 125 runs (100 without the optional crane), one indoor day. Target: done by early December. Most of the toys come from the first shoot.
+
+| Scene | Standalone question | Department | Work order |
+|---|---|---|---|
+| 10. Loop-the-Loop | What's the lowest start height that makes the loop? | Marketing | The box says it clears the loop every time. What's the lowest start height we can print? |
+| 11. Ramp onto Carpet and Tile | How far does the car roll on each floor? | Packaging | How much play space does the box say you need on each floor? |
+| 12. Bouncy Balls | What fraction of its energy does each ball keep? | Quality Control | Our "Super Bounce" ball must return at least 80% of its drop height. Does it, and which competitor beats it? |
+| 13. Rubber-Band Launcher | How does launch speed depend on stretch? | Product Design | Where do the stretch marks go for slow, medium and fast? |
+| 14. Toy Crane (optional) | Is the motor's power the same at every load? | Product Design | Is the motor's power the same at every load? |
+
+**10. Loop-the-Loop**
+- **Variable:** start height, 5 values from just below the ideal 2.5R to well above it. 5 × 5 = 25 runs. Runs that fall off the loop are kept; they are the data.
+- **Setup:** a Hot Wheels loop on a board, the start ramp clamped so the height is repeatable. Side view.
+- **True values:** loop radius, start heights, car mass. Friction pushes the real minimum above 2.5R, which is the discussion.
+- **Camera:** 240 fps.
+
+**11. Ramp onto Carpet and Tile**
+- **Variables:** ramp height, 10, 20, 30, 40 and 50 cm × floor, carpet or tile. 10 × 3 runs = 30.
+- **Setup:** the first shoot's ramp ending on the floor, with a tape along the stopping path. Side view, wide enough to see the car stop.
+- **True values:** ramp heights, stopping distances (tape), car mass. Students get μ from mgh = μmgd.
+- **Camera:** 60 fps.
+
+**12. Bouncy Balls**
+- **Variable:** ball, superball, tennis ball, ping-pong ball, golf ball and a playground ball, dropped from 1 m. 5 × 5 = 25 runs, filmed through at least 3 bounces.
+- **Setup:** a hard floor with a vertical metre stick in the drop plane.
+- **True values:** drop height, rebound heights (reference analysis), ball masses.
+- **Camera:** 240 fps.
+
+**13. Rubber-Band Launcher**
+- **Variable:** stretch, 4, 6, 8, 10 and 12 cm. 5 × 5 = 25 runs.
+- **Setup:** a rubber band between two posts launches a toy car along the floor. Side view.
+- **True values:** car mass. A separate force-stretch clip: washers hung on the same band, stretch measured at each load. Bands aren't ideal springs, so students find the stored energy as the area under the curve.
+- **Camera:** 120 fps.
+
+**14. Toy Crane (optional, for power)**
+- **Variable:** load, 2, 4, 6, 8 and 10 washers. 5 × 5 = 25 runs.
+- **Setup:** a battery toy crane lifting a cup of washers. Side view with a vertical metre stick.
+- **True values:** washer and cup masses, fresh batteries at the start (note it on the take sheet).
+- **Camera:** 60 fps.
+
+**Energy shopping list:** Hot Wheels loop ($15), carpet remnant ($10), superball, tennis ball, ping-pong ball, golf ball and playground ball ($20), rubber bands and two posts ($5), battery toy crane ($25, optional). **About $75.**
+
 ## Later shoots (outline)
 
 Each gets the same detail as the first shoot once we get to it.
@@ -180,7 +224,6 @@ No lab equipment is needed; Tyler has none to borrow. Where a lab classically us
 
 | Shoot | Film by | Toy scenes | DIY stand-ins for classic lab gear |
 |---|---|---|---|
-| Energy | Early December | Hot Wheels loop-the-loop (release height: does it make the loop?), bouncy balls (ball type), rubber-band launcher (stretch) | Pull-back car up a board ramp instead of a spring cart |
 | Momentum | Mid-December | Toy trucks colliding (Velcro vs magnets, added load), marbles colliding, a Newton's cradle, a stacked-ball "astro blaster" | Smooth shelf board instead of a dynamics track; friction becomes part of the error analysis |
 | Rotation | Early January | Yo-yo falling, fidget spinner spin-down, spinning tops, can and ball race | Yo-yo stands in for the unwinding spool |
 | Oscillations | February | Plastic slinky as a spring (added mass), bobblehead, spider toy on a bungee, playground swing (adult riders) | Washers on a string for the pendulum; slinky for the mass on a spring |
