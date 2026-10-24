@@ -137,14 +137,16 @@ Nine scenes, about 250 runs, over one weekend (one indoor day, one outdoor day).
 
 Each gets the same detail as the first shoot once we get to it.
 
-| Shoot | Film by | Toy scenes | Lab-style backups |
+No lab equipment is needed; Tyler has none to borrow. Where a lab classically uses school gear, a toy or household version stands in (DIY column).
+
+| Shoot | Film by | Toy scenes | DIY stand-ins for classic lab gear |
 |---|---|---|---|
-| Energy | Early December | Hot Wheels loop-the-loop (release height: does it make the loop?), jumping popper toys, bouncy balls (ball type), rubber-band launcher (stretch) | Spring cart up an incline |
-| Momentum | Mid-December | Toy trucks colliding (Velcro vs magnets, added load), marbles colliding, a Newton's cradle, a stacked-ball "astro blaster" | Bumper impulse at 240 fps |
-| Rotation | Early January | Yo-yo falling, fidget spinner spin-down, spinning tops, can and ball race | Unwinding spool |
-| Oscillations | February | Plastic slinky as a spring (added mass), bobblehead, spider toy on a bungee, playground swing (adult riders) | Pendulum, mass on a spring |
+| Energy | Early December | Hot Wheels loop-the-loop (release height: does it make the loop?), jumping popper toys, bouncy balls (ball type), rubber-band launcher (stretch) | Pull-back car up a board ramp instead of a spring cart |
+| Momentum | Mid-December | Toy trucks colliding (Velcro vs magnets, added load), marbles colliding, a Newton's cradle, a stacked-ball "astro blaster" | Smooth shelf board instead of a dynamics track; friction becomes part of the error analysis |
+| Rotation | Early January | Yo-yo falling, fidget spinner spin-down, spinning tops, can and ball race | Yo-yo stands in for the unwinding spool |
+| Oscillations | February | Plastic slinky as a spring (added mass), bobblehead, spider toy on a bungee, playground swing (adult riders) | Washers on a string for the pendulum; slinky for the mass on a spring |
 | Fluids | February | Water rockets (water volume), squirt-gun stream, bobbing rubber duck, marble sinking through syrup, draining bottle | |
-| AP2 | January–February | Magnet sliding down an aluminium ramp, slinky waves, laser pointer through a water glass (refraction), compass near a wire | Lens bench, double slit |
+| AP2 | January–February | Magnet sliding down an aluminium ramp, slinky waves, laser pointer through a water glass (refraction), compass near a wire | Magnifying glass and a phone flashlight for the lens bench |
 
 ## Filming standards (every run)
 
@@ -231,4 +233,3 @@ Rough Amazon prices.
 
 1. Where's the indoor drop space for the parachute men (stairwell, garage, deck)?
 2. Prototype the popper car first, or look for a toy that already does it?
-3. Can you borrow lab gear from a school for the "lab-style backups", or leave those out?
