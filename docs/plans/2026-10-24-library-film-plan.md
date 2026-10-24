@@ -57,6 +57,43 @@ AP2 classes are in Electric Force and Field in late October. Magnetism comes aro
 
 This fits the existing data model without code changes. Each run is a `LabTake`. "Run" (1–5) and "Copy" (A, B, C) are ordinary `LabSetting`s, so the bench shows them as rows of buttons and greys out what wasn't filmed.
 
+## Standalone and story mode
+
+Every lab runs two ways from the same clips:
+
+- **Standalone:** a plain physics question, for teachers who just want the lab.
+- **Story mode:** students are the R&D division of a toy company. The lab arrives as a work order from another department, and the class signs off on a spec or claim.
+
+The footage stays neutral (no story in frame), so one clip serves both modes. The story is text in the app.
+
+### The story template
+
+One fictional company (name TBD) runs all year. Each department always asks the same kind of question, so a new story is a department plus three blanks: **product**, **spec**, **claim**.
+
+| Department | Always asks | Physics skill |
+|---|---|---|
+| Quality Control | "Are these units consistent?" | Variability, mean and spread |
+| Marketing and Legal | "Can we print this claim on the box?" | Measure a number, compare to a claim |
+| Safety | "Does it stay under the limit?" | Pass or fail against a threshold, with uncertainty |
+| Packaging | "What spec goes on the box?" | Turn a measurement into a stated range or clearance |
+| Product Design | "Where should this part go?" | Predict, then place |
+
+### First-shoot work orders
+
+Specs in brackets are filled in from the reference analysis, so the claim is testable but not a giveaway.
+
+| Scene | Standalone question | Department | Work order |
+|---|---|---|---|
+| 1. Hot Wheels Off the Table | Where will the car land? | Product Design | Our stunt-ramp set needs a landing pad. Where does it go for each ramp height? |
+| 2. Pull-Back Cars | How does the car speed up, and what does added mass change? | Quality Control | Customers say some cars go farther. Are units from one batch consistent? And will the heavier "deluxe" body still reach the finish line? |
+| 3. Toy-Truck Atwood | How does the hanging weight set the acceleration? | Product Design | The tow-truck playset uses a falling counterweight. How heavy should it be to pull the truck at [target] m/s²? |
+| 4. Crawler Race | When and where does the fast toy catch the slow one? | Marketing | For the commercial, the fast crawler must pass the slow one exactly at the finish line. What head start do we give? |
+| 5. Flying Toy Plane | Predict the period from the string length and cone angle. | Packaging | How much clear space should the box say each string length needs? |
+| 6. Nerf Projectile | Find the launch speed, then predict the range at another angle. | Marketing and Legal | The box says "shoots up to [claim] m". Can we print that? |
+| 7. Stomp Rocket | How much does the launch vary between stomps? | Packaging | What range goes on the box, and what safety distance on the warning label? |
+| 8. Parachute Men | How does terminal speed depend on the load? | Safety | The new heavier figure must land slower than [limit] m/s. How many washers can it carry and still pass? |
+| 9. Ruler Flick | Which coin lands first? | Product Design | A "drop or launch" coin game: does the launched coin ever win? |
+
 ## First shoot: Kinematics, Forces, Circular Motion
 
 Nine scenes, about 255 runs, over one weekend (one indoor day, one outdoor day). Target: done by mid-November.
@@ -229,6 +266,7 @@ Rough Amazon prices.
 
 - **Multi-object tracking** (first in the design's build order): for the crawler race, and later for collisions.
 - **Answer keys on takes:** `LabTake` needs fields for the true values, the reference result and its tolerance, and the per-setting spread.
+- **Briefs on labs:** each `Lab` needs a standalone question and an optional story (department, product, work order, the deliverable students sign off), and a toggle for teachers to pick the mode.
 - **Catalog updates:** the launch labs in `catalog.ts` (Nerf, ramp, collisions, balcony drop) should be swapped for the first-shoot scenes. AP2 later needs a `course` field and new topics.
 
 ## Open questions for Tyler
