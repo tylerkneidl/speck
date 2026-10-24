@@ -107,6 +107,20 @@ COPPA's internal-operations exception covers running, securing and improving the
 - **Product analytics** go through one `track()` wrapper. Teacher and parent events go out in full. Student events are cut down to an allowlist, keyed to an opaque ID, with IP geolocation off.
 - **Ad pixels and retargeting** load only in the `(marketing)` layout. **Email marketing** goes to adults only.
 
+## Observability and logging
+
+**Today:** Pino exists (`src/server/lib/logger.ts`, with redaction), but requests are logged by `hono/logger` as plain text, outside Pino. There are no request IDs, no error tracking, no client error reporting or error boundary, and no alerts. `/api/health` returns ok without checking the database.
+
+**What to build, in the migration or right after it:**
+
+1. **One logger.** Pino handles everything. `hono-pino` replaces `hono/logger` and records request ID, route, status, duration and an opaque user ID as JSON. A request ID (`x-request-id`) runs from the browser through the API and into Sentry, so one ID finds a whole failure.
+2. **Redaction follows the data tags.** The Pino redact list and the Sentry scrubber are generated from the schema's data categories, so a new student field is redacted without anyone remembering to add it.
+3. **Error tracking with Sentry** (the Next.js SDK, on server and client). `error.tsx` and `global-error.tsx` boundaries report and offer a retry. Source maps are uploaded at build time. `beforeSend` scrubs tagged fields, and session replay is off in `(app)`.
+4. **Performance.** Sentry tracing through Next's `instrumentation.ts`, a Drizzle logger that warns on queries over 500 ms, and web vitals on public pages (they affect search ranking).
+5. **Health and alerts.** `/api/health` checks the database and the bucket, and an outside uptime monitor calls it. Alerts fire on error-rate spikes, any failed point or settings save (the old false "Saved" bug), failed uploads, bounced consent emails, and any failed retention or deletion job.
+
+**Logs are not the audit log.** Operational logs hold no student names, are kept for 30 days and exist for debugging. The audit log lives in Postgres, records who did what to student data, and is kept as long as the agreements require. Keeping them separate keeps the logs mostly out of compliance scope.
+
 ## Compliance built in
 
 Each item produces evidence as it runs, so an audit or district questionnaire becomes an export.
@@ -125,14 +139,15 @@ Each item produces evidence as it runs, so an audit or district questionnaire be
 ## Build order
 
 1. **Next.js migration.** Move the routes, mount Hono, switch to `@clerk/nextjs`, client-only editor, Dockerfile on Railway. No behavior change.
-2. **SEO basics.** Per-route metadata, sitemap, robots, noindex on share pages, preview images for lab, sim and share pages. Marketing pages: home, pricing, Logger Pro alternative.
-3. **Domain and video.** Domain on Cloudflare, bucket moved to R2, video served from our own domain.
-4. **Compliance foundation.** Data tags, audit log, `track()` wrapper, CI checks. This lands before any student table exists.
-5. **Organizations, groups, memberships and `can()`.** Coordinated with the Lab Library design.
-6. **Students and consent.** Minimal student accounts, school join, homeschool parent flow, tutor parent-consent flow.
-7. **Retention and deletion jobs** and deletion records.
-8. **Plans and billing.** Stripe for individual and teacher tiers. Organization licenses by invoice later.
-9. **Paperwork for the pilot.** Privacy policy, terms, children's notice, subprocessor page, breach runbook.
+2. **Observability.** Pino for request logs with request IDs, Sentry with error boundaries, health check with database, uptime monitor and alerts. This lands before real users arrive.
+3. **SEO basics.** Per-route metadata, sitemap, robots, noindex on share pages, preview images for lab, sim and share pages. Marketing pages: home, pricing, Logger Pro alternative.
+4. **Domain and video.** Domain on Cloudflare, bucket moved to R2, video served from our own domain.
+5. **Compliance foundation.** Data tags, audit log, `track()` wrapper, CI checks. This lands before any student table exists.
+6. **Organizations, groups, memberships and `can()`.** Coordinated with the Lab Library design.
+7. **Students and consent.** Minimal student accounts, school join, homeschool parent flow, tutor parent-consent flow.
+8. **Retention and deletion jobs** and deletion records.
+9. **Plans and billing.** Stripe for individual and teacher tiers. Organization licenses by invoice later.
+10. **Paperwork for the pilot.** Privacy policy, terms, children's notice, subprocessor page, breach runbook.
 
 ## Open questions
 
