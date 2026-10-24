@@ -1,9 +1,4 @@
-import 'dotenv/config'
-import { existsSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { clerkMiddleware } from '@clerk/hono'
-import { serve } from '@hono/node-server'
-import { serveStatic } from '@hono/node-server/serve-static'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger as honoLogger } from 'hono/logger'
@@ -14,6 +9,11 @@ import { shareRouter } from './routes/share'
 import { uploadRouter } from './routes/upload'
 import { webhooksRouter } from './routes/webhooks'
 
+/**
+ * The API. Mounted inside Next.js by the catch-all route handler at
+ * src/app/api/[[...route]]/route.ts, which hands every /api/* request to
+ * app.fetch — routes keep their full /api/... paths. Next.js serves the pages.
+ */
 const app = new Hono()
 
 // Middleware
@@ -33,7 +33,10 @@ if (!AUTH_BYPASS) {
   // absence 500s every authed request with "Missing Clerk Publishable key".
   const clerk = clerkMiddleware({
     secretKey: process.env.CLERK_SECRET_KEY,
-    publishableKey: process.env.CLERK_PUBLISHABLE_KEY ?? process.env.VITE_CLERK_PUBLISHABLE_KEY,
+    publishableKey:
+      process.env.CLERK_PUBLISHABLE_KEY ??
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ??
+      process.env.VITE_CLERK_PUBLISHABLE_KEY,
   })
   app.use('/api/projects/*', clerk)
   app.use('/api/upload/*', clerk)
@@ -57,44 +60,13 @@ app.route('/api/share', shareRouter)
 // clerkMiddleware/requireAuth.
 app.route('/api/webhooks', webhooksRouter)
 
-// Serve static files in production
-const distPath = join(process.cwd(), 'dist')
-if (existsSync(distPath)) {
-  app.use('/*', serveStatic({ root: './dist' }))
-
-  // SPA fallback - serve index.html for client-side routes
-  app.get('*', (c) => {
-    const indexPath = join(distPath, 'index.html')
-    if (existsSync(indexPath)) {
-      const html = readFileSync(indexPath, 'utf-8')
-      return c.html(html)
-    }
-    return c.notFound()
-  })
-}
-
 // Error handling
 app.onError((err, c) => {
   logger.error({ err, path: c.req.path, method: c.req.method }, 'Unhandled error')
   return c.json({ error: 'Internal server error' }, 500)
 })
 
-// 404 handler for API routes only (in dev mode)
-app.notFound((c) => {
-  if (c.req.path.startsWith('/api')) {
-    return c.json({ error: 'Not found' }, 404)
-  }
-  // In dev mode without dist, return a helpful message
-  return c.json({ error: 'Frontend not built. Run npm run build first.' }, 404)
-})
-
-const port = Number.parseInt(process.env.PORT || '3001', 10)
-
-logger.info({ port }, 'Starting server')
-
-serve({
-  fetch: app.fetch,
-  port,
-})
+// Next.js only forwards /api/* here (src/app/api/[[...route]]/route.ts).
+app.notFound((c) => c.json({ error: 'Not found' }, 404))
 
 export default app

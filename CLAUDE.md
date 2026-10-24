@@ -41,9 +41,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run dev          # Start development server
+npm run dev          # Next.js dev server (app + /api via Hono)
 npm run build        # Production build
-npm run preview      # Preview production build
+npm run start        # Serve the production build (next start)
 npm run lint         # Biome lint
 npm run format       # Biome format
 npm run check        # Biome lint + format check

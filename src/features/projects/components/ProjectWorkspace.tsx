@@ -1,4 +1,5 @@
-import { Link } from '@tanstack/react-router'
+'use client'
+
 import {
   ArrowRight,
   ChevronLeft,
@@ -11,6 +12,7 @@ import {
   Settings,
   Undo2,
 } from 'lucide-react'
+import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 
@@ -253,7 +255,7 @@ export function ProjectWorkspace({
       <header className="flex items-center justify-between border-b border-border bg-card px-4 py-2">
         <div className="flex items-center gap-4">
           <Link
-            to={back?.to ?? '/'}
+            href={back?.to ?? '/'}
             className="flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -356,7 +358,7 @@ export function ProjectWorkspace({
                 size="sm"
                 className="gap-1.5 bg-primary font-semibold text-primary-foreground hover:bg-primary/90"
               >
-                <Link to="/">
+                <Link href="/">
                   Create your own
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>

@@ -1,14 +1,11 @@
+'use client'
+
 import { ProjectWorkspace } from '@/features/projects/components/ProjectWorkspace'
 import { useProjectSync } from '@/features/projects/hooks/useProjectSync'
 import { SignedIn, SignedOut, useIsClerkAvailable } from '@/lib/auth'
-import { RedirectToSignIn } from '@clerk/clerk-react'
-import { createFileRoute } from '@tanstack/react-router'
+import { RedirectToSignIn } from '@clerk/nextjs'
 
-export const Route = createFileRoute('/projects/$projectId')({
-  component: ProjectEditor,
-})
-
-function ProjectEditor() {
+export function ProjectEditor({ projectId }: { projectId: string }) {
   const isClerkAvailable = useIsClerkAvailable()
 
   return (
@@ -18,16 +15,15 @@ function ProjectEditor() {
           <RedirectToSignIn />
         </SignedOut>
       )}
-      <SignedIn fallback={!isClerkAvailable ? <LiveWorkspace /> : null}>
-        <LiveWorkspace />
+      <SignedIn fallback={!isClerkAvailable ? <LiveWorkspace projectId={projectId} /> : null}>
+        <LiveWorkspace projectId={projectId} />
       </SignedIn>
     </>
   )
 }
 
 /** Owner project: fetch + hydrate the stores and keep them saved, then render the editor. */
-function LiveWorkspace() {
-  const { projectId } = Route.useParams()
+function LiveWorkspace({ projectId }: { projectId: string }) {
   const { saveStatus } = useProjectSync(projectId)
   return <ProjectWorkspace projectId={projectId} saveStatus={saveStatus} />
 }

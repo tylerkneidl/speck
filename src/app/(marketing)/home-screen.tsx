@@ -1,5 +1,7 @@
-import { Button } from '@/components/ui/button'
+'use client'
+
 import { ThemeToggle } from '@/components/theme-toggle'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
@@ -14,15 +16,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useApiClient } from '@/lib/api'
 import { SignedIn, SignedOut, useIsClerkAvailable } from '@/lib/auth'
-import { SignInButton, UserButton } from '@clerk/clerk-react'
+import { SignInButton, UserButton } from '@clerk/nextjs'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, createFileRoute } from '@tanstack/react-router'
 import { ArrowRight, Library, Loader2, Plus, Trash2, Video } from 'lucide-react'
+import Link from 'next/link'
 import { useState } from 'react'
-
-export const Route = createFileRoute('/')({
-  component: HomePage,
-})
 
 interface Project {
   id: string
@@ -31,7 +29,7 @@ interface Project {
   updatedAt: string
 }
 
-function HomePage() {
+export function HomePage() {
   const isClerkAvailable = useIsClerkAvailable()
 
   return (
@@ -94,6 +92,14 @@ function HomePage() {
 }
 
 function LandingContent() {
+  const isClerkAvailable = useIsClerkAvailable()
+  const startButton = (
+    <Button className="gap-2 bg-primary font-semibold text-primary-foreground hover:bg-primary/90">
+      Start tracking
+      <ArrowRight className="h-4 w-4" />
+    </Button>
+  )
+
   return (
     <div className="mx-auto max-w-2xl py-16 text-center">
       {/* Hero section */}
@@ -151,18 +157,14 @@ function LandingContent() {
         </p>
 
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <SignInButton mode="modal">
-            <Button className="gap-2 bg-primary font-semibold text-primary-foreground hover:bg-primary/90">
-              Start tracking
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </SignInButton>
+          {/* SignInButton needs ClerkProvider, which is absent when Clerk isn't configured. */}
+          {isClerkAvailable ? <SignInButton mode="modal">{startButton}</SignInButton> : startButton}
           <Button
             asChild
             variant="outline"
             className="gap-2 border-input bg-secondary/50 text-foreground hover:bg-accent hover:text-foreground"
           >
-            <Link to="/library">
+            <Link href="/library">
               Browse the lab library
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -170,7 +172,7 @@ function LandingContent() {
         </div>
         <p className="mt-3 text-sm text-muted-foreground">
           Or{' '}
-          <Link to="/try" className="text-foreground underline-offset-4 hover:underline">
+          <Link href="/try" className="text-foreground underline-offset-4 hover:underline">
             try a sample
           </Link>{' '}
           — no sign-in.
@@ -268,7 +270,7 @@ function ProjectList() {
             variant="outline"
             className="gap-2 border-input bg-secondary/50 text-foreground hover:bg-accent hover:text-foreground"
           >
-            <Link to="/library">
+            <Link href="/library">
               <Library className="h-4 w-4" />
               Lab library
             </Link>
@@ -342,7 +344,7 @@ function ProjectList() {
               key={project.id}
               className="group relative border-border bg-card/60 transition-colors hover:border-input hover:bg-card"
             >
-              <Link to="/projects/$projectId" params={{ projectId: project.id }}>
+              <Link href={`/projects/${project.id}`}>
                 <CardHeader className="pb-3">
                   <CardTitle className="line-clamp-1 text-lg text-foreground group-hover:text-foreground">
                     {project.name}

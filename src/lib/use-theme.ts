@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export type Theme = 'light' | 'dark'
 
@@ -40,7 +40,13 @@ export function applyTheme(theme: Theme): void {
  * Thin reactive wrapper around resolveInitialTheme/applyTheme for components.
  */
 export function useTheme() {
-  const [theme, setThemeState] = useState<Theme>(resolveInitialTheme)
+  // Server-rendered pages can't read localStorage, so start from 'light' and
+  // pick up the real theme after mount (the pre-paint script in the root layout
+  // has already themed the page; only this hook's copy lags one effect).
+  const [theme, setThemeState] = useState<Theme>('light')
+  useEffect(() => {
+    setThemeState(resolveInitialTheme())
+  }, [])
 
   const setTheme = (next: Theme) => {
     applyTheme(next)

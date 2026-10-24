@@ -1,5 +1,5 @@
 # Local development stack for Speck (Postgres + MinIO object storage).
-# Usage:  docker compose up -d   →   npm run db:migrate   →   npm run dev:full
+# Usage:  docker compose up -d   →   npm run db:migrate   →   npm run dev
 services:
   postgres:
     image: postgres:16-alpine
