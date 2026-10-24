@@ -43,6 +43,10 @@ teacher prompt + chosen level + toolbox / sim
  5. draft saved      teacher edits in the authoring UI, then publishes to their groups
 ```
 
+### Model choice
+
+The pipeline calls the model through one `draft(kind, request) → object` function, so the model can be swapped without touching anything else. The starting choice is Claude Sonnet 5.5 for drafting and Claude Haiku 5.5 for the input and moderation checks, because volume is low (teachers draft a few items a week) and a better draft means fewer failed checks and less editing. The eval set (see Verification) runs every candidate: if Haiku 5.5 passes the checks about as often and Tyler rates its drafts as well, drafting moves to Haiku. Self-hosted or small open models are not worth it at this volume, because Railway has no GPUs and hosting one costs more than the API calls would. They also add little on compliance, since no student data is sent either way. Fine-tuning waits until there are enough teacher-approved drafts to train on. Until then, the hand-written examples in the prompt do that job, and prompt caching keeps them cheap.
+
 The prompt carries the content schema, the toolbox for the chosen level, the shared glossary, and two or three of our hand-written examples at that level. Those examples are what make drafts read like Speck content, which is why this comes after we have a good set of them.
 
 ## Per-student variants don't need AI
@@ -94,7 +98,7 @@ This applies to all teacher-shared content, whether it was written by hand or wi
 
 ## Verification
 
-- An eval set of about 30 teacher prompts across the four levels. Track the share that pass all checks on the first try, and Tyler's own rating of a sample.
+- An eval set of about 30 teacher prompts across the four levels, run against each candidate model. Track the share that pass all checks on the first try, cost per accepted draft, and Tyler's own rating of a sample.
 - A test that no request body built by the route contains a field tagged as student data.
 - Every hand-written problem passes `checkReasonable`, so the checker doesn't fight our own content.
 
