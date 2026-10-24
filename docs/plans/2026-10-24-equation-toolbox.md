@@ -25,16 +25,16 @@ Tyler taught problem solving as "equations are a toolbox": identify what you're 
 
 ## The two dials
 
-### Difficulty (filterable, maps onto the MS / HS / AP levels in the standards plan)
+### Difficulty (filterable, the same four levels as the standards plan: MS, conceptual / physics-first, HS, AP)
 
 | Difficulty | What it looks like | Toolbox |
 |---|---|---|
 | `ms` | One step, one equation, givens stated plainly. | average speed (v = d/t) |
-| `hs-intro` | One equation, chosen from several. Implicit phrases appear. | the big four kinematics equations + average velocity |
-| `hs` | Two steps: one answer feeds the next equation. Some extra info that isn't needed. | same |
+| `conceptual` | One equation, chosen from a short list. Implicit phrases appear. Algebra-1 math only (no quadratics). | average velocity, v_f = v₀ + at, Δx = ½(v₀ + v_f)t |
+| `hs` | One or two steps: one answer can feed the next equation. Some extra info that isn't needed. | the big four kinematics equations + average velocity |
 | `ap` | Multi-step and multi-phase (speeds up, then brakes), free fall with signs, 2D, symbolic answers. | same, plus g and per-axis variables |
 
-`hs-intro` and `hs` both map to the HS level for standards and lesson plans.
+Each difficulty is the same id as the content level, so filters, lesson plans, and differentiation (support = level below, extension = level above) line up across labs, sims, and problems.
 
 ### Guidance (the scaffold)
 
@@ -83,6 +83,7 @@ export const equations: Equation[] = [
 
 export const toolboxes = {
   'ms-speed': ['avg-speed'],
+  'conceptual-kinematics': ['avg-velocity', 'kin-vf-v0-a-t', 'kin-dx-avg'],
   'hs-kinematics': ['kin-vf-v0-a-t', 'kin-dx-v0-t-a', 'kin-vf2', 'kin-dx-avg', 'avg-velocity'],
 }
 ```
@@ -95,7 +96,7 @@ Rearranged forms are written out by hand. That's a handful per equation, it give
 // src/features/toolbox/content/problems/kin-hs-007.ts
 export default defineProblem({
   id: 'kin-hs-007',
-  difficulty: 'hs-intro',
+  difficulty: 'hs',
   toolbox: 'hs-kinematics',
   standards: [/* ids from the standards registry (PR #21) */],
   text: 'A toy car starts from rest and speeds up at 3.0 m/s² for 4.0 s. How far does it travel?',
@@ -159,7 +160,7 @@ Two functions hold the real teaching judgment. Each gets a signature, call sites
 
 **Phase 6: guidance levels.** Wire levels 1 to 4 from the table above, plus the glossary hint button.
 
-**Phase 7: problem list and starter content.** Filters for difficulty and topic. Starter set, 1D kinematics only: 6 `ms`, 8 `hs-intro`, 6 `hs`, 4 `ap`. Each lab page links its matching problems.
+**Phase 7: problem list and starter content.** Filters for difficulty and topic. Starter set, 1D kinematics only: 6 `ms`, 8 `conceptual`, 6 `hs`, 4 `ap`. Each lab page links its matching problems.
 
 **Phase 8: polish and verification.** Keyboard access throughout, `aria-live` for feedback, phone layout, reduced motion, both themes.
 
