@@ -18,7 +18,7 @@ When Tyler taught, planning a lab ate time at every step: designing the question
 4. **Tag the activity, not the footage.** The same clip can be a kinematics lab or a forces lab depending on the questions. Standards live on each lab package and sim activity. A scene shows the union of its packages' tags.
 5. **One standards registry in the repo.** A typed list of every code we use. A tag that isn't in the registry fails the build, so typos never ship.
 6. **Every lab follows one pattern.** The method and question types are designed once and reused, so each new lab fills in specifics instead of starting over. This is what makes "lots of labs" possible, and it keeps quality even.
-7. **Labs come in levels, from middle school to AP.** Each lab can have a middle school, high school and AP version over the same footage. The level below is the support version and the level above is the extension, so differentiation comes from the levels instead of being written separately.
+7. **Labs come in levels, from middle school to AP.** Each lab can have a middle school, conceptual, high school and AP version over the same footage. The level below is the support version and the level above is the extension, so differentiation comes from the levels instead of being written separately.
 8. **Lesson plans fit any school's template.** Every school asks for different sections in a different order. Packages store the content once as building blocks, and a template decides which headings appear and which blocks fill them. Teachers pick a preset or set up their own template once.
 
 ## The lab pattern
@@ -41,12 +41,13 @@ Every level uses the same footage and the same six parts. What changes is the ma
 | Level | Standards | Analyze looks like | Example (pull-back cars, added mass) |
 |---|---|---|---|
 | Middle school | NGSS MS-PS (e.g. MS-PS2-2) | Describe and compare. Read values off a graph; no fitting | Which car speeds up faster, the light one or the heavy one? How can you tell from the graph? |
+| Conceptual / physics first | NGSS HS-PS (e.g. HS-PS2-1), lighter math | Patterns and proportional reasoning. Draw a best-fit line by eye; "double this, what happens to that?"; little algebra | Rank the cars by how steep their velocity graphs are. When the mass doubles, roughly what happens to the steepness? |
 | High school | NGSS HS-PS (e.g. HS-PS2-1) | Straight-line fits; the slope means something; CER | Find each car's acceleration from the slope. How does it change as mass goes up? |
 | AP | AP 1/2 framework | Linearize, uncertainty and spread across runs, compare to a model | Linearize acceleration against 1/m. Is the motor's force constant? Use the spread across runs to decide |
 
 - **One package, several levels.** Shared parts (scene, takes, materials, teacher notes on the setup) are written once. Each level adds its own question, prediction, analysis steps, CER prompt, answer key and standards.
 - **Differentiation comes from the levels.** In a lesson plan, the support suggestion is drawn from the level below and the extension from the level above. A teacher writing for a mixed class can hand out two levels of the same lab in one period, and everyone's data still goes on the same class graph.
-- **Not every lab needs every level.** Circular motion with the flying toy plane is probably high school and AP only; the ruler-flick coin drop works at all three.
+- **Not every lab needs every level.** Circular motion with the flying toy plane is probably high school and AP only; the ruler-flick coin drop works at all four.
 - **The tracker can match the level later.** A middle school mode could hide the acceleration column and fitting tools so students aren't swamped. That's a later build, not a blocker for content.
 
 The question bank is the one part of the content that needs Tyler's teaching judgment, so Tyler writes or approves it. Each lab's specifics are drafted from the scene's take sheet and reviewed by Tyler.
@@ -170,19 +171,18 @@ This is what one package looks like end to end at the AP level, using scene 2, s
 
 ## Build order
 
-1. **Standards registry.** AP1 codes first (units, topics, science practices), then NGSS HS-PS and MS-PS. Descriptions in our own words, checked against the official documents.
+1. **Standards registry.** AP1 codes first (units, topics, science practices), then NGSS HS-PS and MS-PS. Conceptual uses the HS-PS codes. Descriptions in our own words, checked against the official documents.
 2. **Package format and loader.** Folder layout with shared parts plus one section per level, Zod frontmatter, build-time tag check, API route for teacher-only files.
 3. **Question bank.** The six-part pattern and its question types. Tyler writes or approves.
 4. **Lab page and handout.** The package page in the library, the student handout in-app and printable.
 5. **Copy lesson plan.** Building blocks, the five presets, rich HTML plus plain text, period length and standards toggles.
 6. **Custom templates.** Edit a preset, build your own, paste a school template and match headings. Saved per teacher.
-7. **First packages.** One per first-shoot scene, written as the footage comes in (mid-November). High school and AP first, middle school right after.
+7. **First packages.** One per first-shoot scene, written as the footage comes in (mid-November). High school and AP first, then conceptual and middle school.
 8. **Unit kits and filter by standard.** AP1 Units 1 and 2 first.
 9. **Pilot feedback.** Collect real school templates from the 5–10 pilot teachers, check the heading matching against them, and add presets for any common format we missed.
 
 ## Open questions
 
-- **A fourth level?** Three levels (middle school, high school, AP) for now. A conceptual or 9th-grade physics-first level could sit between middle school and high school if Tyler wants it.
 
 - **Answer keys on the free plan?** Teacher-only either way. Whether they need a paid plan is part of the deferred free vs. paid decision.
 - **Docs and Word export.** Copying covers most teachers. A "Download .docx" or "Open in Google Docs" button could come later if pilot teachers ask.
