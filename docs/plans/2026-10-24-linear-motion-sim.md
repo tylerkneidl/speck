@@ -59,7 +59,7 @@ export interface SimClock { dt: number; accumulator: number }
 - **Notebook canvas layers.** The static layer (paper, ruler, end stops) is drawn once to an offscreen canvas. The moving layer (car, arrow, dots) is redrawn each frame. Rough.js shapes use fixed seeds so the sketches don't wobble between frames.
 - **`NotebookGraph`** is a new canvas component, not the existing Recharts `Graph`. `Graph.tsx` is wired to the tracking stores, and Recharts can't draw pencil predictions or self-drawing pen lines. The axes are pen-drawn, the grid is aligned to the data, the data is a smooth ink line, the target is a dashed red pen line, and predictions are grey pencil strokes.
 - **Fonts:** Caveat (handwritten labels) and Patrick Hand (UI labels) through `@fontsource`, matching how Archivo and Hanken Grotesk ship today. JetBrains Mono stays the font for numbers, per CLAUDE.md.
-- **Theme:** the notebook page is always paper-light, even in dark mode. The app around it still follows the theme. (Default chosen for now; a blueprint dark look is a possible later option.)
+- **Theme:** the notebook follows the app theme. Light is graph paper with blue-black ink. Dark is a blueprint: white and pale-cyan lines on deep blue, with the red pen kept for targets and arrows. All notebook colors come from a `notebookColors(theme)` helper next to `lib/theme-colors.ts`, so canvas drawing never hardcodes a color.
 - **State:** a small Zustand store for the sim (params, mode, run state, prediction strokes). The engine state lives in a ref and runs on `requestAnimationFrame`, so React doesn't re-render every frame. A throttled readout updates the numbers.
 
 ### Modes
@@ -108,7 +108,7 @@ Two functions hold the real teaching judgment. Each gets a signature, call sites
 
 **Phase 1: engine (TDD).** Types, clock, `advance`, recorder, `TimeSeries` export, and wall handling, with tests written first. `step` is scaffolded for Tyler.
 
-**Phase 2: notebook primitives.** A paper background, Rough.js helpers with fixed seeds, the offscreen static layer, and `NotebookGraph`.
+**Phase 2: notebook primitives.** Paper and blueprint palettes, Rough.js helpers with fixed seeds, the offscreen static layer, and `NotebookGraph`.
 
 **Phase 3: Explore mode.** Route, page layout (margin column of controls, graphs on the right, stacked on phones), car, ticker-tape dots, velocity arrow, and readouts.
 
@@ -123,7 +123,7 @@ Two functions hold the real teaching judgment. Each gets a signature, call sites
 ## Verification
 
 - Vitest: the engine (`advance`, recorder, walls) plus the contract tests for Tyler's two functions.
-- Playwright: screenshots of Explore, Drive, and Match at 1280px and 400px, and a scripted run that checks the readout at t = 10 s against x₀ + v₀t + ½at².
+- Playwright: screenshots of Explore, Drive, and Match at 1280px and 400px in both themes, and a scripted run that checks the readout at t = 10 s against x₀ + v₀t + ½at².
 - `npm run check` and `npm run typecheck` pass.
 
 ## Out of scope for this plan
@@ -136,5 +136,4 @@ Two functions hold the real teaching judgment. Each gets a signature, call sites
 
 ## Open questions
 
-1. Is the notebook always paper-light, or does it get a blueprint look in dark mode? Defaulting to always paper.
-2. What should the fictional toy company be called? The film plan leaves this open too, and the work orders will need it.
+1. What should the fictional toy company be called? The film plan leaves this open too, and the work orders will need it.
