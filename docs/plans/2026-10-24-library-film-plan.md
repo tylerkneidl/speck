@@ -6,7 +6,7 @@
 
 Build a library of real, calibrated clips that lets a teacher run every AP Physics 1 lab from Speck, and the AP Physics 2 labs video can honestly measure. Every clip comes with an answer key.
 
-Footage is always real. Generated video doesn't obey measurable physics (g, frame timing, scale). The howitzer clip on `/try` (LivePhoto Physics, RIT) has no license and is replaced in the first shoot.
+Footage is always real. Generated video doesn't obey measurable physics (g, frame timing, scale). The howitzer clip on `/try` (LivePhoto Physics, RIT) has no license; the best Nerf take from the first shoot replaces it.
 
 ## Decisions so far
 
@@ -59,7 +59,7 @@ This fits the existing data model without code changes. Each run is a `LabTake`.
 
 ## First shoot: Kinematics, Forces, Circular Motion
 
-Nine scenes, about 250 runs, over one weekend (one indoor day, one outdoor day). Target: done by mid-November.
+Nine scenes, about 255 runs, over one weekend (one indoor day, one outdoor day). Target: done by mid-November.
 
 ### Indoors
 
@@ -126,12 +126,14 @@ Nine scenes, about 250 runs, over one weekend (one indoor day, one outdoor day).
 - **True values:** masses, drop height.
 - **Camera:** 120 fps.
 
-**9. Popper on a Moving Car** (Kinematics, replaces the howitzer clip)
-- **Question:** A car at constant speed launches a ball straight up. Where does the ball land?
-- **Variable:** car speed, slow and fast. 2 × 5 = 10 runs.
-- **Setup:** a small spring launcher on a constant-speed toy car, triggered by a string that catches on a fixed post as the car passes. **Needs a prototype session first.**
-- **True values:** car speed, launch height, ball mass.
-- **Camera:** 120 fps, side view.
+**9. Ruler Flick** (Kinematics, indoors; replaces the howitzer idea)
+- **Question:** One coin is flicked sideways and one is dropped at the same instant. Which lands first?
+- **Variable:** launch height: chair, table, counter (about 45, 75 and 90 cm). 3 × 5 = 15 runs.
+- **Setup:** a ruler pivoted on the table edge. One sharp tap launches one coin sideways and releases the other straight down. Side view with a vertical metre stick in the plane of motion.
+- **True values:** launch heights, landing distance of the flicked coin.
+- **Camera:** 240 fps.
+
+A launcher riding on a moving toy was dropped: poppers are hard enough to film going straight up. The howitzer clip on `/try` is replaced by the best Nerf take instead.
 
 ## Later shoots (outline)
 
@@ -141,7 +143,7 @@ No lab equipment is needed; Tyler has none to borrow. Where a lab classically us
 
 | Shoot | Film by | Toy scenes | DIY stand-ins for classic lab gear |
 |---|---|---|---|
-| Energy | Early December | Hot Wheels loop-the-loop (release height: does it make the loop?), jumping popper toys, bouncy balls (ball type), rubber-band launcher (stretch) | Pull-back car up a board ramp instead of a spring cart |
+| Energy | Early December | Hot Wheels loop-the-loop (release height: does it make the loop?), bouncy balls (ball type), rubber-band launcher (stretch) | Pull-back car up a board ramp instead of a spring cart |
 | Momentum | Mid-December | Toy trucks colliding (Velcro vs magnets, added load), marbles colliding, a Newton's cradle, a stacked-ball "astro blaster" | Smooth shelf board instead of a dynamics track; friction becomes part of the error analysis |
 | Rotation | Early January | Yo-yo falling, fidget spinner spin-down, spinning tops, can and ball race | Yo-yo stands in for the unwinding spool |
 | Oscillations | February | Plastic slinky as a spring (added mass), bobblehead, spider toy on a bungee, playground swing (adult riders) | Washers on a string for the pendulum; slinky for the mass on a spring |
@@ -206,8 +208,8 @@ Rough Amazon prices.
 | Nerf blaster and darts, protractor mount | Scene 6 | $30 |
 | Stomp rocket kit | Scene 7 | $20 |
 | 12-pack parachute men | Scene 8 | $10 |
-| Small spring launcher and a constant-speed car | Scene 9 | $30 |
-| **Toys subtotal** | | **about $205** |
+| Rulers and coins | Scene 9 | $0 |
+| **Toys subtotal** | | **about $175** |
 | Tripod with an overhead arm, phone level | All | $50 |
 | 2 flicker-free LED panels | Indoors | $60 |
 | White foam boards, black felt | Backgrounds | $30 |
@@ -231,6 +233,4 @@ Rough Amazon prices.
 
 ## Open questions for Tyler
 
-1. Prototype the popper car first, or look for a toy that already does it?
-
-The parachute-men drop spot is decided at shoot time.
+None. The parachute-men drop spot is decided at shoot time.
