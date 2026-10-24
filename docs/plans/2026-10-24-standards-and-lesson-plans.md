@@ -64,7 +64,24 @@ The question bank is the one part of the content that needs Tyler's teaching jud
 
 ### Answer keys stay off the client
 
-Library content ships in the public JavaScript bundle, so anything in it is readable by students. Answer keys and teacher notes are served by the API only to signed-in teachers (and later only to paid plans, if Tyler decides so). They live in the repo next to the lab but are never imported by client code.
+Library content ships in the public JavaScript bundle, so anything in it is readable by students. Answer keys and teacher notes are served by the API only to signed-in teachers. They live in the repo next to the lab but are never imported by client code. This is basic hygiene, not protection: see the next section.
+
+## AI-resistant by design
+
+A student can paste any lab question into an AI and get a polished answer, so a correct number or a well-written CER no longer proves much. Hiding answer keys doesn't change that. Answer keys are a convenience that lets teachers check work quickly; they aren't the product, and they aren't what keeps work honest.
+
+What an AI can't produce is the student's own process on their own data. Every lab is built so the work only makes sense with it:
+
+1. **Each student gets their own take.** In assigned mode, students in one class get different runs or settings (`chooseTake`, from the Lab Library design). The right answer is different for each student, and an AI doesn't know which video they have. Answer keys are per take, so checking stays automatic.
+2. **Predictions lock before the data.** The prediction is saved with a time stamp and can't be edited once the student starts tracking. The teacher sees the prediction next to the result, so "I predicted it perfectly" after the fact doesn't work.
+3. **The tracking is the work.** Speck already has the student's calibration and every point they clicked. The teacher view shows a short summary of it: points tracked, calibration, time spent, and the graph built from them. A final answer with no tracking behind it stands out.
+4. **Questions about their own data.** Analysis and CER prompts point at the student's graph: "Which of your runs is furthest from the others, and why?" A generic answer doesn't fit a specific graph.
+5. **Held-back takes for the extension.** The student predicts an untested setting, then that take unlocks. The check is real footage nobody has an answer for in advance.
+6. **Class data on one graph.** Everyone's results pool onto a shared class graph, so a made-up value shows up as an outlier, and the closing discussion happens in the room.
+
+This isn't cheat-proof. A student can still track carelessly or let a friend do it. The goal is that doing the lab honestly is easier than faking it, and that a teacher can tell the difference at a glance. None of this is surveillance: it's the same evidence of work a teacher sees when walking around a real lab.
+
+It also changes what Speck sells. The value is the footage, the ready-to-teach content and the teacher's view of student process, not the answer keys.
 
 ## The copy-paste lesson plan
 
@@ -179,11 +196,12 @@ This is what one package looks like end to end at the AP level, using scene 2, s
 6. **Custom templates.** Edit a preset, build your own, paste a school template and match headings. Saved per teacher.
 7. **First packages.** One per first-shoot scene, written as the footage comes in (mid-November). High school and AP first, then conceptual and middle school.
 8. **Unit kits and filter by standard.** AP1 Units 1 and 2 first.
-9. **Pilot feedback.** Collect real school templates from the 5–10 pilot teachers, check the heading matching against them, and add presets for any common format we missed.
+9. **Process evidence.** Locked predictions, per-take answer keys, held-back takes and the teacher's view of each student's tracking. Lands with groups and assignments, since it needs a class to compare against.
+10. **Pilot feedback.** Collect real school templates from the 5–10 pilot teachers, check the heading matching against them, and add presets for any common format we missed.
 
 ## Open questions
 
 
-- **Answer keys on the free plan?** Teacher-only either way. Whether they need a paid plan is part of the deferred free vs. paid decision.
+- **Answer keys on the free plan?** Teacher-only either way. Since they aren't the product, they can probably be free; the final call is part of the deferred free vs. paid decision.
 - **Docs and Word export.** Copying covers most teachers. A "Download .docx" or "Open in Google Docs" button could come later if pilot teachers ask.
 - **NGSS depth.** Performance expectations are enough for tagging. Whether to also tag practices and crosscutting concepts depends on what NGSS teachers in the pilot look for.
