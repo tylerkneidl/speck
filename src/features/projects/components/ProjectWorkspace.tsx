@@ -15,6 +15,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 
 import {
+  AngleTool,
   AxisRotation,
   OriginTool,
   ScaleCalibration,
@@ -45,12 +46,13 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useCoordinateStore } from '@/stores/coordinates'
+import { useMeasureStore } from '@/stores/measure'
 import { useTrackingStore } from '@/stores/tracking'
 import { useUiStore } from '@/stores/ui'
 import { useVideoStore } from '@/stores/video'
 
 type Mode = 'setup' | 'track' | 'analyze'
-type PlacementMode = 'scale1' | 'scale2' | 'origin' | null
+type PlacementMode = 'scale1' | 'scale2' | 'origin' | 'angle' | null
 
 interface ProjectWorkspaceProps {
   /** Owner project id — enables uploads and drives the live save path. Omitted for the sample. */
@@ -67,6 +69,10 @@ interface ProjectWorkspaceProps {
   readOnly?: boolean
   /** Owner's display name, shown as "Shared by …" on a read-only share view. */
   sharedBy?: string
+  /** Where the back link goes. Defaults to home / the project list. */
+  back?: { to: '/' | '/library'; label: string }
+  /** Mode to open in — 'track' for a pre-calibrated library take. */
+  initialMode?: Mode
 }
 
 /**
@@ -81,8 +87,10 @@ export function ProjectWorkspace({
   sample = false,
   readOnly = false,
   sharedBy,
+  back,
+  initialMode = 'setup',
 }: ProjectWorkspaceProps) {
-  const [mode, setMode] = useState<Mode>('setup')
+  const [mode, setMode] = useState<Mode>(initialMode)
   const [placementMode, setPlacementMode] = useState<PlacementMode>(null)
   const [graphType, setGraphType] = useState<GraphType>('x-t')
   const [showRegression, setShowRegression] = useState(false)
@@ -177,6 +185,13 @@ export function ProjectWorkspace({
         setPlacementMode(null)
         return
       }
+      if (placementMode === 'angle') {
+        const { anglePoints, addAnglePoint } = useMeasureStore.getState()
+        addAnglePoint({ x: pixelX, y: pixelY })
+        // Third click completes the angle.
+        if (anglePoints.length === 2) setPlacementMode(null)
+        return
+      }
       if (mode === 'track' && metadata) {
         const hit = dataPoints.find((p) => Math.hypot(p.pixelX - pixelX, p.pixelY - pixelY) <= 14)
         if (hit) {
@@ -211,11 +226,22 @@ export function ProjectWorkspace({
     setPlacementMode('origin')
   }, [])
 
+  // Measurements belong to the video on screen — start each workspace clean.
+  useEffect(() => {
+    useMeasureStore.getState().clearAngle()
+  }, [])
+
+  const handleAngleToolStart = useCallback(() => {
+    useMeasureStore.getState().clearAngle()
+    setPlacementMode('angle')
+  }, [])
+
   const handleChangeVideo = useCallback(() => {
     if (confirm('This will clear all tracking data. Continue?')) {
       resetVideo()
       resetTracking()
       resetCoordinates()
+      useMeasureStore.getState().clearAngle()
       setMode('setup')
       setPlacementMode(null)
     }
@@ -227,11 +253,11 @@ export function ProjectWorkspace({
       <header className="flex items-center justify-between border-b border-border bg-card px-4 py-2">
         <div className="flex items-center gap-4">
           <Link
-            to="/"
+            to={back?.to ?? '/'}
             className="flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground"
           >
             <ChevronLeft className="h-4 w-4" />
-            <span className="text-sm">{sample ? 'Home' : 'Projects'}</span>
+            <span className="text-sm">{back?.label ?? (sample ? 'Home' : 'Projects')}</span>
           </Link>
 
           <div className="h-4 w-px bg-border" />
@@ -420,7 +446,9 @@ export function ProjectWorkspace({
                         ? 'Click first scale point'
                         : placementMode === 'scale2'
                           ? 'Click second scale point'
-                          : 'Click to set origin'}
+                          : placementMode === 'angle'
+                            ? 'Click side, corner, side'
+                            : 'Click to set origin'}
                     </span>
                     <button
                       type="button"
@@ -470,6 +498,10 @@ export function ProjectWorkspace({
               <div data-tour="fps">
                 <FrameRateControl />
               </div>
+              <AngleTool
+                onStartPlacement={handleAngleToolStart}
+                isPlacing={placementMode === 'angle'}
+              />
 
               {/* Calibration status */}
               {pixelsPerUnit && (

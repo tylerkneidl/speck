@@ -1,5 +1,7 @@
+import { angleAt } from '@/lib/geometry'
 import { getThemeColors } from '@/lib/theme-colors'
 import { useCoordinateStore } from '@/stores/coordinates'
+import { useMeasureStore } from '@/stores/measure'
 import { useTrackingStore } from '@/stores/tracking'
 import { useVideoStore } from '@/stores/video'
 import { useCallback, useEffect, useRef } from 'react'
@@ -35,6 +37,7 @@ export function CanvasOverlay({ width, height, onClick, enableDrag = false }: Ca
   const { dataPoints, selectedPointId, trailLength } = useTrackingStore()
   const { origin, rotation, scalePoint1, scalePoint2 } = useCoordinateStore()
   const { currentFrame } = useVideoStore()
+  const anglePoints = useMeasureStore((s) => s.anglePoints)
 
   // Draw overlay content
   const draw = useCallback(() => {
@@ -59,6 +62,8 @@ export function CanvasOverlay({ width, height, onClick, enableDrag = false }: Ca
 
     // Draw tracked points and path
     drawPoints(ctx, points, selectedPointId, currentFrame, trailLength)
+
+    drawAngle(ctx, anglePoints)
   }, [
     width,
     height,
@@ -70,6 +75,7 @@ export function CanvasOverlay({ width, height, onClick, enableDrag = false }: Ca
     selectedPointId,
     currentFrame,
     trailLength,
+    anglePoints,
   ])
 
   useEffect(() => {
@@ -373,6 +379,66 @@ function drawCoordinateSystem(
   }
   if (scalePoint1) drawScaleMarker(ctx, scalePoint1.x, scalePoint1.y, '1')
   if (scalePoint2) drawScaleMarker(ctx, scalePoint2.x, scalePoint2.y, '2')
+}
+
+// Protractor overlay: the two rays, an arc at the corner, and the reading.
+// Amber, like the other over-video markers, is theme-independent for legibility.
+function drawAngle(ctx: CanvasRenderingContext2D, points: { x: number; y: number }[]) {
+  if (points.length === 0) return
+  const [a, vertex, b] = points
+  const color = '#ffc233'
+
+  ctx.save()
+  ctx.strokeStyle = color
+  ctx.fillStyle = color
+  ctx.lineWidth = 2
+  ctx.setLineDash([])
+
+  if (a && vertex) {
+    ctx.beginPath()
+    ctx.moveTo(a.x, a.y)
+    ctx.lineTo(vertex.x, vertex.y)
+    if (b) ctx.lineTo(b.x, b.y)
+    ctx.stroke()
+  }
+
+  for (const p of points) {
+    ctx.beginPath()
+    ctx.arc(p.x, p.y, 4, 0, 2 * Math.PI)
+    ctx.fill()
+  }
+
+  const angle = a && vertex && b ? angleAt(a, vertex, b) : null
+  if (a && vertex && b && angle !== null) {
+    const start = Math.atan2(a.y - vertex.y, a.x - vertex.x)
+    const end = Math.atan2(b.y - vertex.y, b.x - vertex.x)
+    let sweep = end - start
+    if (sweep > Math.PI) sweep -= 2 * Math.PI
+    if (sweep < -Math.PI) sweep += 2 * Math.PI
+    const radius = Math.min(
+      36,
+      Math.hypot(a.x - vertex.x, a.y - vertex.y) / 2,
+      Math.hypot(b.x - vertex.x, b.y - vertex.y) / 2,
+    )
+    ctx.beginPath()
+    ctx.arc(vertex.x, vertex.y, radius, start, start + sweep, sweep < 0)
+    ctx.stroke()
+
+    // Label on the bisector, just outside the arc.
+    const mid = start + sweep / 2
+    const lx = vertex.x + Math.cos(mid) * (radius + 22)
+    const ly = vertex.y + Math.sin(mid) * (radius + 22)
+    const label = `${angle.toFixed(1)}°`
+    ctx.font = 'bold 13px ui-monospace, monospace'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    const w = ctx.measureText(label).width + 10
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
+    ctx.fillRect(lx - w / 2, ly - 10, w, 20)
+    ctx.fillStyle = color
+    ctx.fillText(label, lx, ly)
+  }
+  ctx.restore()
 }
 
 function drawScaleMarker(ctx: CanvasRenderingContext2D, x: number, y: number, label: string) {
