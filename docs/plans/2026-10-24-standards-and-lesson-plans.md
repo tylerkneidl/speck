@@ -18,7 +18,7 @@ When Tyler taught, planning a lab ate time at every step: designing the question
 4. **Tag the activity, not the footage.** The same clip can be a kinematics lab or a forces lab depending on the questions. Standards live on each lab package and sim activity. A scene shows the union of its packages' tags.
 5. **One standards registry in the repo.** A typed list of every code we use. A tag that isn't in the registry fails the build, so typos never ship.
 6. **Every lab follows one pattern.** The method and question types are designed once and reused, so each new lab fills in specifics instead of starting over. This is what makes "lots of labs" possible, and it keeps quality even.
-7. **"Copy lesson plan" fits a standard admin template.** Tyler's school template wasn't available, so we use the sections most templates share (below) and adjust when real templates come in from the teacher pilot.
+7. **Lesson plans fit any school's template.** Every school asks for different sections in a different order. Packages store the content once as building blocks, and a template decides which headings appear and which blocks fill them. Teachers pick a preset or set up their own template once.
 
 ## The lab pattern
 
@@ -53,19 +53,42 @@ Library content ships in the public JavaScript bundle, so anything in it is read
 
 One button, "Copy lesson plan", copies the plan in two formats at once: rich HTML (headings and bullets survive pasting into Google Docs or Word) and plain text (for district systems that strip formatting). A preview lets the teacher change the date, period length and group before copying.
 
-Sections, matching what most school templates ask for:
+### Building blocks
 
-1. **Standards** (AP codes and/or NGSS performance expectations, with descriptions)
-2. **Learning objective** ("Students will be able to…")
-3. **Success criteria** ("I can…" statements)
-4. **Materials** (Speck link, devices, handout)
-5. **Warm-up** (5 minutes)
-6. **Procedure** with timings, sized to the period length
-7. **Differentiation** (support, English learners, extension)
-8. **Assessment** (formative checks and the CER as the product)
-9. **Closure** (exit ticket)
+A package never stores a finished lesson plan. It stores the pieces every template is made from:
 
-A teacher can switch AP or NGSS standards on or off depending on the course. The sections come from the package, so a lab written once produces plans for a 45-minute, 50-minute or 90-minute block.
+| Block | Example |
+|---|---|
+| Standards | AP and NGSS codes with descriptions (the teacher switches each set on or off) |
+| Essential question | The lab's question |
+| Objective | "Students will be able to…" |
+| Success criteria | "I can…" statements |
+| Vocabulary | Terms students need |
+| Prior knowledge | Prerequisite skills and labs |
+| Materials | Speck link, devices, handout |
+| Warm-up | A 5-minute opener |
+| Procedure steps | Each step has a duration and two phase labels: a 5E phase (engage, explore, explain, elaborate, evaluate) and a gradual-release phase (I do, we do, you do) |
+| Differentiation | Support, English learners, extension |
+| Formative checks | Questions to ask while students work |
+| Summative assessment | The CER and its scoring guide |
+| Closure | Exit ticket |
+| Homework | Optional follow-up |
+
+Because each procedure step carries its phase labels, the same steps can be printed as one timed list, grouped into the five 5E sections, or grouped into I do / we do / you do. Step durations scale to the period length.
+
+### Templates
+
+A template is an ordered list of headings, and each heading names the blocks that fill it. Speck ships presets for the formats schools use most:
+
+- **General:** standards, objective, materials, warm-up, procedure, differentiation, assessment, closure
+- **5E:** standards, objective, then engage, explore, explain, elaborate, evaluate
+- **Madeline Hunter:** objective, anticipatory set, input and modeling, guided practice, checking for understanding, independent practice, closure
+- **Understanding by Design:** desired results, evidence, learning plan
+- **Gradual release:** objective, I do, we do, you do, assessment
+
+A teacher can edit any preset or build their own: rename headings, reorder them, and choose which blocks fill each one. They can also paste in their school's blank template; Speck matches its headings to blocks ("Learning target" to objective, "Do now" to warm-up), and the teacher confirms or fixes the matches. The template is saved to the teacher's account, so every lab after that copies out in their school's format with no extra work. Later, a school on a site license can set one template for all its teachers.
+
+The template is data, separate from the content, so adding a new preset or a teacher's custom format never touches a lab package.
 
 ## Unit kits
 
@@ -89,9 +112,11 @@ content/
       teacher.md      teacher notes and answer key (served by the API only)
   units/
     ap1-unit-2.ts     ordered package ids and suggested days
+  templates/
+    presets.ts        General, 5E, Madeline Hunter, UbD, gradual release
 ```
 
-Frontmatter is checked with Zod at build time, including every standards tag against the registry. Adding a lab is adding a folder; no engineering work.
+Frontmatter is checked with Zod at build time, including every standards tag against the registry. Adding a lab is adding a folder; no engineering work. Teachers' custom templates are user data, so they live in the database (a `lesson_templates` table keyed by user, and later by organization), not in the repo.
 
 ## Sample package: Pull-Back Cars, added mass
 
@@ -119,7 +144,7 @@ This is what one package looks like end to end, using scene 2, series B from the
 - The cleanest data is in takes `pullback-q0-r2`, `-q2-r1`, `-q4-r3`.
 - Common mistake: including the coasting part of the run in the slope.
 
-**Lesson plan** (what "Copy lesson plan" produces, in short)
+**Lesson plan** (what "Copy lesson plan" produces with the General preset, in short)
 - *Objective:* Students will be able to determine how a pull-back car's acceleration depends on its mass using video analysis, and support a claim about Newton's second law with a linearized graph.
 - *Warm-up (5 min):* Which accelerates faster, an empty shopping cart or a full one, if you push the same? Why?
 - *Procedure (40 min):* predict (5), method (5), track and graph in pairs (20), class pools results and compares to 1/m (10).
@@ -133,10 +158,11 @@ This is what one package looks like end to end, using scene 2, series B from the
 2. **Package format and loader.** Folder layout, Zod frontmatter, build-time tag check, API route for teacher-only files.
 3. **Question bank.** The six-part pattern and its question types. Tyler writes or approves.
 4. **Lab page and handout.** The package page in the library, the student handout in-app and printable.
-5. **Copy lesson plan.** Rich HTML plus plain text, period length and standards toggles.
-6. **First packages.** One per first-shoot scene, written as the footage comes in (mid-November).
-7. **Unit kits and filter by standard.** AP1 Units 1 and 2 first.
-8. **Pilot feedback.** Collect real school templates from the 5–10 pilot teachers and adjust the lesson plan sections.
+5. **Copy lesson plan.** Building blocks, the five presets, rich HTML plus plain text, period length and standards toggles.
+6. **Custom templates.** Edit a preset, build your own, paste a school template and match headings. Saved per teacher.
+7. **First packages.** One per first-shoot scene, written as the footage comes in (mid-November).
+8. **Unit kits and filter by standard.** AP1 Units 1 and 2 first.
+9. **Pilot feedback.** Collect real school templates from the 5–10 pilot teachers, check the heading matching against them, and add presets for any common format we missed.
 
 ## Open questions
 
