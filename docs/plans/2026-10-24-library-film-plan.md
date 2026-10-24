@@ -231,5 +231,6 @@ Rough Amazon prices.
 
 ## Open questions for Tyler
 
-1. Where's the indoor drop space for the parachute men (stairwell, garage, deck)?
-2. Prototype the popper car first, or look for a toy that already does it?
+1. Prototype the popper car first, or look for a toy that already does it?
+
+The parachute-men drop spot is decided at shoot time.
