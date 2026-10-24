@@ -1,17 +1,14 @@
+'use client'
+
 import { Input } from '@/components/ui/input'
 import { LIBRARY } from '@/features/library/catalog'
 import { LabPreview } from '@/features/library/components/LabPreview'
 import { LibraryHeader } from '@/features/library/components/LibraryHeader'
 import type { Lab, LabTopic } from '@/features/library/types'
 import { cn } from '@/lib/utils'
-import { Link, createFileRoute } from '@tanstack/react-router'
 import { Search, SlidersHorizontal } from 'lucide-react'
+import Link from 'next/link'
 import { useMemo, useState } from 'react'
-
-// Public — anyone can browse the library and run a take with no sign-in.
-export const Route = createFileRoute('/library/')({
-  component: LibraryPage,
-})
 
 const TOPICS: LabTopic[] = [
   'Kinematics',
@@ -23,7 +20,8 @@ const TOPICS: LabTopic[] = [
   'Fluids',
 ]
 
-function LibraryPage() {
+// Public — anyone can browse the library and run a take with no sign-in.
+export function LibraryPage() {
   const [query, setQuery] = useState('')
   const [topic, setTopic] = useState<LabTopic | null>(null)
 
@@ -127,8 +125,7 @@ function LabCard({ lab }: { lab: Lab }) {
   const filmed = lab.takes.length > 0
   return (
     <Link
-      to="/library/$labSlug"
-      params={{ labSlug: lab.slug }}
+      href={`/library/${lab.slug}`}
       className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-input"
     >
       <div className={cn('aspect-video overflow-hidden', !filmed && 'opacity-90')}>

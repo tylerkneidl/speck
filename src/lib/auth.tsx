@@ -1,10 +1,12 @@
+'use client'
+
 /**
  * Auth utilities that gracefully handle missing Clerk provider.
  * When Clerk is not configured, these components render fallback content
  * to allow UI development without authentication.
  */
 
-import { useAuth as useClerkAuth } from '@clerk/clerk-react'
+import { useAuth as useClerkAuth } from '@clerk/nextjs'
 import type { ReactNode } from 'react'
 
 /**
@@ -29,8 +31,8 @@ export function useAuth() {
   if (!isClerkAvailable) {
     // No Clerk provider. In the dev server we treat this as a signed-in "dev user"
     // so the gated app (project list, editor) is reachable without logging in.
-    // In a production build (import.meta.env.DEV === false) this fails safe to signed-out.
-    const devSignedIn = import.meta.env.DEV
+    // In a production build (NODE_ENV === 'production') this fails safe to signed-out.
+    const devSignedIn = process.env.NODE_ENV === 'development'
     return {
       isSignedIn: devSignedIn,
       isLoaded: true,

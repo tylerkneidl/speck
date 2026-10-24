@@ -1,31 +1,38 @@
 # syntax=docker/dockerfile:1
 
-# ---- build: full deps, compile the client bundle ----
+# ---- build: full deps, compile the Next.js app ----
 FROM node:20-slim AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
-# VITE_* vars are baked into the client at build time. Railway exposes service
-# variables to Dockerfile builds as build args — declare the one the client needs
-# so the shipped bundle carries the real Clerk publishable key (not empty →
-# "development mode" / no auth). Only this one is required in prod; VITE_DEV_NO_AUTH
-# is dev-only (gated on import.meta.env.DEV).
+# NEXT_PUBLIC_* vars are baked into the client at build time. Railway exposes
+# service variables to Dockerfile builds as build args. next.config.ts maps the
+# legacy VITE_CLERK_PUBLISHABLE_KEY onto NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, so
+# either name works; without one the shipped bundle runs with no auth.
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=""
 ARG VITE_CLERK_PUBLISHABLE_KEY=""
-ENV VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY
+ARG NEXT_PUBLIC_SITE_URL=""
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY \
+    VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY \
+    NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
+    NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
-# ---- runtime: prod deps only; Hono serves the API + built SPA ----
+# ---- runtime: prod deps only; `next start` serves pages + /api (Hono) ----
 FROM node:20-slim AS runtime
 WORKDIR /app
-ENV NODE_ENV=production
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
 COPY package.json package-lock.json ./
-# tsx + drizzle-orm are prod deps, so the server runs and migrations apply without
-# the dev-only drizzle-kit / build toolchain.
+# tsx + drizzle-orm are prod deps, so migrations apply (preDeployCommand)
+# without the dev-only drizzle-kit / build toolchain. Not using Next's
+# standalone output for that reason: migrate.ts needs src/ and node_modules.
 RUN npm ci --omit=dev && npm cache clean --force
-COPY --from=build /app/dist ./dist
+COPY --from=build /app/.next ./.next
+COPY --from=build /app/public ./public
 COPY src ./src
 COPY drizzle ./drizzle
-COPY tsconfig.json tsconfig.node.json drizzle.config.ts ./
-EXPOSE 3001
+COPY next.config.ts tsconfig.json tsconfig.node.json drizzle.config.ts ./
+# Railway injects PORT; next start honours it (defaults to 3000).
+EXPOSE 3000
 CMD ["npm", "run", "start"]

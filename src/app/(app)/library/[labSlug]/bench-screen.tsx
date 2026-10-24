@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
@@ -12,25 +14,15 @@ import { LabPreview } from '@/features/library/components/LabPreview'
 import { LibraryHeader } from '@/features/library/components/LibraryHeader'
 import type { Lab, Selection } from '@/features/library/types'
 import { cn } from '@/lib/utils'
-import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { ArrowRight, Check, Link2, Shuffle } from 'lucide-react'
+import Link from 'next/link'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 
 // The lab bench: one scene, its filmed variables, and the take they pick.
 // The choice lives in the URL, so a teacher can copy the link to hand a whole
 // class the same setup.
-export const Route = createFileRoute('/library/$labSlug')({
-  validateSearch: (search: Record<string, unknown>): Selection =>
-    Object.fromEntries(
-      Object.entries(search)
-        .filter(([, v]) => typeof v === 'string' || typeof v === 'number')
-        .map(([k, v]) => [k, String(v)]),
-    ),
-  component: LabBenchPage,
-})
-
-function LabBenchPage() {
-  const { labSlug } = Route.useParams()
+export function LabBenchPage({ labSlug }: { labSlug: string }) {
   const lab = findLab(labSlug)
 
   if (!lab) {
@@ -41,7 +33,7 @@ function LabBenchPage() {
           <h1 className="font-display text-2xl font-bold text-foreground">Experiment not found</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             It may have been renamed.{' '}
-            <Link to="/library" className="text-primary underline-offset-4 hover:underline">
+            <Link href="/library" className="text-primary underline-offset-4 hover:underline">
               Browse the library
             </Link>
           </p>
@@ -54,15 +46,17 @@ function LabBenchPage() {
 }
 
 function LabBench({ lab }: { lab: Lab }) {
-  const search = Route.useSearch()
-  const navigate = useNavigate({ from: Route.fullPath })
-  const { selection, take } = resolveSelection(lab, search)
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+  const { selection, take } = resolveSelection(lab, Object.fromEntries(searchParams.entries()))
   const [calibrated, setCalibrated] = useState(false)
   const [copied, setCopied] = useState(false)
   const filmed = lab.takes.length > 0
 
   const choose = (next: Selection) => {
-    navigate({ search: resolveSelection(lab, next).selection, replace: true })
+    const query = new URLSearchParams(resolveSelection(lab, next).selection).toString()
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
   }
 
   const copyLink = async () => {
@@ -164,11 +158,7 @@ function LabBench({ lab }: { lab: Lab }) {
                     asChild
                     className="gap-2 bg-primary font-semibold text-primary-foreground hover:bg-primary/90"
                   >
-                    <Link
-                      to="/run/$takeId"
-                      params={{ takeId: take.id }}
-                      search={{ calibrated: calibrated || undefined }}
-                    >
+                    <Link href={`/run/${take.id}${calibrated ? '?calibrated=true' : ''}`}>
                       Start tracking
                       <ArrowRight className="h-4 w-4" />
                     </Link>

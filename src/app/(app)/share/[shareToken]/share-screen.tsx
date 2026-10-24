@@ -1,19 +1,16 @@
+'use client'
+
 import { Button } from '@/components/ui/button'
 import { ProjectWorkspace } from '@/features/projects/components/ProjectWorkspace'
 import { useSharedProject } from '@/features/projects/hooks/useSharedProject'
-import { Link, createFileRoute } from '@tanstack/react-router'
 import { ArrowRight, Link2, Loader2 } from 'lucide-react'
-
-export const Route = createFileRoute('/share/$shareToken')({
-  component: SharedProject,
-})
+import Link from 'next/link'
 
 /**
  * Public read-only view of a shared project. No auth — the token in the URL is
  * the credential, and the server only serves projects still flagged public.
  */
-function SharedProject() {
-  const { shareToken } = Route.useParams()
+export function SharedProject({ shareToken }: { shareToken: string }) {
   const { isLoading, isError, ownerName } = useSharedProject(shareToken)
 
   if (isLoading) {
@@ -46,7 +43,7 @@ function InvalidLink() {
       </p>
       <div className="mt-6 flex items-center gap-2">
         <Button asChild size="sm" className="gap-1.5 font-semibold">
-          <Link to="/try">
+          <Link href="/try">
             Try Speck with a sample
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
@@ -57,7 +54,7 @@ function InvalidLink() {
           size="sm"
           className="text-muted-foreground hover:text-foreground"
         >
-          <Link to="/">Go home</Link>
+          <Link href="/">Go home</Link>
         </Button>
       </div>
     </div>
