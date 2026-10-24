@@ -107,6 +107,30 @@ COPPA's internal-operations exception covers running, securing and improving the
 - **Product analytics** go through one `track()` wrapper. Teacher and parent events go out in full. Student events are cut down to an allowlist, keyed to an opaque ID, with IP geolocation off.
 - **Ad pixels and retargeting** load only in the `(marketing)` layout. **Email marketing** goes to adults only.
 
+## Data stores
+
+Postgres holds nearly everything. At Speck's scale it's a small database, and every extra datastore is one more thing to secure, back up and list as a subprocessor in every district agreement.
+
+| Data | Where |
+|---|---|
+| Video | Cloudflare R2 |
+| Lab content | Markdown in git (`content/`) |
+| Logs, errors | Log service, Sentry |
+| Product analytics | Analytics vendor |
+| Everything else | Postgres |
+
+Inside Postgres:
+
+- **Relational tables** for organizations, groups, memberships, plans and consent. **JSONB** for settings, as today.
+- **`data_points` stays one row per point.** That's easy to query for auto-checks and class graphs, and fine at millions of rows.
+- **Background jobs** (deletion runs, consent emails, the yearly video purge) run on `pg-boss`, a job queue built on Postgres. No Redis.
+- **Library search** uses Postgres full-text search until there are thousands of labs.
+- **The live class view** uses `LISTEN/NOTIFY` plus server-sent events. No separate realtime service.
+- **The audit log** is an append-only, hash-chained table, partitioned by month once it grows.
+- **Row-level security on student tables only**, added when those tables are created. It's a second wall behind `can()` and good audit evidence.
+
+**Revisit only if:** several app instances need shared rate limiting (Redis), or analysis across districts outgrows the analytics tool (a warehouse).
+
 ## Observability and logging
 
 **Today:** Pino exists (`src/server/lib/logger.ts`, with redaction), but requests are logged by `hono/logger` as plain text, outside Pino. There are no request IDs, no error tracking, no client error reporting or error boundary, and no alerts. `/api/health` returns ok without checking the database.
