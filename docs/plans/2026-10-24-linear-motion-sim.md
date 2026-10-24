@@ -97,7 +97,7 @@ Two functions hold the real teaching judgment. Each gets a signature, call sites
 
 **1. `step(state, a, dt)`** in `engine/step.ts`. The choice of integrator: explicit Euler, semi-implicit Euler, or the exact kinematic equation for constant a. That choice decides how drag and friction will slot in later. The tests check the contract, not the method:
 - Constant velocity stays exact.
-- Constant acceleration stays within 1 mm of x₀ + v₀t + ½at² after 10 s at dt = 1/240.
+- Constant acceleration stays within 1 cm (a third of a pixel on the position graph) of x₀ + v₀t + ½at² after 10 s at dt = 1/240. The tolerance is part of the call.
 - `step` never mutates its input.
 
 **2. `scoreMatch(samples, target) → { gap, verdict, hint? }`** in `linear-motion/score.ts`. How strict to be, whether to forgive a small time offset, and which mistakes deserve a named hint: a slope with the wrong sign means v has the wrong direction, and curvature with the wrong sign means a has the wrong sign. The tests pin down only the shape: a perfect match gets the best verdict, and every verdict comes from a fixed set.
