@@ -59,12 +59,11 @@ This fits the existing data model without code changes. Each run is a `LabTake`.
 
 ## Standalone and story mode
 
-Every lab runs two ways from the same clips:
+**Standalone is the main product:** a plain physics question on each lab, as supplementary material for teachers.
 
-- **Standalone:** a plain physics question, for teachers who just want the lab.
-- **Story mode:** students are the R&D division of a toy company. The lab arrives as a work order from another department, and the class signs off on a spec or claim.
+**Story mode is optional and undecided** (Tyler, 2026-10-24). It may become a mode for self-guided learners and homeschool: students are the R&D division of a toy company, the lab arrives as a work order from another department, and they sign off on a spec or claim. The company name is on hold.
 
-The footage stays neutral (no story in frame), so one clip serves both modes. The story is text in the app.
+Either way, the footage stays neutral (no story in frame), so the same clips serve both. The story is only text in the app, so nothing here changes what gets filmed.
 
 ### The story template
 
@@ -309,7 +308,7 @@ Rough Amazon prices.
 
 - **Multi-object tracking** (first in the design's build order): for the crawler race, and later for collisions.
 - **Answer keys on takes:** `LabTake` needs fields for the true values, the reference result and its tolerance, and the per-setting spread.
-- **Briefs on labs:** each `Lab` needs a standalone question and an optional story (department, product, work order, the deliverable students sign off), and a toggle for teachers to pick the mode.
+- **Briefs on labs:** each `Lab` needs a standalone question and an optional story (department, product, work order, the deliverable students sign off), if story mode goes ahead (for self-guided and homeschool use).
 - **Catalog updates:** the launch labs in `catalog.ts` (Nerf, ramp, collisions, balcony drop) should be swapped for the first-shoot scenes. AP2 later needs a `course` field and new topics.
 
 ## Open questions for Tyler
