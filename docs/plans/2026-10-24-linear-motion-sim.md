@@ -95,7 +95,7 @@ Activities start as typed TypeScript objects, which are easy to review in PRs. T
 
 Two functions hold the real teaching judgment. Each gets a signature, call sites, and tests, with a `TODO(Tyler)` body.
 
-**1. `step(state, a, dt)`** in `engine/step.ts`. The choice of integrator: explicit Euler, semi-implicit Euler, or the exact kinematic equation for constant a. That choice decides how drag and friction will slot in later. The tests check the contract, not the method:
+**1. `step(state, a, dt)`** in `engine/step.ts`. Decided (Tyler, 2026-10-25): the kinematic equation. In kinematics, a is given and no forces sit behind it, so x + v·dt + ½a·dt² is the sim's actual physics and is exact. Forces, friction, drag and springs get a **separate stepper** when the forces sims arrive: it computes a from the forces every tick with a numerical method (e.g. velocity Verlet), so the motion sims never change. The tests check the contract:
 - Constant velocity stays exact.
 - Constant acceleration stays within 1 cm (a third of a pixel on the position graph) of x₀ + v₀t + ½at² after 10 s at dt = 1/240. The tolerance is part of the call.
 - `step` never mutates its input.
@@ -128,7 +128,7 @@ Two functions hold the real teaching judgment. Each gets a signature, call sites
 
 ## Out of scope for this plan
 
-- Friction and drag knobs (the next linear-motion iteration, after `step` exists).
+- Friction and drag knobs. They belong to the forces sims and their own stepper, not to `step()`.
 - Saving sim runs to a project, or class assignments.
 - Story mode chrome beyond the work-order sticky note.
 - Free vs. paid gating.
