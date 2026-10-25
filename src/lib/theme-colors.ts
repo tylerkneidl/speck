@@ -49,12 +49,11 @@ export function getThemeColors() {
 }
 
 /**
- * Reactive palette for components that need JS color values (e.g. Recharts
- * props), not just CSS. `useTheme()` holds its own local state and won't
- * notify other components when the theme changes elsewhere, so this watches
- * the `dark` class on <html> directly via MutationObserver.
+ * The active theme, kept current. `useTheme()` holds its own local state and won't notify other
+ * components when the theme changes elsewhere, so this watches the `dark` class on <html> directly
+ * via MutationObserver.
  */
-export function useThemeColors() {
+export function useActiveTheme(): 'light' | 'dark' {
   const [theme, setTheme] = useState(getActiveTheme)
 
   useEffect(() => {
@@ -64,5 +63,10 @@ export function useThemeColors() {
     return () => observer.disconnect()
   }, [])
 
-  return THEME_COLORS[theme]
+  return theme
+}
+
+/** Reactive palette for components that need JS color values (e.g. Recharts props), not just CSS. */
+export function useThemeColors() {
+  return THEME_COLORS[useActiveTheme()]
 }
