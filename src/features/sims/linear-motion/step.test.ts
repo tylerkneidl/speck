@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import type { Body1D } from '../engine/types'
 import { step } from './step'
-import type { Body1D } from './types'
 
 // The contract for step().
 

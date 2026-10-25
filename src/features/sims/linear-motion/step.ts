@@ -1,7 +1,9 @@
-import type { Body1D } from './types'
+import type { Body1D } from '../engine/types'
 
 /**
- * One physics tick for a body on a line: given the state now and the acceleration acting on it,
+ * Linear motion's physics tick. Each sim owns its step and hands it to the engine.
+ *
+ * One tick for a body on a line: given the state now and the acceleration acting on it,
  * return the state `dt` seconds later. Must not mutate `state`. The returned `a` is the `a` passed in.
  *
  * Uses the kinematic equation. In kinematics a is a given, not the result of forces, so this is

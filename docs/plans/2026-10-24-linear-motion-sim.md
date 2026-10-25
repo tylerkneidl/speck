@@ -95,7 +95,7 @@ Activities start as typed TypeScript objects, which are easy to review in PRs. T
 
 Two functions hold the real teaching judgment. Each gets a signature, call sites, and tests, with a `TODO(Tyler)` body.
 
-**1. `step(state, a, dt)`** in `engine/step.ts`. Decided (Tyler, 2026-10-25): the kinematic equation. In kinematics, a is given and no forces sit behind it, so x + v·dt + ½a·dt² is the sim's actual physics and is exact. Forces, friction, drag and springs get a **separate stepper** when the forces sims arrive: it computes a from the forces every tick with a numerical method (e.g. velocity Verlet), so the motion sims never change. The tests check the contract:
+**1. `step(state, a, dt)`** in `linear-motion/step.ts`. Each sim owns its own step and passes it to the engine, which runs whatever it is handed; the engine's state type is 1D today and gets generalized when the projectile sim arrives. Decided (Tyler, 2026-10-25): the kinematic equation. In kinematics, a is given and no forces sit behind it, so x + v·dt + ½a·dt² is the sim's actual physics and is exact. Forces, friction, drag and springs get their **own step** in their own sim folders: it computes a from the forces every tick with a numerical method (e.g. velocity Verlet), so the motion sims never change. The tests check the contract:
 - Constant velocity stays exact.
 - Constant acceleration stays within 1 cm (a third of a pixel on the position graph) of x₀ + v₀t + ½at² after 10 s at dt = 1/240. The tolerance is part of the call.
 - `step` never mutates its input.

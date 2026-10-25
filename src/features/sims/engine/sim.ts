@@ -1,6 +1,5 @@
 import { type SimClock, createClock, dueTicks } from './clock'
 import { type Recorder, createRecorder, record } from './recorder'
-import { step as defaultStep } from './step'
 import { applyTrack } from './track'
 import type { Body1D, StepFn, Track } from './types'
 
@@ -21,7 +20,8 @@ export interface LinearSimOptions {
   dt?: number
   track?: Track
   tMax?: number
-  step?: StepFn
+  /** The sim's own physics tick. The engine runs whatever it is given. */
+  step: StepFn
 }
 
 export function createLinearSim({
@@ -31,7 +31,7 @@ export function createLinearSim({
   dt = 1 / 240,
   track = { min: 0, max: 10 },
   tMax = 10,
-  step = defaultStep,
+  step,
 }: LinearSimOptions): LinearSim {
   const sim: LinearSim = {
     state: { t: 0, x: x0, v: v0, a: a0 },
