@@ -4,10 +4,11 @@ import { type NextFetchEvent, type NextRequest, NextResponse } from 'next/server
 
 // Clerk's session handling for Next.js (needed by @clerk/nextjs components).
 // It protects nothing on its own: pages gate themselves, and /api routes keep
-// verifying sessions inside Hono (src/server/app.ts).
+// verifying sessions inside Hono (src/server/app.ts). The secret key is read
+// from CLERK_SECRET_KEY by Clerk itself: passing it here as an option makes
+// Clerk require CLERK_ENCRYPTION_KEY and 500 every request without one.
 const clerk = clerkMiddleware({
   publishableKey: CLERK_PUBLISHABLE_KEY,
-  secretKey: process.env.CLERK_SECRET_KEY,
 })
 
 export default function proxy(request: NextRequest, event: NextFetchEvent) {
