@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { step } from './step'
 import type { Body1D } from './types'
 
-// The contract for Tyler's step(). These stay red until step() is written.
+// The contract for step().
 
 const DT = 1 / 240
 
