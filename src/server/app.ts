@@ -1,9 +1,12 @@
 import { clerkMiddleware } from '@clerk/hono'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { logger as honoLogger } from 'hono/logger'
+import { requestId } from 'hono/request-id'
 import { AUTH_BYPASS, requireAuth } from './lib/auth'
 import { logger } from './lib/logger'
+import { requestLog } from './lib/request-log'
+import { clientLogRouter } from './routes/client-log'
+import { healthRouter } from './routes/health'
 import { projectsRouter } from './routes/projects'
 import { shareRouter } from './routes/share'
 import { uploadRouter } from './routes/upload'
@@ -17,11 +20,17 @@ import { webhooksRouter } from './routes/webhooks'
 const app = new Hono()
 
 // Middleware
-app.use('*', cors())
-app.use('*', honoLogger())
+app.use('*', cors({ origin: '*', exposeHeaders: ['X-Request-Id'] }))
+// Reuses an incoming X-Request-Id (so one ID can follow a request from the
+// browser) and echoes it on the response.
+app.use('*', requestId())
+app.use('*', requestLog())
 
-// Health check (public)
-app.get('/api/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }))
+// Health checks (public): /api/health for Railway, /api/health/deep for uptime.
+app.route('/api/health', healthRouter)
+
+// Public — error boundaries report crashes here (src/lib/report-error.ts).
+app.route('/api/log', clientLogRouter)
 
 // Authentication on protected API routes.
 // clerkMiddleware() verifies the session token; requireAuth() enforces it and sets userId.
@@ -62,8 +71,10 @@ app.route('/api/webhooks', webhooksRouter)
 
 // Error handling
 app.onError((err, c) => {
-  logger.error({ err, path: c.req.path, method: c.req.method }, 'Unhandled error')
-  return c.json({ error: 'Internal server error' }, 500)
+  const id = c.get('requestId')
+  logger.error({ err, requestId: id, path: c.req.path, method: c.req.method }, 'Unhandled error')
+  // The ID lets a user's bug report be matched to this log line.
+  return c.json({ error: 'Internal server error', requestId: id }, 500)
 })
 
 // Next.js only forwards /api/* here (src/app/api/[[...route]]/route.ts).
