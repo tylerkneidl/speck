@@ -215,6 +215,59 @@ Five scenes, about 125 runs (100 without the optional crane), one indoor day. Ta
 
 **Energy shopping list:** Hot Wheels loop ($15), carpet remnant ($10), superball, tennis ball, ping-pong ball, golf ball and playground ball ($20), rubber bands and two posts ($5), battery toy crane ($25, optional). **About $75.**
 
+## Third shoot: Momentum
+
+Six scenes, about 140 runs (115 without the optional recoil), one indoor day. Target: done by mid-December. Scenes 15, 16 and 20 need multi-object tracking in the app first.
+
+Story-mode work orders (optional) are in the right-hand columns.
+
+| Scene | Standalone question | Department | Work order |
+|---|---|---|---|
+| 15. Bumper Trucks | Is momentum conserved when the trucks stick, and when they bounce? Where does the energy go? | Safety | When a car gets rear-ended, how fast does it shoot forward? |
+| 16. Marble Collisions | Is momentum conserved in two dimensions? | Product Design | For the marble-run kit, where does the target marble go? |
+| 17. Newton's Cradle | How much energy is lost per click? | Quality Control | A customer says the cradle dies too fast. How much energy is lost per click? |
+| 18. Stacked-Ball Blaster | Why does the top ball fly so high? | Safety | How high can the top ball fly? That goes on the warning label. |
+| 19. Crash Bumpers | Same change in momentum, different stops: which bumper gives the smallest average force? | Safety | Which bumper gives the gentlest stop? |
+| 20. Push-Apart Recoil (optional) | Two trucks pushed apart from rest: how do their speeds compare? | Product Design | Which way does the playset's launcher kick, and how hard? |
+
+**15. Bumper Trucks**
+- **Variables:** target-truck load, 0, 50, 100, 150 and 200 g × bumper, Velcro (stick) or magnets (bounce). 10 × 3 runs = 30.
+- **Setup:** two free-rolling toy trucks on a smooth shelf board; one rolls into the other at rest. Side view.
+- **True values:** both truck masses and loads.
+- **Camera:** 120 fps.
+
+**16. Marble Collisions**
+- **Variable:** target marble, glass, steel or large glass, struck by a standard glass marble. 3 × 5 runs = 15. Aim is not controlled; the spread of angles is part of the data.
+- **Setup:** a flat table, filmed **overhead**, with a short ramp to launch the striker. Metre stick on the table.
+- **True values:** marble masses and diameters.
+- **Camera:** 240 fps.
+
+**17. Newton's Cradle**
+- **Variables:** balls pulled back, 1, 2 or 3 × release height, 2 or 4 cm. 6 × 3 runs = 18, each filmed for about 10 seconds.
+- **Setup:** a desk cradle, side view, metre stick behind the balls.
+- **True values:** ball mass and diameter, string length, release height.
+- **Camera:** 240 fps.
+
+**18. Stacked-Ball Blaster**
+- **Variable:** drop height, 20, 40, 60, 80 and 100 cm. 5 × 5 = 25 runs.
+- **Setup:** a stacked-ball toy (or a tennis ball under a ping-pong ball) dropped onto a hard floor in front of a vertical metre stick.
+- **True values:** drop heights, ball masses. The top ball's rebound height comes from the reference analysis.
+- **Camera:** 240 fps.
+
+**19. Crash Bumpers**
+- **Variable:** bumper material, foam, sponge, folded cardboard, rubber band or bare wood. 5 × 5 = 25 runs.
+- **Setup:** a toy car released from the same ramp height so it arrives at the same speed each time, hitting a bumper fixed to a block. Side view, close in.
+- **True values:** car mass, ramp height. Contact time and Δp come from the reference analysis; average force is Δp over contact time.
+- **Camera:** 240 fps.
+
+**20. Push-Apart Recoil (optional)**
+- **Variable:** mass ratio, 1:1, 1:2, 1:3, 1:4 and 2:3 (washers added to one truck). 5 × 5 = 25 runs.
+- **Setup:** two trucks held together against a stretched rubber band, then released. Side view.
+- **True values:** truck masses.
+- **Camera:** 120 fps.
+
+**Momentum shopping list:** a second free-rolling truck, Velcro dots and small magnets ($20), marbles including steel and large ones ($10), desk Newton's cradle ($15), stacked-ball toy ($12), foam and sponge offcuts ($5), shelf board ($15). **About $75.**
+
 ## Later shoots (outline)
 
 Each gets the same detail as the first shoot once we get to it.
@@ -223,7 +276,6 @@ No lab equipment is needed; Tyler has none to borrow. Where a lab classically us
 
 | Shoot | Film by | Toy scenes | DIY stand-ins for classic lab gear |
 |---|---|---|---|
-| Momentum | Mid-December | Toy trucks colliding (Velcro vs magnets, added load), marbles colliding, a Newton's cradle, a stacked-ball "astro blaster" | Smooth shelf board instead of a dynamics track; friction becomes part of the error analysis |
 | Rotation | Early January | Yo-yo falling, fidget spinner spin-down, spinning tops, can and ball race | Yo-yo stands in for the unwinding spool |
 | Oscillations | February | Plastic slinky as a spring (added mass), bobblehead, spider toy on a bungee, playground swing (adult riders) | Washers on a string for the pendulum; slinky for the mass on a spring |
 | Fluids | February | Water rockets (water volume), squirt-gun stream, bobbing rubber duck, marble sinking through syrup, draining bottle | |
