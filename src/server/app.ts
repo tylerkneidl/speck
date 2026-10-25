@@ -34,8 +34,8 @@ if (!AUTH_BYPASS) {
   const clerk = clerkMiddleware({
     secretKey: process.env.CLERK_SECRET_KEY,
     publishableKey:
-      process.env.CLERK_PUBLISHABLE_KEY ??
-      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ??
+      process.env.CLERK_PUBLISHABLE_KEY ||
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
       process.env.VITE_CLERK_PUBLISHABLE_KEY,
   })
   app.use('/api/projects/*', clerk)
